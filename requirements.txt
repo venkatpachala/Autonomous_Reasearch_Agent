@@ -1,0 +1,8 @@
+langgraph
+langchain
+langchain-ollama
+langchain-core
+llama-index
+llama-parse
+pydantic-settings
+python-dotenv
