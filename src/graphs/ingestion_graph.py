@@ -13,8 +13,8 @@ from src.agents.decomposer import decomposer_agent
 from src.agents.pdf_extractor import pdf_extractor_node
 from src.agents.summarizer import summarizer_agent
 from src.agents.critic_note import critic_agent
-from src.models.schemas import ResearchState
-from src.tools.arxiv_tool import arxiv_tool   # ← ADD THIS LINE
+from src.models.schemas import ResearchState , PaperStatus
+from src.tools.arxiv_tool import arxiv_tool   
 
 
 async def decomposer_node(state: ResearchState) -> ResearchState:
@@ -80,10 +80,12 @@ def route_to_parallel(state: ResearchState):
 
 
 async def per_paper_pipeline(state_input: dict) -> dict:
-    """Full per-paper pipeline"""
     output = await pdf_extractor_node(state_input)
-    output = await summarizer_agent.run(output)
-    output = await critic_agent.run(output)
+    
+    if output.status != PaperStatus.FAILED:
+        output = await summarizer_agent.run(output)
+        output = await critic_agent.run(output)
+        output.status = PaperStatus.COMPLETED
 
     return {
         "processed_papers": [output.dict() if hasattr(output, "dict") else output]

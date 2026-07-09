@@ -3,7 +3,7 @@ PDF Extractor Agent - FIXED
 """
 
 from src.tools.pdf_tools import pdf_tools
-from src.models.schemas import ExtractedContent, PerPaperInput, PerPaperOutput
+from src.models.schemas import ExtractedContent, PerPaperInput, PerPaperOutput ,PaperStatus
 from loguru import logger
 
 
@@ -37,8 +37,9 @@ async def pdf_extractor_node(input_data) -> PerPaperOutput:
         paper_id=paper.arxiv_id,
         metadata=paper,
         extracted=extracted,
-        summary=None,
-        knowledge_note=None,
-        local_pdf_path=str(pdf_path),
-        status="extracted"
+        summary=None,                    # Summarizer will fill this later
+        knowledge_note=None,             # Critic will fill this later
+        local_pdf_path=str(pdf_path) if pdf_path else None,
+        status=PaperStatus.EXTRACTING,
+        error=None
     )

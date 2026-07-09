@@ -166,12 +166,11 @@ class PerPaperInput(BaseModel):
 
 
 class PerPaperOutput(BaseModel):
-    """Output from one parallel paper processing branch"""
     paper_id: str
     metadata: PaperMetadata
     extracted: ExtractedContent
-    summary: StructuredPaperSummary
-    knowledge_note: KnowledgeNote
+    summary: Optional[StructuredPaperSummary] = None      # ← Made Optional
+    knowledge_note: Optional[KnowledgeNote] = None        # ← Made Optional
     local_pdf_path: Optional[str] = None
-    status: PaperStatus
+    status: PaperStatus = PaperStatus.EXTRACTING          # ← Use valid default
     error: Optional[str] = None
