@@ -1,49 +1,44 @@
-import requests
-from pathlib import Path
-import tempfile
-from llama_parse import LlamaParse
-from src.config import settings
+"""
+PDF Extractor Agent - FIXED
+"""
 
-parser = LlamaParse(
-    api_key=settings.LLAMA_CLOUD_API_KEY,
-    result_type="markdown",
-    num_workers=2,
-    verbose=True
-)
+from src.tools.pdf_tools import pdf_tools
+from src.models.schemas import ExtractedContent, PerPaperInput, PerPaperOutput
+from loguru import logger
 
-def pdf_extractor_agent(state):
-    """PDF Extractor with LlamaParse"""
-    extracted_docs = []
-    
-    for paper in state.get("retrieved_papers", []):
-        pdf_url = paper.get("pdf_url")
-        if not pdf_url:
-            continue
-            
-        try:
-            # Download PDF
-            response = requests.get(pdf_url, timeout=30)
-            response.raise_for_status()
-            
-            # Save to temp file
-            temp_path = Path(tempfile.gettempdir()) / f"paper_{hash(pdf_url)}.pdf"
-            temp_path.write_bytes(response.content)
-            
-            # Extract with LlamaParse
-            documents = parser.load_data(str(temp_path))
-            text = "\n".join([doc.text for doc in documents])
-            
-            extracted_docs.append({
-                "paper_title": paper.get("title"),
-                "extracted_text": text[:4000],
-                "metadata": documents[0].metadata if documents else {}
-            })
-            
-            print(f"✓ Extracted: {paper.get('title')[:60]}...")
-            
-        except Exception as e:
-            print(f"✗ Failed to extract {paper.get('title')}: {e}")
-    
-    return {
-    "extracted_docs": extracted_docs
-}
+
+async def pdf_extractor_node(input_data) -> PerPaperOutput:
+    # Handle both dict (from Send) and Pydantic model
+    if isinstance(input_data, dict):
+        paper = input_data["paper"]
+        topic = input_data.get("topic", "")
+    else:
+        paper = input_data.paper
+        topic = input_data.topic
+
+    logger.info(f"Extracting PDF for {paper.arxiv_id}")
+
+    pdf_path = await pdf_tools.download_pdf(str(paper.pdf_url), paper.arxiv_id, topic)
+
+    if not pdf_path:
+        return PerPaperOutput(
+            paper_id=paper.arxiv_id,
+            metadata=paper,
+            extracted=ExtractedContent(full_text=""),
+            summary=None,  # type: ignore
+            knowledge_note=None,  # type: ignore
+            status="failed",
+            error="Download failed"
+        )
+
+    extracted = await pdf_tools.extract_content(pdf_path)
+
+    return PerPaperOutput(
+        paper_id=paper.arxiv_id,
+        metadata=paper,
+        extracted=extracted,
+        summary=None,
+        knowledge_note=None,
+        local_pdf_path=str(pdf_path),
+        status="extracted"
+    )

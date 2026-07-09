@@ -2,11 +2,15 @@ import arxiv
 from typing import List, Dict
 from src.config import settings
 
-def search_arxiv(query: str, max_results: int = 1) -> List[Dict]:
-    """Real search using arXiv API"""
+def search_arxiv_with_keywords(keywords: List[str], max_results: int = 5) -> List[Dict]:
+    """Real arXiv search using keywords from Decomposer"""
     client = arxiv.Client()
+    
+    # Combine keywords for better search
+    search_query = " OR ".join(keywords)
+    
     search = arxiv.Search(
-        query=query,
+        query=search_query,
         max_results=max_results,
         sort_by=arxiv.SortCriterion.Relevance
     )
@@ -19,19 +23,18 @@ def search_arxiv(query: str, max_results: int = 1) -> List[Dict]:
             "url": result.entry_id,
             "pdf_url": result.pdf_url,
             "authors": [author.name for author in result.authors],
-            "published": str(result.published.date())
+            "published": str(result.published.date()),
+            "keywords_matched": [k for k in keywords if k.lower() in result.title.lower() or k.lower() in result.summary.lower()]
         })
     return papers
 
 def retrieve_papers(state):
-    """Retriever Agent - Real arXiv search"""
-    retrieved = []
+    """Retriever Agent - Uses keywords from Decomposer"""
+    keywords = state.get("keywords", [state["topic"]])
     
-    for question in state.get("sub_questions", []):
-        papers = search_arxiv(question, max_results=3)
-        retrieved.extend(papers)
+    retrieved = search_arxiv_with_keywords(keywords, max_results=4)  # Adjustable
     
-    print(f"Retrieved {len(retrieved)} real papers from arXiv.")
-
-    return {
-    "retrieved_papers": retrieved}
+    state["retrieved_papers"] = retrieved
+    print(f"Retrieved {len(retrieved)} real papers using keywords: {keywords[:3]}...")
+    
+    return state

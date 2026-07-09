@@ -1,11 +1,42 @@
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
+"""
+Central configuration using Pydantic Settings.
+"""
 
-load_dotenv()
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
-    OLLAMA_MODEL: str="qwen2.5:7b"
-    TEMPERATURE: float=0.6
-    LLAMA_CLOUD_API_KEY: str="llx-2cgyFLturoBCGY2S4tIX4c451hDkPhQt6f92GVITEGZ7Z1BL"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
 
-settings=Settings()
+    # LLM
+    ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
+    default_model: str = Field(default="qwen2.5:7b", alias="DEFAULT_MODEL")
+    extraction_model: str = Field(default="qwen2.5:7b", alias="EXTRACTION_MODEL")
+    critic_model: str = Field(default="qwen2.5:7b", alias="CRITIC_MODEL")
+
+    # LlamaParse
+    llamaparse_api_key: Optional[str] = Field(default=None, alias="LLAMAPARSE_API_KEY")
+
+    # Paths
+    base_dir: Path = Path(__file__).parent.parent.parent.resolve()
+    papers_dir: Path = base_dir / "papers"
+    outputs_dir: Path = base_dir / "outputs"
+
+    def model_post_init(self, __context: Any) -> None:
+        self.papers_dir.mkdir(parents=True, exist_ok=True)
+        self.outputs_dir.mkdir(parents=True, exist_ok=True)
+
+
+# Force reload
+settings = Settings(_env_file=".env")

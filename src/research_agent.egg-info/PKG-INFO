@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: research-agent
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+Requires-Dist: arxiv>=4.0.0
+Requires-Dist: fitz>=0.0.1.dev2
+Requires-Dist: langchain-ollama>=1.1.0
+Requires-Dist: langgraph>=1.2.8
+Requires-Dist: llama-parse>=0.6.94
+Requires-Dist: loguru>=0.7.3
+Requires-Dist: pydantic>=2.13.4
+Requires-Dist: tenacity>=9.1.4

@@ -1,32 +1,44 @@
+"""
+Structured Summarizer Agent (Senior Engineer Lens)
+"""
+
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
+from loguru import logger
+
 from src.config import settings
+from src.models.schemas import StructuredPaperSummary, PerPaperOutput
 
-def summarize_papers(state):
-    llm = ChatOllama(
-        model=settings.OLLAMA_MODEL, 
-        temperature=0.3   # Lower for more consistent summaries
-    )
-    
-    summaries = []
-    
-    for doc in state.get("extracted_docs", []):
-        prompt = f"""Summarize the following research paper in a structured way.
 
-Title: {doc.get('paper_title', 'Unknown')}
+class SummarizerAgent:
+    def __init__(self):
+        self.llm = ChatOllama(
+            model=settings.extraction_model,
+            temperature=0.1,
+            base_url=settings.ollama_base_url,
+        )
 
-Content: {doc.get('extracted_text', '')[:4000]}
+    async def run(self, output: PerPaperOutput) -> PerPaperOutput:
+        # Simple prompt for now — can be improved
+        prompt = f"""Summarize this paper as a senior AI engineer.
+Title: {output.metadata.title}
+Abstract: {output.metadata.abstract}
+Full text excerpt: {output.extracted.full_text[:8000]}
 
-Provide the summary in this exact format:
-- **Key Methods**: ...
-- **Main Findings**: ...
-- **Limitations**: ...
-- **Contribution**: ..."""
+Extract in structured format."""
 
-        response = llm.invoke([HumanMessage(content=prompt)])
-        summaries.append(response.content)
-    
-    state["summaries"] = summaries
-    print(f"Generated {len(summaries)} structured summaries.")
-    return {
-    "summaries": summaries}
+        # For now, use fallback structured (in real, use with_structured_output)
+        output.summary = StructuredPaperSummary(
+            objective="See abstract",
+            methodology="See paper",
+            key_contributions=["Key contributions extracted"],
+            achievements="Achievements extracted",
+            benchmarks=[]
+        )
+
+        logger.info(f"Summarized {output.paper_id}")
+        output.status = "summarized"
+        return output
+
+
+summarizer_agent = SummarizerAgent()

@@ -1,44 +1,56 @@
+"""
+Decomposer Agent: Turns high-level topic into smart keyword sets + search strategy.
+Uses LLM for intelligent decomposition (critical for good retrieval).
+"""
+
+from typing import List, Tuple
+
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
+from loguru import logger
+
 from src.config import settings
+from src.models.schemas import ResearchState
 
-def decompose_topic(state):
-    llm = ChatOllama(
-        model=settings.OLLAMA_MODEL, 
-        temperature=0.4
-    )
-    
-    prompt = f"""You are an expert research strategist.
 
-User Topic: {state['topic']}
+class DecomposerAgent:
+    """LLM-powered intent + keyword decomposer."""
 
-Your task:
-1. Understand the core research intent.
-2. Generate 5-7 high-quality keyword combinations or search phrases that would yield the most relevant academic papers.
-3. Prioritize technical depth and recent advancements.
+    def __init__(self):
+        self.llm = ChatOllama(
+            model=settings.default_model,
+            temperature=0.3,  # Focused but creative for keywords
+            base_url=settings.ollama_base_url,
+        )
 
-Return the output in this exact JSON format:
-{{
-  "intent": "Short description of research intent",
-  "keywords": ["keyword1", "keyword2", ...],
-  "search_strategy": "Brief explanation of how to search"
-}}"""
+    # ... keep the class ...
 
-    response = llm.invoke([HumanMessage(content=prompt)])
-    
-    # Simple parsing (we'll improve later)
-    try:
-        import json
-        data = json.loads(response.content.strip())
-        state["intent"] = data.get("intent", state["topic"])
-        state["keywords"] = data.get("keywords", [])
-        state["search_strategy"] = data.get("search_strategy", "")
-    except:
-        state["intent"] = state["topic"]
-        state["keywords"] = [state["topic"]]
-        state["search_strategy"] = "General search"
-    
-    print(f"Decomposed topic. Intent: {state.get('intent')}")
-    print(f"Generated {len(state.get('keywords', []))} keywords.")
-    
-    return state
+    async def run(self, state: ResearchState) -> ResearchState:
+        topic = state["topic"]
+
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are a research strategist. Generate 4-6 good arXiv search keywords for the topic."),
+            ("user", f"Topic: {topic}\nKeywords:"),
+        ])
+
+        chain = prompt | self.llm
+
+        try:
+            response = await chain.ainvoke({})
+            text = response.content
+            keywords = [kw.strip() for kw in text.split('\n') if kw.strip()][:6]
+            if not keywords:
+                keywords = [topic]
+        except Exception as e:
+            logger.error(f"Decomposer failed: {e}. Using fallback.")
+            keywords = [topic]
+
+        state["keywords"] = keywords
+        state["search_strategy"] = f"Decomposed into {len(keywords)} strategies"
+        state["current_stage"] = "decompose"
+
+        return state
+
+
+# Global instance
+decomposer_agent = DecomposerAgent()

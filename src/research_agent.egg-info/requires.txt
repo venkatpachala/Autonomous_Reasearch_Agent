@@ -1,0 +1,8 @@
+arxiv>=4.0.0
+fitz>=0.0.1.dev2
+langchain-ollama>=1.1.0
+langgraph>=1.2.8
+llama-parse>=0.6.94
+loguru>=0.7.3
+pydantic>=2.13.4
+tenacity>=9.1.4
