@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
+        
     )
 
     # LLM
@@ -32,6 +33,12 @@ class Settings(BaseSettings):
     base_dir: Path = Path(__file__).parent.parent.parent.resolve()
     papers_dir: Path = base_dir / "papers"
     outputs_dir: Path = base_dir / "outputs"
+    # Chroma
+    chroma_persist_dir: Path = Field(default=Path("./chroma_db"), alias="CHROMA_PERSIST_DIR")
+    # Neo4j
+    neo4j_uri: str = Field(default="bolt://localhost:7687", alias="NEO4J_URI")
+    neo4j_user: str = Field(default="neo4j", alias="NEO4J_USER")
+    neo4j_password: str = Field(default="password", alias="NEO4J_PASSWORD")
 
     def model_post_init(self, __context: Any) -> None:
         self.papers_dir.mkdir(parents=True, exist_ok=True)
