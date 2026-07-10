@@ -107,16 +107,16 @@ sequenceDiagram
 
 | Feature                        | Description                                                                 | Status      |
 |--------------------------------|-----------------------------------------------------------------------------|-------------|
-| **Topic-scoped Sessions**      | Every chat is tied to a research topic. History & papers stay isolated.    | ✅ Done     |
-| **Autonomous Ingestion**       | Decomposer + arXiv search + parallel paper processing                      | ✅ Done     |
-| **Senior-Engineer Notes**      | Structured summaries with objectives, contributions, benchmarks, limitations | ✅ Done     |
-| **Hybrid Memory**              | File-based Artifact Store + Chroma + Neo4j                                 | ✅ Done     |
-| **Grounded Chat**              | RAG with proper arXiv citations and source scores                          | ✅ Done     |
-| **Parallel Processing**        | LangGraph `Send()` for true multi-paper concurrency                        | ✅ Done     |
-| **Rate-limit Friendly**        | Polite arXiv client with retries and delays                                | ✅ Done     |
-| Continuous Monitor             | Background agent for new papers                                            | 🔜 Planned  |
-| Streamlit Dashboard            | Beautiful web UI                                                           | 🔜 Planned  |
-| GraphRAG                       | Full Neo4j reasoning over authors, concepts, citations                     | 🔜 Planned  |
+| **Topic-scoped Sessions**      | Every chat is tied to a research topic. History & papers stay isolated.    | Done     |
+| **Autonomous Ingestion**       | Decomposer + arXiv search + parallel paper processing                      | Done     |
+| **Senior-Engineer Notes**      | Structured summaries with objectives, contributions, benchmarks, limitations | Done     |
+| **Hybrid Memory**              | File-based Artifact Store + Chroma + Neo4j                                 | Done     |
+| **Grounded Chat**              | RAG with proper arXiv citations and source scores                          | Done     |
+| **Parallel Processing**        | LangGraph `Send()` for true multi-paper concurrency                        | Done     |
+| **Rate-limit Friendly**        | Polite arXiv client with retries and delays                                | Done     |
+| Continuous Monitor             | Background agent for new papers                                            | Done     |
+| Streamlit Dashboard            | Beautiful web UI                                                           | Done     |
+| GraphRAG                       | Full Neo4j reasoning over authors, concepts, citations                     | Done     |
 
 ---
 
