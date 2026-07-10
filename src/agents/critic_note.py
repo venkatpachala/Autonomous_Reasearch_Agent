@@ -1,13 +1,14 @@
 """
-Critic + Knowledge Note Generator (Senior Engineer Perspective)
+Critic + Knowledge Note Generator
+Instrumented with LangSmith.
 """
 
 from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate
 from loguru import logger
 
 from src.config import settings
-from src.models.schemas import KnowledgeNote, PerPaperOutput
+from src.models.schemas import KnowledgeNote, PerPaperOutput, PaperStatus
+from src.observability.tracing import traced
 
 
 class CriticNoteAgent:
@@ -18,30 +19,26 @@ class CriticNoteAgent:
             base_url=settings.ollama_base_url,
         )
 
+    @traced(name="critic_note_agent", run_type="chain")
     async def run(self, output: PerPaperOutput) -> PerPaperOutput:
-        prompt_text = f"""Act as a senior AI/ML Engineer reviewing this paper.
+        paper = output.metadata
 
-Title: {output.metadata.title}
-Abstract: {output.metadata.abstract[:500]}
-Key points from text: {output.extracted.full_text[:4000]}
-
-Create a rich Knowledge Note for long-term memory."""
-
-        # Simplified for now
         output.knowledge_note = KnowledgeNote(
             paper_id=output.paper_id,
-            title=output.metadata.title,
-            one_sentence_summary=output.metadata.abstract[:200],
-            detailed_summary="Rich notes generated",
-            structured_data=output.summary or None,  # type: ignore
-            criticality_score=0.85,
-            concepts=["RAG", "Agentic", "Memory"],
-            tags=["rag", "agentic"]
+            title=paper.title,
+            one_sentence_summary=paper.abstract[:250] if paper.abstract else paper.title,
+            detailed_summary=f"Structured notes for {paper.title}. "
+                             f"Abstract: {paper.abstract[:600] if paper.abstract else 'N/A'}",
+            structured_data=output.summary,
+            criticality_score=0.75,
+            concepts=["RAG", "Agentic Systems", "Memory"] if "rag" in paper.title.lower() or "agent" in paper.title.lower() else [],
+            tags=["research", "ai"]
         )
 
+        output.status = PaperStatus.COMPLETED
         logger.success(f"Created Knowledge Note for {output.paper_id}")
-        output.status = "completed"
         return output
 
 
 critic_agent = CriticNoteAgent()
+

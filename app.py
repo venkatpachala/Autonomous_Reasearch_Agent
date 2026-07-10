@@ -18,6 +18,8 @@ from src.agents.monitor_agent import monitor_agent
 from src.tools.research_index import research_index
 from src.models.session import ResearchSession
 
+from src.observability.startup import init_observability
+init_observability(project_name="research-agent")
 
 # =========================================================
 # Page Config

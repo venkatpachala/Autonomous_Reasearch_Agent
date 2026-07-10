@@ -1,5 +1,6 @@
 """
 Query / Chat Agent - Talks to the Research Memory using RAG.
+Instrumented with LangSmith tracing.
 """
 
 from typing import List, Dict, Any, Optional
@@ -9,9 +10,12 @@ from loguru import logger
 
 from src.config import settings
 from src.tools.retriever import research_retriever
+from src.observability.tracing import traced
 
 
 class QueryAgent:
+    """RAG-based agent that answers questions over the personal research knowledge base."""
+
     def __init__(self):
         self.llm = ChatOllama(
             model=settings.default_model,
@@ -20,7 +24,12 @@ class QueryAgent:
         )
         self.retriever = research_retriever
 
-    async def answer(self, question: str, topic: Optional[str] = None) -> Dict[str, Any]:
+    @traced(name="query_agent_answer", run_type="chain")
+    async def answer(self, question: str, topic: Optional[str] = None, chat_history: Optional[List] = None) -> Dict[str, Any]:
+        """
+        Main entry point: retrieve relevant papers and generate a grounded answer with citations.
+        """
+        # 1. Retrieve relevant context
         contexts = self.retriever.search(question, topic=topic, n_results=6)
 
         if not contexts:
@@ -31,8 +40,10 @@ class QueryAgent:
                 "contexts_used": 0
             }
 
+        # 2. Build context string
         context_str = self._format_contexts(contexts)
 
+        # 3. Build messages
         system_prompt = """You are a senior AI Research Engineer with access to a personal research knowledge base of academic papers.
 
 Answer the user's question **strictly based on the provided paper notes**.
@@ -57,6 +68,7 @@ Answer the question using only the above context. Include citations."""
             HumanMessage(content=human_prompt)
         ]
 
+        # 4. Generate answer
         try:
             response = await self.llm.ainvoke(messages)
             answer = response.content
@@ -64,6 +76,7 @@ Answer the question using only the above context. Include citations."""
             logger.error(f"LLM generation failed: {e}")
             answer = f"Error generating answer: {e}"
 
+        # 5. Prepare sources
         sources = [
             {
                 "paper_id": c["paper_id"],
@@ -102,3 +115,4 @@ Answer the question using only the above context. Include citations."""
 
 
 query_agent = QueryAgent()
+

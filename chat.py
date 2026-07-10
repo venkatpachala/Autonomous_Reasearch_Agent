@@ -20,6 +20,8 @@ from src.agents.session_manager import session_manager
 from src.agents.query_agent import query_agent
 from src.models.session import ResearchSession
 
+from src.observability.startup import init_observability
+init_observability(project_name="research-agent")
 
 console = Console()
 
