@@ -1,11 +1,9 @@
-cat > /home/workdir/artifacts/research_agent/README.md << 'ENDOFFILE'
 # Agentic Research Memory System
 
 > **Autonomous multi-agent system that turns research topics into a living, queryable knowledge base.**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-purple.svg)](https://github.com/langchain-ai/langgraph)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
@@ -371,14 +369,3 @@ The codebase is deliberately modular. Good extension points:
 - Add new storage backends
 
 ---
-
-## License
-
-MIT
-
----
-
-**Built as a serious portfolio-grade Agentic AI system.**  
-
-> “The best research assistant is one that remembers everything you ever read and can reason over it.”
-ENDOFFILE
