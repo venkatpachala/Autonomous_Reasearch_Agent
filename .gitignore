@@ -8,3 +8,4 @@ python-version
 uv.lock
 pyproject.toml
 evaluation_runs/
+__pycache__/
