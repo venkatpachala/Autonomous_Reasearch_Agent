@@ -1,0 +1,232 @@
+[
+  {
+    "paper_id": "1411.3958v3",
+    "title": "Edge-state enhanced transport in a 2-dimensional quantum walk",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "1705.08449v4",
+    "title": "Developing an edge computing platform for real-time descriptive analytics",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "1807.05037v1",
+    "title": "Exploring Hierarchy-Aware Inverse Reinforcement Learning",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "1812.00922v1",
+    "title": "Multi-agent Deep Reinforcement Learning with Extremely Noisy Observations",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2007.04193v2",
+    "title": "Mobility driven Cloud-Fog-Edge Framework for Location-aware Services: A Comprehensive Review",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2011.08729v3",
+    "title": "Control Strategies for Autonomous Vehicles",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2106.14827v2",
+    "title": "Analysis and Control of Autonomous Mobility-on-Demand Systems",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2110.01831v1",
+    "title": "The Artificial Scientist: Logicist, Emergentist, and Universalist Approaches to Artificial General Intelligence",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2110.01835v1",
+    "title": "Compression, The Fermi Paradox and Artificial Super-Intelligence",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2203.08975v2",
+    "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2204.10358v1",
+    "title": "Creative Problem Solving in Artificially Intelligent Agents: A Survey and Framework",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2301.08028v4",
+    "title": "A Tutorial on Meta-Reinforcement Learning",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2304.04780v1",
+    "title": "A Review on Explainable Artificial Intelligence for Healthcare: Why, How, and When?",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2501.02842v1",
+    "title": "Foundations of GenIR",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2506.06962v3",
+    "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2506.10461v1",
+    "title": "Automating Multi-Tenancy Performance Evaluation on Edge Compute Nodes",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2507.02910v1",
+    "title": "Causal-Paced Deep Reinforcement Learning",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2601.00360v3",
+    "title": "Mapping Human Anti-collusion Mechanisms to Multi-agent AI Systems",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2601.16513v1",
+    "title": "Competing Visions of Ethical AI: A Case Study of OpenAI",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2602.04518v1",
+    "title": "Learning the Value Systems of Agents with Preference-based and Inverse Reinforcement Learning",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2602.12375v1",
+    "title": "Value Bonuses using Ensemble Errors for Exploration in Reinforcement Learning",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2603.28944v2",
+    "title": "Faith in AI can narrow the futures individuals consider",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.7,
+    "usefulness": 3.0,
+    "overall": 0.728,
+    "feedback": "Judge failed"
+  },
+  {
+    "paper_id": "2605.27827v1",
+    "title": "Operational AI Deployment Assurance: Governance-State Orchestration Under Threshold-Sensitive Deployment Conditions -- A Governance Framework for High-Stakes AI Systems",
+    "completeness": 1.0,
+    "contribution_density": 0.75,
+    "specificity": 0.4,
+    "usefulness": 3.0,
+    "overall": 0.668,
+    "feedback": "Judge failed"
+  }
+]
