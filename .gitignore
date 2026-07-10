@@ -1,0 +1,9 @@
+.env
+chroma_db
+debug
+notebooks
+outputs
+papers
+python-version
+uv.lock
+pyproject.toml
