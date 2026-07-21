@@ -324,20 +324,13 @@ NEO4J_PASSWORD=password
 
 ---
 
-## Roadmap
+Observability:
 
-- [x] Core multi-agent ingestion pipeline
-- [x] Hybrid storage (Artifact + Vector + Graph)
-- [x] Session-aware chat interface
-- [ ] Higher-quality structured summaries (better prompts + structured output)
-- [ ] Research Index + smart deduplication
-- [ ] Continuous background monitor
-- [ ] Streamlit web dashboard
-- [ ] Full GraphRAG with concept extraction
-- [ ] Paper comparison & research report generation
-- [ ] Evaluation harness for note quality
-
----
+Full LangSmith integration for tracing every LLM call and agent step. Structured events for ingestion, retrieval, and answer generation.Evaluation Framework
+Note Quality scoring (completeness, contribution density, specificity + LLM-as-Judge usefulness)
+LangSmith-compatible evaluators
+Retrospective evaluation of the entire knowledge base
+Foundation for retrieval quality and answer faithfulness evaluation
 
 ## Design Principles
 

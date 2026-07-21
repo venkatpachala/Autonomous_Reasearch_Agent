@@ -1,6 +1,5 @@
 .env
 chroma_db/
-debug/
 notebooks/
 outputs/
 papers/
