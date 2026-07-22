@@ -18,7 +18,7 @@ class ResearchRetriever:
         self.artifact = artifact_store
         self.n_results = n_results
 
-    def search(self, query: str, topic: Optional[str] = None, n_results: Optional[int] = None) -> List[Dict[str, Any]]:
+    def search(self, query: str, topic: Optional[str] = None, n_results: Optional[int] = None) -> Dict[str, Any]:
         n = n_results or self.n_results
         where = {"topic": topic} if topic else None
 
@@ -26,11 +26,11 @@ class ResearchRetriever:
             results = self.chroma.query(query_text=query, n_results=n, where=where)
         except Exception as e:
             logger.error(f"Chroma query failed: {e}")
-            return []
+            return {"papers": [], "graph_triplets": []}
 
         contexts = []
         if not results or not results.get("ids") or not results["ids"][0]:
-            return contexts
+            return {"papers": [], "graph_triplets": []}
 
         ids = results["ids"][0]
         documents = results["documents"][0]
@@ -56,7 +56,32 @@ class ResearchRetriever:
                             if (self.artifact.base_dir / paper_id / "paper.pdf").exists() else None,
             })
 
-        return contexts
+        # === GRAPH RAG RELATIONSHIPS EXTRACTION ===
+        import re
+        from src.db.neo4j_client import neo4j_client
+
+        entities_to_query = []
+        # 1. Pull concepts from retrieved KnowledgeNotes
+        for ctx in contexts:
+            note = ctx.get("full_note")
+            if note and note.concepts:
+                entities_to_query.extend(note.concepts)
+
+        # 2. Extract capitalized terms or acronyms from the query
+        proper_nouns = re.findall(r'\b[A-Z][a-zA-Z0-9\-\.]+\b', query)
+        entities_to_query.extend(proper_nouns)
+
+        # 3. Clean duplicates
+        entities_to_query = list(set([e.strip() for e in entities_to_query if len(e.strip()) > 1]))
+
+        graph_triplets = []
+        if neo4j_client.is_connected() and entities_to_query:
+            graph_triplets = neo4j_client.get_related_triplets(entities_to_query)
+
+        return {
+            "papers": contexts,
+            "graph_triplets": graph_triplets
+        }
 
     def _load_full_note(self, paper_id: str) -> Optional[KnowledgeNote]:
         try:

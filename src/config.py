@@ -7,8 +7,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+import dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Load environment variables from .env file into os.environ
+dotenv.load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -43,6 +47,11 @@ class Settings(BaseSettings):
     def model_post_init(self, __context: Any) -> None:
         self.papers_dir.mkdir(parents=True, exist_ok=True)
         self.outputs_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Fallback to check standard alternative LlamaParse key name
+        if not self.llamaparse_api_key:
+            import os
+            self.llamaparse_api_key = os.getenv("LLAMA_CLOUD_API_KEY")
 
 
 # Force reload

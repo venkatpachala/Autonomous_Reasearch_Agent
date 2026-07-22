@@ -22,9 +22,11 @@ class QueryAgent:
         Main entry point: retrieve relevant papers and generate a grounded answer with citations.
         """
         # 1. Retrieve relevant context
-        contexts = self.retriever.search(question, topic=topic, n_results=6)
+        retrieved = self.retriever.search(question, topic=topic, n_results=6)
+        papers = retrieved.get("papers", [])
+        graph_triplets = retrieved.get("graph_triplets", [])
 
-        if not contexts:
+        if not papers:
             return {
                 "answer": "I don't have any relevant research papers in my knowledge base for this question yet. "
                           "Ingest more papers on this topic first.",
@@ -33,22 +35,34 @@ class QueryAgent:
             }
 
         # 2. Build context string
-        context_str = self._format_contexts(contexts)
+        context_str = self._format_contexts(papers)
 
         # 3. Build messages
-        system_prompt = """You are a senior AI Research Engineer with access to a personal research knowledge base of academic papers.
+        system_prompt = """You are a senior AI Research Engineer with access to a personal research knowledge base of academic papers and graph relationships.
 
-Answer the user's question **strictly based on the provided paper notes**.
+Answer the user's question **strictly based on the provided context (papers and graph relationships)**.
 
 Rules:
 - Ground every claim in the provided context.
 - Always cite papers using the format: [arXiv:XXXX.XXXXX - Short Title]
 - If context is insufficient, say so honestly.
 - Be technical, precise and insightful.
-- Compare papers when multiple are relevant.
+- Use the structural graph relationships to link entities (Methods, Datasets, Metrics, Concepts) and explain comparisons.
 - Structure long answers clearly."""
 
-        human_prompt = f"""Question: {question}
+        if graph_triplets:
+            graph_context_str = "\n".join(f"- {t}" for t in graph_triplets)
+            human_prompt = f"""Question: {question}
+
+Relevant Graph Relationships (Entities & Semantic Links):
+{graph_context_str}
+
+Relevant Research Context (Document Details):
+{context_str}
+
+Answer the question using only the above context. Include citations."""
+        else:
+            human_prompt = f"""Question: {question}
 
 Relevant Research Context:
 {context_str}
@@ -80,13 +94,13 @@ Answer the question using only the above context. Include citations."""
                 "arxiv_url": c["arxiv_url"],
                 "score": c.get("score"),
             }
-            for c in contexts
+            for c in papers
         ]
 
         return {
             "answer": answer,
             "sources": sources,
-            "contexts_used": len(contexts),
+            "contexts_used": len(papers),
         }
 
     def _format_contexts(self, contexts: List[Dict[str, Any]]) -> str:

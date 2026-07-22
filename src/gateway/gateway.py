@@ -1,7 +1,7 @@
 import re
 import json
 import time
-from typing import Dict, Any, List, Optional, Type
+from typing import Dict, Any, List, Optional, Type, Tuple
 from pydantic import BaseModel, ValidationError
 from loguru import logger
 
@@ -33,6 +33,43 @@ class AIGateway:
         self.ollama = OllamaProvider()
         self.openai = OpenAIProvider()
         self.embed = embeddings_gateway.embed
+
+    async def _verify_groundedness(self, answer: str, context: str, model: str) -> Tuple[bool, str]:
+        """
+        Fast LLM-as-a-judge consistency validation.
+        """
+        system_prompt = """You are a strict factual consistency judge.
+Analyze the provided Answer and Context. Determine if the Answer contains ANY claims, metrics, or facts that are NOT directly supported by the Context.
+
+Return a JSON object matching this schema:
+{"is_grounded": true|false, "reason": "<explanation if not grounded>"}"""
+
+        human_prompt = f"""Context:
+{context}
+
+Answer:
+{answer}
+
+Verify the Answer."""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": human_prompt}
+        ]
+        
+        try:
+            # Run using Ollama locally for fast verification
+            response = await self.ollama.generate(
+                model=model,
+                messages=messages,
+                temperature=0.0
+            )
+            text = clean_json_text(response["text"])
+            data = json.loads(text)
+            return bool(data.get("is_grounded", True)), data.get("reason", "")
+        except Exception as e:
+            logger.warning(f"Groundedness checker failed: {e}. Defaulting to True.")
+            return True, ""
 
     async def generate(
         self,
@@ -76,8 +113,19 @@ class AIGateway:
             )
 
         # 3. Define the actual LLM call executing with retries
-        # Copy messages to allow mutation during retry loops (self-correction)
-        execution_messages = list(messages)
+        # Copy messages (deep dict copy) to allow mutation during retry loops
+        execution_messages = [{"role": m["role"], "content": m["content"]} for m in messages]
+
+        # If a structured schema model is specified, inject schema formatting instructions
+        if schema_model:
+            schema_json = json.dumps(schema_model.model_json_schema(), indent=2)
+            schema_instruction = f"\n\nYou must respond ONLY with a JSON object conforming exactly to this JSON schema:\n{schema_json}"
+            
+            system_msg = next((m for m in execution_messages if m["role"] == "system"), None)
+            if system_msg:
+                system_msg["content"] += schema_instruction
+            else:
+                execution_messages.insert(0, {"role": "system", "content": schema_instruction})
 
         async def _call_llm():
             # Check Circuit Breaker
@@ -113,6 +161,22 @@ class AIGateway:
                                    f"Please correct your response and return ONLY valid JSON matching the schema."
                     })
                     raise ValueError(f"JSON schema validation failed: {val_err}")
+
+            # 5. Factual Groundedness Verification (for research answers)
+            if task == "research_answer":
+                # Find the context in human message
+                user_msg = next((m["content"] for m in execution_messages if m["role"] == "user"), "")
+                is_grounded, reason = await self._verify_groundedness(text, user_msg, model)
+                if not is_grounded:
+                    logger.warning(f"Hallucination detected: {reason}")
+                    execution_messages.append({"role": "assistant", "content": text})
+                    execution_messages.append({
+                        "role": "user",
+                        "content": f"Your response was rejected because it contains ungrounded claims or hallucinations: {reason}. "
+                                   f"Please rewrite your answer ensuring that EVERY statement is strictly backed by the provided context. "
+                                   f"Do not invent facts, numbers, or external info."
+                    })
+                    raise ValueError(f"Factual consistency check failed: {reason}")
 
             response["structured"] = structured_output
             return response

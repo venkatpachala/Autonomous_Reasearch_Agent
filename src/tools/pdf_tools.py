@@ -5,7 +5,7 @@ Primary: LlamaParse (multimodal), fallback: PyMuPDF + vision.
 
 import asyncio
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 import fitz  # PyMuPDF
 from loguru import logger
@@ -92,6 +92,85 @@ class PDFTools:
         except Exception as e:
             logger.error(f"PDF extraction failed for {pdf_path}: {e}")
             raise
+
+    def chunk_text(self, text: str, paper_id: str, topic: str, chunk_size: int = 1500, overlap: int = 250) -> List[Dict[str, Any]]:
+        """
+        Split raw text into semantic paragraph-based chunks.
+        Extracts markdown tables separately to keep them as contiguous chunks.
+        """
+        import re
+
+        # Regex to locate markdown table structures (lines starting/ending with | or containing multiple |)
+        table_pattern = re.compile(r'((?:\n\|[^\n]+\|)+)', re.MULTILINE)
+        
+        tables = []
+        raw_text_without_tables = text
+        for i, match in enumerate(table_pattern.finditer(text)):
+            table_str = match.group(1).strip()
+            tables.append({
+                "chunk_id": f"{paper_id}_table_{i}",
+                "text": f"[Document: {paper_id} | Table {i}] \n{table_str}",
+                "metadata": {
+                    "paper_id": paper_id,
+                    "topic": topic,
+                    "chunk_index": i,
+                    "is_table": True,
+                    "table_index": i
+                }
+            })
+            raw_text_without_tables = raw_text_without_tables.replace(table_str, "")
+
+        chunks = []
+        paragraphs = [p.strip() for p in raw_text_without_tables.split("\n\n") if p.strip()]
+        
+        current_chunk = []
+        current_length = 0
+        chunk_idx = 0
+        
+        for p in paragraphs:
+            if current_length + len(p) > chunk_size and current_chunk:
+                chunk_text = "\n\n".join(current_chunk)
+                chunks.append({
+                    "chunk_id": f"{paper_id}_chunk_{chunk_idx}",
+                    "text": f"[Document: {paper_id}] \n{chunk_text}",
+                    "metadata": {
+                        "paper_id": paper_id,
+                        "topic": topic,
+                        "chunk_index": chunk_idx,
+                        "is_table": False
+                    }
+                })
+                chunk_idx += 1
+                
+                # Build overlap paragraphs
+                overlap_chars = 0
+                new_chunk = []
+                for prev in reversed(current_chunk):
+                    if overlap_chars + len(prev) < overlap:
+                        new_chunk.insert(0, prev)
+                        overlap_chars += len(prev)
+                    else:
+                        break
+                current_chunk = new_chunk
+                current_length = sum(len(x) for x in current_chunk)
+            
+            current_chunk.append(p)
+            current_length += len(p)
+            
+        if current_chunk:
+            chunk_text = "\n\n".join(current_chunk)
+            chunks.append({
+                "chunk_id": f"{paper_id}_chunk_{chunk_idx}",
+                "text": f"[Document: {paper_id}] \n{chunk_text}",
+                "metadata": {
+                    "paper_id": paper_id,
+                    "topic": topic,
+                    "chunk_index": chunk_idx,
+                    "is_table": False
+                }
+            })
+
+        return chunks + tables
 
 
 # Global singleton

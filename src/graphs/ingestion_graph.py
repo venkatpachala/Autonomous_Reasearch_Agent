@@ -74,7 +74,7 @@ def route_to_parallel(state: ResearchState):
 
 
 async def per_paper_pipeline(state_input: dict) -> dict:
-    """Full per-paper pipeline + Layered Storage"""
+    """Full per-paper pipeline + Layered Storage + Property Graph Extractor"""
     topic = state_input.get("topic", "unknown")
 
     # Run extraction → summarization → critic
@@ -87,6 +87,16 @@ async def per_paper_pipeline(state_input: dict) -> dict:
         await memory_manager.store_paper(output, topic)
     except Exception as e:
         logger.error(f"Memory Manager failed for {output.paper_id}: {e}")
+
+    # === Extract Property Graph Entities & Write to Neo4j ===
+    try:
+        from src.agents.extractor_agent import extractor_agent
+        from src.db.neo4j_client import neo4j_client
+        if neo4j_client.is_connected():
+            graph_data = await extractor_agent.extract_graph_elements(output)
+            neo4j_client.write_extracted_graph(output.paper_id, graph_data.entities, graph_data.relationships)
+    except Exception as e:
+        logger.error(f"Failed to compile property graph for {output.paper_id}: {e}")
 
     return {
         "processed_papers": [output.dict() if hasattr(output, "dict") else output]

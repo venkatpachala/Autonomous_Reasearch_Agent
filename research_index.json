@@ -63,6 +63,142 @@
       ],
       "first_seen": "2026-07-21T09:17:24.606037",
       "last_processed": "2026-07-21T09:17:24.606037"
+    },
+    "1808.06100v6": {
+      "title": "On the solution existence and stability of polynomial optimization problems",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:27.710845",
+      "last_processed": "2026-07-22T07:55:27.710845"
+    },
+    "2306.03369v3": {
+      "title": "Event Encryption: Rethinking Privacy Exposure for Neuromorphic Imaging",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:30.263035",
+      "last_processed": "2026-07-22T07:55:30.263035"
+    },
+    "2502.20729v1": {
+      "title": "NeuroMorse: A Temporally Structured Dataset For Neuromorphic Computing",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:33.271827",
+      "last_processed": "2026-07-22T07:55:33.271827"
+    },
+    "2303.08710v1": {
+      "title": "Two-Scale Optimization of Graded Lattice Structures respecting Buckling on Micro- and Macroscale",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:36.802142",
+      "last_processed": "2026-07-22T07:55:36.802142"
+    },
+    "2201.02491v3": {
+      "title": "An efficient and easy-to-extend Matlab code of the Moving Morphable Component (MMC) method for three-dimensional topology optimization",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:37.851161",
+      "last_processed": "2026-07-22T07:55:37.851161"
+    },
+    "2304.04640v5": {
+      "title": "NeuroBench: A Framework for Benchmarking Neuromorphic Computing Algorithms and Systems",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:38.844755",
+      "last_processed": "2026-07-22T07:55:38.844755"
+    },
+    "2504.10053v2": {
+      "title": "Synthetic Biology meets Neuromorphic Computing: Towards a bio-inspired Olfactory Perception System",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:41.276239",
+      "last_processed": "2026-07-22T07:55:41.276239"
+    },
+    "2501.00258v1": {
+      "title": "Optimal design of frame structures with mixed categorical and continuous design variables using the Gumbel-Softmax method",
+      "topics": [
+        "memory architectures for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T07:55:45.255021",
+      "last_processed": "2026-07-22T07:55:45.255021"
+    },
+    "2501.0001": {
+      "title": "Evaluating Qwen-2.5 on Cognitive Benchmarks",
+      "topics": [
+        "llm benchmarks"
+      ],
+      "first_seen": "2026-07-22T08:06:08.701617",
+      "last_processed": "2026-07-22T10:16:13.747670"
+    },
+    "1308.2881v1": {
+      "title": "Opacity of Memory Management in Software Transactional Memory",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:00.953277",
+      "last_processed": "2026-07-22T10:20:00.953277"
+    },
+    "2601.05960v2": {
+      "title": "Distilling Feedback into Memory-as-a-Tool",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:09.782554",
+      "last_processed": "2026-07-22T10:20:09.782554"
+    },
+    "2507.02910v1": {
+      "title": "Causal-Paced Deep Reinforcement Learning",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:12.475039",
+      "last_processed": "2026-07-22T10:20:12.475039"
+    },
+    "1807.05037v1": {
+      "title": "Exploring Hierarchy-Aware Inverse Reinforcement Learning",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:14.754180",
+      "last_processed": "2026-07-22T10:20:14.754180"
+    },
+    "1509.00070v1": {
+      "title": "In-Line-Test of Variability and Bit-Error-Rate of HfOx-Based Resistive Memory",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:23.163087",
+      "last_processed": "2026-07-22T10:20:23.163087"
+    },
+    "2607.18488v1": {
+      "title": "The Open Ant: A Robot Platform for Reinforcement Learning Research",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:31.633867",
+      "last_processed": "2026-07-22T10:20:31.633867"
+    },
+    "2602.12375v1": {
+      "title": "Value Bonuses using Ensemble Errors for Exploration in Reinforcement Learning",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:33.519395",
+      "last_processed": "2026-07-22T10:20:33.519395"
+    },
+    "2202.02626v3": {
+      "title": "Layer-wise Regularized Adversarial Training using Layers Sustainability Analysis (LSA) framework",
+      "topics": [
+        "memory layers for ai agents 2026"
+      ],
+      "first_seen": "2026-07-22T10:20:55.252693",
+      "last_processed": "2026-07-22T10:20:55.252693"
     }
   },
   "topics": {
@@ -79,6 +215,41 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-21T09:17:24.606037"
+    },
+    "memory architectures for ai agents 2026": {
+      "paper_ids": [
+        "1808.06100v6",
+        "2306.03369v3",
+        "2502.20729v1",
+        "2303.08710v1",
+        "2201.02491v3",
+        "2304.04640v5",
+        "2504.10053v2",
+        "2501.00258v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T07:55:45.255021"
+    },
+    "llm benchmarks": {
+      "paper_ids": [
+        "2501.0001"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T10:16:13.747670"
+    },
+    "memory layers for ai agents 2026": {
+      "paper_ids": [
+        "1308.2881v1",
+        "2601.05960v2",
+        "2507.02910v1",
+        "1807.05037v1",
+        "1509.00070v1",
+        "2607.18488v1",
+        "2602.12375v1",
+        "2202.02626v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T10:20:55.252693"
     }
   }
 }
