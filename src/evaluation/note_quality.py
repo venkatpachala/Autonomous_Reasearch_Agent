@@ -15,6 +15,11 @@ from src.config import settings
 from src.models.schemas import KnowledgeNote
 
 
+from pydantic import BaseModel, Field
+from src.gateway import gateway
+from src.models.schemas import KnowledgeNote
+
+
 @dataclass
 class NoteQualityScore:
     completeness: float          # 0-1
@@ -23,6 +28,11 @@ class NoteQualityScore:
     usefulness: float            # 1-5 (LLM judge)
     overall: float               # weighted
     feedback: str = ""
+
+
+class JudgeEvaluation(BaseModel):
+    score: float = Field(..., ge=1.0, le=5.0, description="Evaluation score from 1 to 5")
+    feedback: str = Field(..., description="Short feedback explaining the score")
 
 
 @traceable(name="score_knowledge_note", run_type="chain")
@@ -57,16 +67,9 @@ def score_knowledge_note_rule_based(note: KnowledgeNote) -> Dict[str, float]:
 
 @traceable(name="llm_judge_note_quality", run_type="llm")
 async def llm_judge_note_quality(note: KnowledgeNote) -> Dict[str, Any]:
-    """LLM-as-Judge for usefulness of a KnowledgeNote."""
-    llm = ChatOllama(
-        model=settings.default_model,
-        temperature=0.1,
-        base_url=settings.ollama_base_url,
-    )
-
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a senior AI research engineer evaluating the quality of a paper summary note.
-Score the note from 1 to 5 on how useful it would be for quickly understanding and using the paper later.
+    """LLM-as-Judge for usefulness of a KnowledgeNote using AI Gateway and structured output validation."""
+    system_content = """You are a senior AI research engineer evaluating the quality of a paper summary note.
+Score the note from 1.0 to 5.0 on how useful it would be for quickly understanding and using the paper later.
 
 Criteria:
 - Clarity and conciseness
@@ -74,39 +77,46 @@ Criteria:
 - Presence of concrete details (methods, results, limitations)
 - Overall value as a long-term memory item
 
-Return ONLY a JSON object:
-{"score": <1-5>, "feedback": "<short feedback>"}"""),
-        ("human", """Title: {title}
-
-One-sentence: {one_sentence}
-
-Detailed Summary:
-{detailed}
-
-Key Contributions: {contributions}
-
-Evaluate this KnowledgeNote.""")
-    ])
+Return a JSON object matching this schema:
+{"score": <1.0-5.0>, "feedback": "<short feedback>"}"""
 
     contributions = []
     if note.structured_data and note.structured_data.key_contributions:
         contributions = note.structured_data.key_contributions
 
-    chain = prompt | llm
+    human_content = f"""Title: {note.title}
+
+One-sentence: {note.one_sentence_summary}
+
+Detailed Summary:
+{(note.detailed_summary or "")[:2000]}
+
+Key Contributions: {contributions}
+
+Evaluate this KnowledgeNote."""
+
+    messages = [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": human_content}
+    ]
+
     try:
-        response = await chain.ainvoke({
-            "title": note.title,
-            "one_sentence": note.one_sentence_summary,
-            "detailed": (note.detailed_summary or "")[:2000],
-            "contributions": contributions,
-        })
-        # Very simple parsing (production would use structured output)
-        content = response.content
+        response = await gateway.generate(
+            task="evaluation",
+            messages=messages,
+            temperature=0.1,
+            schema_model=JudgeEvaluation
+        )
+        if response.structured:
+            return {"score": response.structured.score, "feedback": response.structured.feedback}
+        
+        # Fallback manual parsing if schema wasn't fully enforced
+        content = response.text
         score = 3.0
         feedback = content
         if "score" in content.lower():
             import re
-            match = re.search(r'"score"\s*:\s*(\d+)', content)
+            match = re.search(r'"score"\s*:\s*([\d\.]+)', content)
             if match:
                 score = float(match.group(1))
         return {"score": score, "feedback": feedback}

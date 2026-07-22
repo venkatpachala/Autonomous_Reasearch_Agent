@@ -1,0 +1,84 @@
+{
+  "papers": {
+    "2504.14689v1": {
+      "title": "Designing AI Systems that Augment Human Performed vs. Demonstrated Critical Thinking",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:03.702364",
+      "last_processed": "2026-07-21T09:17:03.702364"
+    },
+    "2412.16365v1": {
+      "title": "Overview of the First Workshop on Language Models for Low-Resource Languages (LoResLM 2025)",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:03.976535",
+      "last_processed": "2026-07-21T09:17:03.976535"
+    },
+    "2409.02228v1": {
+      "title": "Unforgettable Generalization in Language Models",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:04.874614",
+      "last_processed": "2026-07-21T09:17:04.874614"
+    },
+    "2504.13684v1": {
+      "title": "Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:05.864457",
+      "last_processed": "2026-07-21T09:17:05.864457"
+    },
+    "2503.21676v2": {
+      "title": "How do language models learn facts? Dynamics, curricula and hallucinations",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:06.734983",
+      "last_processed": "2026-07-21T09:17:06.734983"
+    },
+    "2603.01691v1": {
+      "title": "Building a Strong Instruction Language Model for a Less-Resourced Language",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:16.142068",
+      "last_processed": "2026-07-21T09:17:16.142068"
+    },
+    "2506.06962v3": {
+      "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:21.258067",
+      "last_processed": "2026-07-21T09:17:21.258067"
+    },
+    "2504.17204v1": {
+      "title": "Factually: Exploring Wearable Fact-Checking for Augmented Truth Discernment",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-21T09:17:24.606037",
+      "last_processed": "2026-07-21T09:17:24.606037"
+    }
+  },
+  "topics": {
+    "agentic rag memory systems": {
+      "paper_ids": [
+        "2504.14689v1",
+        "2412.16365v1",
+        "2409.02228v1",
+        "2504.13684v1",
+        "2503.21676v2",
+        "2603.01691v1",
+        "2506.06962v3",
+        "2504.17204v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-21T09:17:24.606037"
+    }
+  }
+}

@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     llamaparse_api_key: Optional[str] = Field(default=None, alias="LLAMAPARSE_API_KEY")
 
     # Paths
-    base_dir: Path = Path(__file__).parent.parent.parent.resolve()
+    base_dir: Path = Path(__file__).parent.parent.resolve()
     papers_dir: Path = base_dir / "papers"
     outputs_dir: Path = base_dir / "outputs"
     # Chroma

@@ -35,7 +35,7 @@ async def run_once(topics: list[str] | None = None):
         f"[bold cyan]Continuous Monitor Agent[/bold cyan]\n"
         f"Checking arXiv for new papers...\n"
         f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-        title="Research Memory"
+        title="Helix Research"
     ))
 
     results = await monitor_agent.run_once(topics=topics)
@@ -96,7 +96,7 @@ async def run_daemon(interval_hours: float = 6.0, topics: list[str] | None = Non
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Continuous Monitor Agent for Research Memory")
+    parser = argparse.ArgumentParser(description="Continuous Monitor Agent for Helix Research")
     parser.add_argument(
         "--topics",
         nargs="+",

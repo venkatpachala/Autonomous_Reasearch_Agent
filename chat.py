@@ -1,5 +1,5 @@
 """
-Session-Aware Research Memory Chat
+Session-Aware Helix Research Chat
 ==================================
 Flow:
 1. Show existing sessions or create a new one
@@ -56,9 +56,9 @@ async def start_session_flow() -> ResearchSession:
     sessions = session_manager.list_sessions()
 
     console.print(Panel.fit(
-        "[bold cyan]Research Memory — Session Manager[/bold cyan]\n"
+        "[bold cyan]Helix Research — Session Manager[/bold cyan]\n"
         "Each session is scoped to one research topic.",
-        title="Agentic Research Agent"
+        title="Helix Research"
     ))
 
     print_sessions(sessions)
@@ -111,7 +111,7 @@ async def chat_loop(session: ResearchSession):
         f"[bold]Papers in memory[/bold]: {len(session.papers_ingested)}\n\n"
         "Ask anything about this research topic.\n"
         "Commands: /history  /papers  /ingest  /exit",
-        title="Research Memory Chat",
+        title="Helix Research Chat",
         border_style="cyan"
     ))
 
@@ -195,7 +195,7 @@ async def chat_loop(session: ResearchSession):
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Session-aware Research Memory Chat")
+    parser = argparse.ArgumentParser(description="Session-aware Helix Research Chat")
     parser.add_argument("--topic", type=str, help="Directly start with this topic")
     parser.add_argument("--session", type=str, help="Resume a specific session_id")
     args = parser.parse_args()

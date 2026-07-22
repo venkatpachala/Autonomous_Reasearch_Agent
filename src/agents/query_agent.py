@@ -1,14 +1,11 @@
 """
-Query / Chat Agent - Talks to the Research Memory using RAG.
+Query / Chat Agent - Talks to Helix Research using RAG.
 Instrumented with LangSmith tracing.
 """
 
 from typing import List, Dict, Any, Optional
-from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage, SystemMessage
 from loguru import logger
-
-from src.config import settings
+from src.gateway import gateway
 from src.tools.retriever import research_retriever
 from src.observability.tracing import traced
 
@@ -17,11 +14,6 @@ class QueryAgent:
     """RAG-based agent that answers questions over the personal research knowledge base."""
 
     def __init__(self):
-        self.llm = ChatOllama(
-            model=settings.default_model,
-            temperature=0.2,
-            base_url=settings.ollama_base_url,
-        )
         self.retriever = research_retriever
 
     @traced(name="query_agent_answer", run_type="chain")
@@ -64,14 +56,18 @@ Relevant Research Context:
 Answer the question using only the above context. Include citations."""
 
         messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=human_prompt)
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": human_prompt}
         ]
 
         # 4. Generate answer
         try:
-            response = await self.llm.ainvoke(messages)
-            answer = response.content
+            response = await gateway.generate(
+                task="research_answer",
+                messages=messages,
+                temperature=0.2
+            )
+            answer = response.text
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
             answer = f"Error generating answer: {e}"

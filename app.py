@@ -1,5 +1,5 @@
 """
-Streamlit UI for Agentic Research Memory System
+Streamlit UI for Helix Research
 ================================================
 Run with:
     streamlit run app.py
@@ -25,7 +25,7 @@ init_observability(project_name="research-agent")
 # Page Config
 # =========================================================
 st.set_page_config(
-    page_title="Research Memory",
+    page_title="Helix Research",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -92,8 +92,8 @@ def get_or_create_session(topic: str) -> ResearchSession:
 # Sidebar
 # =========================================================
 with st.sidebar:
-    st.markdown("### 🧠 Research Memory")
-    st.caption("Agentic Research Assistant")
+    st.markdown("### 🧠 Helix Research")
+    st.caption("Autonomous Research Assistant")
 
     st.divider()
 
@@ -174,7 +174,7 @@ with st.sidebar:
 # =========================================================
 # Main Area
 # =========================================================
-st.markdown('<div class="main-header">Research Memory</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">Helix Research</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Talk to your personal research knowledge base</div>', unsafe_allow_html=True)
 
 
