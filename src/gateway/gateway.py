@@ -15,6 +15,7 @@ from src.gateway.retries import retry_with_backoff
 from src.gateway.circuit_breaker import circuit_breaker
 from src.gateway.cost_tracker import cost_tracker
 from src.gateway.embeddings import embeddings_gateway
+from src.config import settings
 
 def clean_json_text(text: str) -> str:
     """Strip markdown code block ticks if present."""
@@ -58,9 +59,12 @@ Verify the Answer."""
         ]
         
         try:
-            # Run using Ollama locally for fast verification
+            # Always use the local Ollama default model for verification.
+            # The `model` argument may be an OpenAI model name (e.g. gpt-4o-mini)
+            # which would cause a 404 when submitted to Ollama's API.
+            local_model = settings.default_model or "qwen2.5:7b"
             response = await self.ollama.generate(
-                model=model,
+                model=local_model,
                 messages=messages,
                 temperature=0.0
             )

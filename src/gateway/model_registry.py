@@ -25,9 +25,25 @@ TASK_MODEL_REGISTRY: Dict[str, ModelConfig] = {
     "research_answer": ModelConfig(
         provider="OpenAI",
         model_name="gpt-4o-mini",
-        fallback="qwen2.5:7b"  # Falls back to Ollama locally
+        fallback="qwen2.5:7b"
     ),
     "evaluation": ModelConfig(
+        provider="Ollama",
+        model_name="qwen2.5:7b"
+    ),
+    # Intent classification — fast local, doesn't need cloud quality
+    "intent_classification": ModelConfig(
+        provider="Ollama",
+        model_name="qwen2.5:7b"
+    ),
+    # Cross-paper synthesis — needs strong reasoning, use cloud when available
+    "synthesis": ModelConfig(
+        provider="OpenAI",
+        model_name="gpt-4o-mini",
+        fallback="qwen2.5:7b"
+    ),
+    # Binary relevance classification — fast local
+    "relevance_check": ModelConfig(
         provider="Ollama",
         model_name="qwen2.5:7b"
     ),

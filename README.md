@@ -5,265 +5,263 @@
 # Helix Research 🧬
 
 <p align="center">
-  <b>Autonomous multi-agent research memory system that turns complex topics into a structured, queryable knowledge base.</b>
+  <b>Enterprise-Grade Autonomous Multi-Agent Research Platform & GraphRAG Memory System.</b>
 </p>
 
 <p align="center">
   <a href="https://github.com/langchain-ai/langgraph"><img src="https://img.shields.io/badge/Framework-LangGraph-purple?style=for-the-badge" alt="LangGraph"></a>
-  <a href="https://github.com/chroma-core/chroma"><img src="https://img.shields.io/badge/Vector%20DB-Chroma-orange?style=for-the-badge" alt="Chroma"></a>
-  <a href="https://neo4j.com"><img src="https://img.shields.io/badge/Graph%20DB-Neo4j%20(Optional)-blue?style=for-the-badge" alt="Neo4j"></a>
+  <a href="https://pinecone.io"><img src="https://img.shields.io/badge/Vector%20DB-Pinecone-blue?style=for-the-badge" alt="Pinecone"></a>
+  <a href="https://neo4j.com"><img src="https://img.shields.io/badge/Graph%20DB-Neo4j-green?style=for-the-badge" alt="Neo4j"></a>
   <a href="https://ollama.com"><img src="https://img.shields.io/badge/Local%20LLM-Ollama-black?style=for-the-badge" alt="Ollama"></a>
+  <a href="https://openai.com"><img src="https://img.shields.io/badge/Reasoning-OpenAI-brightgreen?style=for-the-badge" alt="OpenAI"></a>
 </p>
 
-Helix Research is a production-grade research engineering assistant. When given a complex research topic, it autonomously decomposes the concept, retrieves academic literature, parallelizes paper digestion (from raw PDF extraction to structured summaries and critical notes), and establishes a session-scoped hybrid memory. Users can then chat directly with their personalized repository of grounded knowledge.
+Helix Research is a production-grade AI research engineering platform. When given a complex research topic, it autonomously constructs a domain ontology, builds targeted keyword queries, retrieves academic literature, filters out noise pre-download via a 4-tier LLM relevance gate, parallelizes paper digestion, and establishes a session-scoped 4-layer memory (Disk, Pinecone, Neo4j, Index). 
+
+Users can ask collection-wide synthesis questions (*"What are these papers about?"*, *"What research gaps exist?"*) or targeted questions (*"Compare Episodic vs Working Memory"*), receiving intent-aware, hallucination-checked responses.
 
 ---
 
-## Key Features
+## 🌟 Key Upgrades & Architecture Highlights
 
 <table>
   <tr>
-    <td width="30%"><b>Topic-Scoped Sessions</b></td>
-    <td>Every research endeavor runs in an isolated workspace. Conversations, documents, and indexing are fully scoped to the active topic.</td>
+    <td width="30%"><b>Research Ontology Decomposer</b></td>
+    <td>Moves away from naive long-sentence LLM queries. The <code>ResearchOntologyAgent</code> analyzes the domain vocabulary (core concepts, named frameworks like <i>MemGPT</i>/<i>MemoryOS</i>, task types, datasets, and negative terms). A pure Python <code>SearchQueryBuilder</code> transforms this into 20+ short, targeted, arXiv-optimized queries with auto-retry fallback chains.</td>
   </tr>
   <tr>
-    <td><b>Autonomous Ingestion</b></td>
-    <td>A LangGraph ingestion pipeline that automatically decomposes your research query into optimized search terms and pulls targeted publications from arXiv.</td>
+    <td><b>4-Tier Relevance Filter</b></td>
+    <td>Candidates are graded into <code>highly_relevant</code>, <code>relevant</code>, <code>weakly_relevant</code>, and <code>irrelevant</code> before downloading. Papers matching domain negative terms (e.g. OS memory management) are automatically discarded pre-ingestion.</td>
   </tr>
   <tr>
-    <td><b>Parallel Per-Paper Pipelines</b></td>
-    <td>Leverages LangGraph's <code>Send()</code> interface for true concurrency. Downloaded PDFs are processed in parallel: text extraction, structured summaries, and senior-engineer critical evaluations.</td>
+    <td><b>Intent Classifier & Synthesis Agent</b></td>
+    <td>Queries are classified into 7 intent types (e.g. <code>collection_overview</code>, <code>trend_analysis</code>, <code>gap_analysis</code>, <code>comparison</code>, <code>fact_lookup</code>). Collection-level questions bypass vector similarity and load the full collection into a <code>SynthesisAgent</code> that maps research directions, paper relationships, and research gaps.</td>
   </tr>
   <tr>
-    <td><b>Hybrid Memory Storage</b></td>
-    <td>Maintains a local file-based Artifact Store as the source of truth, an indexed Chroma Vector database for topic-filtered semantic retrieval, and an optional Neo4j Graph DB mapping connections between concepts, papers, and authors.</td>
+    <td><b>4-Layer Memory System</b></td>
+    <td>
+      1. <b>Artifact Store (Disk):</b> Source of truth storing raw PDFs and JSON metadata.<br>
+      2. <b>Pinecone Vector DB:</b> Cloud-hosted semantic index powered by OpenAI <code>text-embedding-3-small</code> embeddings.<br>
+      3. <b>Neo4j Property Graph:</b> Entity-relationship triplets (<code>Method</code>, <code>Dataset</code>, <code>Metric</code>, <code>Concept</code>).<br>
+      4. <b>Research Index:</b> Global session tracking and deduplication.
+    </td>
   </tr>
   <tr>
-    <td><b>Grounded RAG Chat</b></td>
-    <td>Talk to your papers with confidence. The query agent uses retrieved structured summaries to provide exact answers complete with source scores and arXiv citations.</td>
-  </tr>
-  <tr>
-    <td><b>Continuous Monitoring</b></td>
-    <td>A background monitor agent automatically polls arXiv at specified intervals to find, ingest, and index new papers related to your active topics.</td>
+    <td><b>AI Gateway Control Tower</b></td>
+    <td>Centralized LLM gateway featuring semantic caching, token & cost tracking, task-to-model routing (Ollama local for fast filtering/classification, OpenAI for reasoning), automatic fallback switching, and a local LLM Groundedness Judge to verify responses against hallucinations.</td>
   </tr>
 </table>
 
 ---
 
-## System Architecture
+## 📐 System Architecture
 
-### 1. High-Level Ingestion Flow
-Helix Research processes a research topic through a multi-agent ingestion graph that runs paper ingestion tasks concurrently:
+### 1. Ingestion Pipeline (The Write Path)
 
 ```mermaid
 flowchart TD
-    A[Topic Input] --> B[Decomposer Agent]
-    B --> C[Clean Keywords]
-    C --> D[arXiv Search & Retrieve]
-    D --> E{Parallel Send}
-    E --> F1[Paper 1 Pipeline]
-    E --> F2[Paper 2 Pipeline]
-    E --> F3[Paper N Pipeline]
-    F1 & F2 & F3 --> G[Memory Manager]
-    G --> H[Artifact Store]
-    G --> I[Chroma Vector DB]
-    G --> J[Neo4j Graph DB Optional]
+    A[User Topic] --> B[ResearchOntologyAgent]
+    B -->|Domain Ontology: Frameworks, Tasks, Terms| C[Search Query Builder]
+    C -->|20+ Short Keyword Queries| D[arXiv Batch Parallel Search]
+    D -->|Candidate Papers| E[RelevanceFilterAgent 4-Tier Gate]
+    E -->|Filtered Relevant Papers| F[Parallel Per-Paper Pipelines]
+    F --> G[PDF Extraction: LlamaParse / PyMuPDF]
+    G --> H[Summarizer & Critic Agents]
+    H --> I[MemoryManager]
+    I -->|1. Raw JSON/PDF| S1[(Artifact Store - Disk)]
+    I -->|2. OpenAI Embeddings| S2[(Pinecone Vector DB)]
+    I -->|3. Entities & Triplets| S3[(Neo4j Property Graph)]
+    I -->|4. Metadata Index| S4[Research Index JSON]
 ```
 
-Each concurrent paper pipeline performs the following steps:
-1. **PDF Extractor**: Downloads and parses raw PDF layout structures.
-2. **Summarizer**: Builds a dense, structured outline containing objectives, benchmarks, and limitations.
-3. **Critic Note**: Generates a finalized Senior-Engineer Knowledge Note detailing contributions, criticality, and metadata.
-
-### 2. Query / RAG Flow
-When you ask a question within a session, the system runs the following process:
+### 2. Query & RAG Pipeline (The Read Path)
 
 ```mermaid
-sequenceDiagram
-    participant U as User
-    participant SM as Session Manager
-    participant QA as Query Agent
-    participant CH as Chroma DB
-    participant AS as Artifact Store
+flowchart TD
+    Q1[User Query] --> Q2[IntentClassifier]
+    Q2 -->|Classify & Expand Query| Q3{Intent Type?}
 
-    U->>SM: Ask question (topic-scoped)
-    SM->>QA: Dispatch request
-    QA->>CH: Semantic search (filtered by topic)
-    CH-->>QA: Top-K matching notes
-    QA->>AS: Load full knowledge notes (if needed)
-    QA-->>U: Synthesized answer + arXiv citations & source scores
+    Q3 -->|collection_overview / trends / gaps| Q4[SynthesisAgent]
+    Q3 -->|comparison / fact_lookup / general_qa| Q5[ResearchRetriever]
+
+    S1 & S2 & S3 -->|Load All Collection Notes| Q4
+    S2 & S3 -->|Pinecone Vector Search + Neo4j 2-Hop Graph Traversal| Q5
+
+    Q4 & Q5 --> Q6[QueryAgent Prompt Assembly]
+    Q6 --> GW[AI Gateway]
+    GW --> Router{Model Router}
+    Router -->|Local Tasks| Ollama[Ollama qwen2.5:7b]
+    Router -->|Cloud Reasoning| OpenAI[OpenAI gpt-4o-mini]
+    GW --> Judge[Local Groundedness Judge]
+    Judge -->|Verified Answer| Final[User Response + Citations]
 ```
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 Helix_Research/
 ├── app.py                      # Streamlit dashboard interface
-├── chat.py                      # Session-scoped interactive CLI UI
-├── monitor.py                   # Background monitor daemon for new papers
-├── pyproject.toml               # Project setup and dependencies
-├── requirements.txt             # Pip dependency list
-├── .env                         # Local environment settings
-├── helix_research.png           # Banner image
+├── chat.py                     # Session-scoped interactive CLI UI
+├── monitor.py                  # Background monitor daemon for new papers
+├── requirements.txt            # Python dependencies
+├── .env                        # Environment configuration
 │
 ├── src/
 │   ├── agents/
-│   │   ├── decomposer.py        # Generates search queries
-│   │   ├── pdf_extractor.py     # Handles PDF ingestion
-│   │   ├── summarizer.py        # Generates structured summaries
-│   │   ├── critic_note.py       # Writes critical knowledge notes
-│   │   ├── memory_manager.py    # Orchestrates database & file storage
-│   │   ├── query_agent.py       # RAG answering logic
-│   │   ├── session_manager.py   # Handles workspace & session states
-│   │   └── monitor_agent.py     # Automated polling agent
-│   │
-│   ├── graphs/
-│   │   ├── ingestion_graph.py   # LangGraph ingestion pipeline
-│   │   └── query_graph.py       # LangGraph query processing
+│   │   ├── research_ontology_agent.py # Domain ontology generator
+│   │   ├── decomposer.py             # Orchestrates ontology -> query builder
+│   │   ├── relevance_filter.py       # 4-tier pre-download paper classifier
+│   │   ├── pdf_extractor.py          # PDF layout & text extraction
+│   │   ├── summarizer.py             # Structured outline summary generator
+│   │   ├── critic_note.py            # Senior-engineer Knowledge Note creator
+│   │   ├── extractor_agent.py        # Graph entity-relationship triplet extractor
+│   │   ├── memory_manager.py         # 4-layer memory orchestrator
+│   │   ├── intent_classifier.py      # 7-class intent detection & query expansion
+│   │   ├── synthesis_agent.py        # Cross-paper collection synthesis agent
+│   │   ├── query_agent.py            # Intent-routed RAG answering logic
+│   │   ├── session_manager.py        # Workspace session manager
+│   │   └── monitor_agent.py          # Background polling agent
 │   │
 │   ├── tools/
-│   │   ├── arxiv_tool.py        # Connects to arXiv API
-│   │   ├── pdf_tools.py         # PyMuPDF/LlamaParse extractors
-│   │   ├── retriever.py         # Retrieval helper classes
-│   │   └── research_index.py    # Global tracking and deduplication
+│   │   ├── query_builder.py          # Deterministic arXiv query builder + retry
+│   │   ├── arxiv_tool.py             # Rate-limited arXiv API client
+│   │   ├── pdf_tools.py              # PyMuPDF / LlamaParse integration
+│   │   ├── retriever.py              # Vector + threshold retrieval helper
+│   │   └── research_index.py         # Global tracking & deduplication
+│   │
+│   ├── gateway/
+│   │   ├── gateway.py                # AI Gateway control tower
+│   │   ├── model_registry.py         # Task-to-model routing matrix
+│   │   ├── embeddings.py             # Embedding gateway (OpenAI/Ollama)
+│   │   ├── router.py                 # Provider routing & fallback switching
+│   │   ├── cache.py                  # Gateway JSON response cache
+│   │   └── cost_tracker.py           # Token & USD cost tracking
 │   │
 │   ├── db/
-│   │   ├── chroma_client.py     # Vector database connection
-│   │   └── neo4j_client.py      # Knowledge graph database client
+│   │   ├── pinecone_client.py        # Cloud Pinecone vector DB client
+│   │   ├── chroma_client.py          # Legacy Chroma DB client
+│   │   └── neo4j_client.py           # Property Graph DB client
 │   │
 │   ├── storage/
-│   │   └── artifact_store.py    # File-based artifact read/write
+│   │   └── artifact_store.py         # Disk file storage (papers/{arxiv_id}/)
+│   │
+│   ├── graphs/
+│   │   ├── ingestion_graph.py        # LangGraph ingestion pipeline
+│   │   └── query_graph.py            # LangGraph query pipeline
 │   │
 │   ├── models/
-│   │   ├── schemas.py           # Structured schema validation models
-│   │   └── session.py           # Session configuration schemas
+│   │   ├── schemas.py                # Pydantic state & data schemas
+│   │   └── session.py                # Session configuration schemas
 │   │
-│   ├── observability/
-│   │   ├── startup.py           # Initialize LangSmith traces
-│   │   └── tracing.py           # Custom decorators for tracing
-│   │
-│   └── config.py                # Pydantic central settings
+│   └── config.py                     # Pydantic central settings
 │
-├── papers/                      # Source of Truth: PDFs + Structured JSONs
-│   └── {arxiv_id}/
-│       ├── paper.pdf
-│       ├── metadata.json
-│       ├── summary.json
-│       └── knowledge_note.json
+├── debug/
+│   ├── test_ingestion_phases.py      # Step-by-step 7-phase pipeline inspector
+│   ├── test_ontology.py              # Ontology + Query Builder validator
+│   └── test_rag_overhaul.py          # E2E validation test suite
 │
-├── sessions/                    # Session JSON files
-│   └── {session_id}.json
-│
-└── chroma_db/                   # Local Chroma DB storage
+└── papers/                           # Source of truth disk storage
 ```
 
 ---
 
-## Installation & Setup
+## ⚡ Quick Start & Setup
 
 ### 1. Prerequisites
-* **Python**: Version `3.11` or higher.
-* **uv**: Recommended for fast package management (or use `pip`).
-* **Ollama**: Running locally with required models:
+* **Python**: `3.11` or higher.
+* **Ollama**: Local instance with `qwen2.5:7b` pulled:
   ```bash
   ollama pull qwen2.5:7b
   ```
-* **Neo4j** *(Optional)*: Required only if knowledge graph features are enabled.
+* **Pinecone**: Free account at [pinecone.io](https://pinecone.io).
+* **Neo4j**: Local instance running at `bolt://localhost:7687` (optional, for Knowledge Graph).
 
-### 2. Setup environment
-Clone the repository and install it in editable mode:
+### 2. Installation
 ```bash
 # Clone the repository
 cd Research_Agent
 
 # Create and activate virtual environment
-uv venv
-source .venv/Scripts/activate # Windows
-# source .venv/bin/activate   # Linux/macOS
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate # Linux/macOS
 
-# Install package dependencies
-uv pip install -e .
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-Create and configure your `.env` file:
-```bash
-cp .env.example .env
-```
-Edit the `.env` settings:
+### 3. Environment Configuration
+Create or edit your `.env` file:
 ```env
+# LLM / Gateway
 OLLAMA_BASE_URL=http://localhost:11434
 DEFAULT_MODEL=qwen2.5:7b
 EXTRACTION_MODEL=qwen2.5:7b
 CRITIC_MODEL=qwen2.5:7b
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxx
 
-CHROMA_PERSIST_DIR=./chroma_db
-# Neo4j configuration (optional)
+# LlamaParse
+LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxx
+
+# Pinecone Vector DB
+PINECONE_API_KEY=pc-xxxxxxxxxxxxxxxx
+PINECONE_INDEX_NAME=helix-research
+PINECONE_CLOUD=aws
+PINECONE_REGION=us-east-1
+PINECONE_EMBEDDING_DIM=1536
+
+# Neo4j Property Graph
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
-NEO4J_PASSWORD=password
+NEO4J_PASSWORD=your_password
+
+# LangSmith Tracing
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=lsv2_pt_xxxxxxxx
+LANGCHAIN_PROJECT=helix-research
 ```
 
 ---
 
-## Usage
+## 🧪 Verification & Testing
 
-### 1. Interactive CLI Chat
-Launch the session-scoped terminal interface to create or resume research workspaces:
-```bash
-PYTHONPATH=. python chat.py
+Inspect the pipeline phases or run full validation tests:
+
+```powershell
+# 1. Test Ontology Generation & Query Builder
+python debug/test_ontology.py
+
+# 2. Inspect all 7 Ingestion Phases step-by-step
+python debug/test_ingestion_phases.py "memory architectures in AI agents"
+
+# 3. Run full E2E RAG Validation Suite
+python debug/test_rag_overhaul.py
 ```
-You can also launch a topic workspace or resume a session directly:
-```bash
-# Create or open a topic session
-PYTHONPATH=. python chat.py --topic "agents memory architectures"
 
-# Resume session by ID
-PYTHONPATH=. python chat.py --session d0ab5049
+---
+
+## 💻 Usage
+
+### Interactive CLI Chat
+```powershell
+# Start topic session
+python chat.py --topic "memory architectures in AI agents"
 ```
-**Interactive CLI commands**:
-* `/papers`: Lists all academic papers currently ingested in this workspace.
-* `/history`: Shows recent conversation history.
-* `/ingest`: Triggers manual re-ingest of papers for the session.
-* `/exit`: Saves progress and closes the session.
 
-### 2. Streamlit Dashboard
-To run the visual UI and chat dashboard:
-```bash
+### Streamlit Dashboard
+```powershell
 streamlit run app.py
 ```
-This launches a browser window (default: `http://localhost:8501`) where you can create new topics, run continuous monitors, view structured summary tabs, and chat with your repository.
 
-### 3. Background Continuous Monitor
-To search for new literature related to your active topics in the background:
-```bash
-PYTHONPATH=. python monitor.py
+### Background Monitor Daemon
+```powershell
+python monitor.py
 ```
 
 ---
 
-## Observability & Evaluation
+## 🛡️ License
 
-### LangSmith Tracing
-Helix Research is fully instrumented for tracking and observability. Every LLM generation call, prompt template structure, and graph execution state is traced automatically when standard LangSmith variables are set in your environment:
-```env
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
-LANGCHAIN_API_KEY="your-langsmith-api-key"
-LANGCHAIN_PROJECT="helix-research"
-```
-
-### Evaluation Framework
-Under `src/evaluation/`, the system includes automated assessment scripts using LLM-as-a-judge patterns to evaluate:
-* Ingested note quality (completeness, density, and specificity).
-* Retrieval faithfulness and semantic relevance.
-* RAG answering correctness.
-
----
-
-## Design Principles
-1. **Artifact Store is the Source of Truth**: Databases (Chroma, Neo4j) are treated as query indexes. All critical data lives as standard JSON files and PDFs in the `papers/` folder and can be re-indexed at any time.
-2. **Session-Scoped Isolation**: Documents and histories are strictly bound to their respective topics to minimize context contamination.
-3. **True Parallel Processing**: All downloads and paper analyses scale concurrently using graph orchestration.
-4. **Polite Web Ingestion**: Employs rate-limiting, retries, and backoffs when querying search endpoints (like arXiv) to ensure reliable runs.
+MIT License. Designed and built for enterprise-grade autonomous AI research workflows.

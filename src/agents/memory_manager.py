@@ -5,7 +5,7 @@ Memory Manager - Layered Storage (Artifact + Vector + Graph + Research Index)
 from loguru import logger
 
 from src.storage.artifact_store import artifact_store
-from src.db.chroma_client import chroma_client
+from src.db.pinecone_client import chroma_client  # Pinecone replaces ChromaDB (same interface)
 from src.db.neo4j_client import neo4j_client
 from src.tools.research_index import research_index
 from src.models.schemas import PerPaperOutput

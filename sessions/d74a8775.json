@@ -1,0 +1,193 @@
+{
+  "session_id": "d74a8775",
+  "topic": "AI Agents Retrieval quality",
+  "created_at": "2026-07-22T16:23:10.780017",
+  "last_active": "2026-07-22T17:40:27.837180",
+  "papers_ingested": [
+    "2601.05264v1",
+    "2510.22344v1",
+    "2401.15391v1",
+    "2505.21439v1",
+    "2603.14541v1",
+    "2004.11045v1",
+    "2404.07220v2",
+    "2411.00744v2",
+    "2502.02464v3",
+    "2511.22858v1"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "What are all these paper about ?",
+      "timestamp": "2026-07-22T16:34:36.965940",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "## Research Synthesis\n\nThe collection of papers presents a rich tapestry of research focused on Retrieval-Augmented Generation (RAG) systems, particularly their application in enhancing the quality of AI agents' retrieval capabilities. A significant theme across the papers is the integration of RAG with Large Language Models (LLMs), which is explored in multiple studies such as [2404.07220v2] and [2510.22344v1]. These works highlight the challenges of maintaining accuracy and relevance in increasingly complex query environments, particularly when dealing with multi-hop queries that require synthesizing information from diverse sources.\n\nAnother prominent direction is the focus on instruction-following capabilities in retrieval models, as seen in [2505.21439v1]. This paper introduces a novel training corpus aimed at improving how retrieval systems interpret and act on user instructions, addressing a critical gap in traditional models that rely solely on standard query-passage pairs. This theme is further supported by the development of frameworks like InF-IR, which aim to enhance the adaptability of retrieval systems to user needs.\n\nThe papers also delve into memory and knowledge management, particularly in the context of RAG systems. For instance, [2603.14541v1] discusses the preservation of expert knowledge in the energy sector, while [2511.22858v1] examines the application of RAG in legal contexts, underscoring the need for tailored approaches in specialized domains. These explorations reveal a growing recognition of the importance of context-specific adaptations in retrieval systems.\n\nDespite the advancements, notable research gaps remain. There is a lack of standardized benchmarks for evaluating RAG systems, which hampers the ability to compare methodologies effectively. Furthermore, while the integration of RAG with LLMs is gaining traction, there is insufficient exploration of its application in niche fields such as law and medicine. The need for comprehensive frameworks that unify retrieval and re-ranking processes is also evident, as highlighted in [2601.05264v1]. Overall, this synthesis underscores the dynamic evolution of retrieval systems and the pressing need for continued innovation and evaluation in this rapidly advancing field.\n\n---\n\n### Research Directions\n1. Retrieval-Augmented Generation (RAG) Techniques\n2. Instruction Following in Information Retrieval\n3. Memory and Knowledge Management in AI Agents\n4. Evaluation and Benchmarking of Retrieval Systems\n\n### Emerging Trends\n- Integration of RAG with Large Language Models (LLMs)\n- Focus on Multi-Hop Query Handling\n- Development of Instruction-Following Retrieval Models\n- Cost-Constrained Retrieval Optimization\n\n### Research Gaps & Open Problems\n- Lack of standardized benchmarks for RAG systems\n- Limited exploration of RAG in specialized domains like legal or medical fields\n- Need for comprehensive frameworks integrating retrieval and re-ranking\n- Insufficient attention to user instruction adherence in retrieval models\n\n### State of the Art\n[2404.07220v2] Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers represents the current state of the art due to its innovative approach to enhancing RAG accuracy through hybrid retrieval methods and semantic search integration.\n\n### Key Paper Relationships\n- **2404.07220v2** `BUILDS_UPON` **2510.22344v1**: Both papers focus on improving RAG systems, with the latter building on the former's foundation to address multi-hop queries.\n- **2401.15391v1** `EXTENDS` **2505.21439v1**: The former introduces a benchmarking approach for RAG, while the latter extends this by focusing on instruction-following capabilities.\n- **2601.05264v1** `SURVEYS` **2404.07220v2**: The former provides a comprehensive review of RAG architectures, including those discussed in the latter.\n- **2511.22858v1** `PROPOSES_ALTERNATIVE` **2603.14541v1**: While both papers apply RAG in specialized contexts, the former focuses on legal procedures, whereas the latter addresses knowledge preservation in the energy sector.",
+      "timestamp": "2026-07-22T16:34:57.596018",
+      "sources": [
+        {
+          "paper_id": "2004.11045v1",
+          "title": "Distilling Knowledge for Fast Retrieval-based Chat-bots",
+          "arxiv_url": "https://arxiv.org/abs/2004.11045v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2404.07220v2",
+          "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+          "arxiv_url": "https://arxiv.org/abs/2404.07220v2",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2510.22344v1",
+          "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2510.22344v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2411.00744v2",
+          "title": "CARROT: A Learned Cost-Constrained Retrieval Optimization System for RAG",
+          "arxiv_url": "https://arxiv.org/abs/2411.00744v2",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2502.02464v3",
+          "title": "Rankify: A Comprehensive Python Toolkit for Retrieval, Re-Ranking, and Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2502.02464v3",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2505.21439v1",
+          "title": "Towards Better Instruction Following Retrieval Models",
+          "arxiv_url": "https://arxiv.org/abs/2505.21439v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2601.05264v1",
+          "title": "Engineering the RAG Stack: A Comprehensive Review of the Architecture and Trust Frameworks for Retrieval-Augmented Generation Systems",
+          "arxiv_url": "https://arxiv.org/abs/2601.05264v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2603.14541v1",
+          "title": "Expert Mind: A Retrieval-Augmented Architecture for Expert Knowledge Preservation in the Energy Sector",
+          "arxiv_url": "https://arxiv.org/abs/2603.14541v1",
+          "score": 0.75
+        },
+        {
+          "paper_id": "2511.22858v1",
+          "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+          "arxiv_url": "https://arxiv.org/abs/2511.22858v1",
+          "score": 0.75
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "Summarise the 1st aper",
+      "timestamp": "2026-07-22T17:36:51.783417",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The first paper, titled \"Distilling Knowledge for Fast Retrieval-based Chat-bots\" [2004.11045v1], focuses on the response retrieval process in neural ranking systems, specifically for chat-bots used in information-seeking conversational contexts like customer support. The paper outlines two primary methodologies for making pairwise comparisons between conversation histories and candidate responses: cross-encoders and bi-encoders. Cross-encoders utilize full self-attention over the entire pair, yielding superior prediction quality but at the cost of speed, making them impractical for real-time applications. In contrast, bi-encoders encode the conversation history and candidate responses separately, which is faster but may compromise on prediction accuracy.\n\nKey contributions of the paper include the exploration of these two approaches and their implications for the efficiency and effectiveness of retrieval-based chat-bots. The paper highlights the trade-offs between prediction quality and computational speed, which are critical for deploying chat-bots in real-world scenarios.\n\nHowever, the paper also discusses limitations, particularly regarding the balance between speed and accuracy in retrieval methods, suggesting that while bi-encoders are faster, they may not always meet the quality standards required for effective conversational agents. This highlights the ongoing challenge in the field of AI chat-bots to optimize both performance metrics simultaneously. \n\nOverall, the paper contributes to the understanding of how different encoding strategies can impact the reliability of retrieval-based systems, which is essential for enhancing user experience in conversational AI applications.",
+      "timestamp": "2026-07-22T17:37:17.418159",
+      "sources": [
+        {
+          "paper_id": "2004.11045v1",
+          "title": "Distilling Knowledge for Fast Retrieval-based Chat-bots",
+          "arxiv_url": "https://arxiv.org/abs/2004.11045v1",
+          "score": 0.489245147
+        },
+        {
+          "paper_id": "2404.07220v2",
+          "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+          "arxiv_url": "https://arxiv.org/abs/2404.07220v2",
+          "score": 0.44115471799999995
+        },
+        {
+          "paper_id": "2510.22344v1",
+          "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2510.22344v1",
+          "score": 0.428188264
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 0.4122780260000001
+        },
+        {
+          "paper_id": "2411.00744v2",
+          "title": "CARROT: A Learned Cost-Constrained Retrieval Optimization System for RAG",
+          "arxiv_url": "https://arxiv.org/abs/2411.00744v2",
+          "score": 0.401107341
+        },
+        {
+          "paper_id": "2502.02464v3",
+          "title": "Rankify: A Comprehensive Python Toolkit for Retrieval, Re-Ranking, and Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2502.02464v3",
+          "score": 0.3987890780000001
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "In paper 1 what is the Prediction quality metrics across all datasets.",
+      "timestamp": "2026-07-22T17:39:31.120838",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "Error generating answer: Factual consistency check failed: The answer makes claims and provides information that are not directly supported by the provided context. Specifically, it introduces the concepts of cross-encoders and bi-encoders performing better in terms of prediction quality, which is not mentioned or implied in the given context.",
+      "timestamp": "2026-07-22T17:40:27.837156",
+      "sources": [
+        {
+          "paper_id": "2004.11045v1",
+          "title": "Distilling Knowledge for Fast Retrieval-based Chat-bots",
+          "arxiv_url": "https://arxiv.org/abs/2004.11045v1",
+          "score": 0.483408123
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 0.427329749
+        },
+        {
+          "paper_id": "2404.07220v2",
+          "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+          "arxiv_url": "https://arxiv.org/abs/2404.07220v2",
+          "score": 0.418157279
+        },
+        {
+          "paper_id": "2502.02464v3",
+          "title": "Rankify: A Comprehensive Python Toolkit for Retrieval, Re-Ranking, and Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2502.02464v3",
+          "score": 0.413832903
+        },
+        {
+          "paper_id": "2510.22344v1",
+          "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
+          "arxiv_url": "https://arxiv.org/abs/2510.22344v1",
+          "score": 0.40368023499999994
+        },
+        {
+          "paper_id": "2411.00744v2",
+          "title": "CARROT: A Learned Cost-Constrained Retrieval Optimization System for RAG",
+          "arxiv_url": "https://arxiv.org/abs/2411.00744v2",
+          "score": 0.397041738
+        }
+      ]
+    }
+  ],
+  "status": "active",
+  "description": null
+}

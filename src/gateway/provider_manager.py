@@ -130,8 +130,16 @@ class OpenAIProvider:
             "metadata": {"raw_response": data}
         }
 
-    async def embed(self, model: str, text: str) -> List[float]:
-        """Generate embedding vector using OpenAI embeddings API."""
+    async def embed(self, model: str, text: str, dimensions: Optional[int] = None) -> List[float]:
+        """Generate embedding vector using OpenAI embeddings API.
+        
+        Args:
+            model: Embedding model name (e.g. 'text-embedding-3-small')
+            text: Text to embed
+            dimensions: Optional output dimension for models that support truncation
+                        (text-embedding-3-small supports any dim ≤ 1536).
+                        Must match Pinecone index dimension exactly.
+        """
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY is not set.")
 
@@ -144,9 +152,14 @@ class OpenAIProvider:
             "model": model,
             "input": text
         }
+        # Only text-embedding-3-* models support the dimensions parameter
+        if dimensions and "embedding-3" in model:
+            payload["dimensions"] = dimensions
+
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             data = response.json()
         
         return data["data"][0]["embedding"]
+

@@ -1,8 +1,15 @@
 """
-Main Ingestion Graph with Layered Storage (Artifact + Vector + Graph)
+Main Ingestion Graph v2 — Ontology-Guided, Batch-Parallel arXiv Search
+=======================================================================
+New retriever_node:
+  - Executes 15-25 queries from the Query Builder
+  - Groups into batches of 5 (rate-limit friendly)
+  - Runs queries within each batch in PARALLEL (asyncio.gather)
+  - Auto-retries zero-result queries with progressively simpler fallbacks
+  - Passes ontology's negative_terms to the relevance filter
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 import asyncio
 import re
 from loguru import logger
@@ -15,8 +22,15 @@ from src.agents.pdf_extractor import pdf_extractor_node
 from src.agents.summarizer import summarizer_agent
 from src.agents.critic_note import critic_agent
 from src.agents.memory_manager import memory_manager
-from src.models.schemas import ResearchState
+from src.agents.relevance_filter import relevance_filter_agent
+from src.tools.query_builder import query_builder
+from src.models.schemas import ResearchState, PaperMetadata
 from src.tools.arxiv_tool import arxiv_tool
+
+BATCH_SIZE = 5          # Parallel queries per batch
+BATCH_DELAY = 8.0       # Seconds between batches (arXiv rate limit)
+MAX_RESULTS_PER_QUERY = 5
+MAX_FINAL_PAPERS = 10
 
 
 # ==================== NODES ====================
@@ -25,43 +39,112 @@ async def decomposer_node(state: ResearchState) -> ResearchState:
     return await decomposer_agent.run(state)
 
 
-async def retriever_node(state: ResearchState) -> ResearchState:
-    """Search arXiv using cleaned keywords (rate-limit friendly)."""
-    all_papers = []
-    raw_keywords = state.get("keywords", [state["topic"]])
+async def _search_with_retry(query: str, query_type: str, topic: str) -> List[PaperMetadata]:
+    """
+    Search arXiv with auto-fallback retry on zero results.
+    Simplifies the query one word at a time until results are found.
+    """
+    from src.tools.query_builder import query_builder as qb
 
-    # Clean keywords
-    clean_keywords = []
-    for kw in raw_keywords:
-        kw = re.sub(r'^\d+[\.\)]\s*', '', kw).strip()
-        kw = kw.replace('**', '').replace('*', '').strip()
-        kw = kw.strip('"\'')
-        if kw:
-            clean_keywords.append(kw)
+    # Primary search
+    try:
+        results = await arxiv_tool.search(query, topic, max_results=MAX_RESULTS_PER_QUERY)
+        if results:
+            logger.debug(f"  [{query_type}] '{query}' → {len(results)} papers")
+            return results
+    except Exception as e:
+        logger.warning(f"  [{query_type}] '{query}' failed: {e}")
+        return []
 
-    clean_keywords = clean_keywords[:3]  # Limit during development
-
-    for i, kw in enumerate(clean_keywords):
-        logger.info(f"[{i+1}/{len(clean_keywords)}] Searching: {kw}")
+    # Zero results — try progressively simpler fallbacks
+    fallbacks = qb.build_fallback_chain(query)
+    for fallback in fallbacks:
+        logger.debug(f"  [{query_type}] Retry: '{fallback}' (fallback from '{query}')")
         try:
-            papers = await arxiv_tool.search(kw, state["topic"], max_results=4)
-            all_papers.extend(papers)
-        except Exception as e:
-            logger.warning(f"Failed to search '{kw}': {e}")
+            results = await arxiv_tool.search(fallback, topic, max_results=MAX_RESULTS_PER_QUERY)
+            if results:
+                logger.info(
+                    f"  [{query_type}] '{query}' → 0 results → retried '{fallback}' → {len(results)} papers ✓"
+                )
+                return results
+        except Exception:
             continue
-        if i < len(clean_keywords) - 1:
-            await asyncio.sleep(7)
 
-    # Deduplication
-    seen = {}
-    unique_papers = []
+    logger.debug(f"  [{query_type}] '{query}' → 0 results (all fallbacks exhausted)")
+    return []
+
+
+async def retriever_node(state: ResearchState) -> ResearchState:
+    """
+    Batch-parallel arXiv search with ontology-guided queries and retry logic.
+    """
+    topic = state["topic"]
+    raw_queries = state.get("keywords", [topic])
+    query_types = state.get("query_types", {})
+    ontology_dict = state.get("research_ontology", {})
+    negative_terms = ontology_dict.get("negative_terms", [])
+
+    logger.info(f"Retriever: Running {len(raw_queries)} queries for '{topic}' in batches of {BATCH_SIZE}")
+
+    all_papers: List[PaperMetadata] = []
+
+    # Process in batches of BATCH_SIZE with delay between batches
+    for batch_i in range(0, len(raw_queries), BATCH_SIZE):
+        batch = raw_queries[batch_i: batch_i + BATCH_SIZE]
+        batch_num = batch_i // BATCH_SIZE + 1
+        total_batches = (len(raw_queries) + BATCH_SIZE - 1) // BATCH_SIZE
+
+        logger.info(f"Batch {batch_num}/{total_batches}: {[q[:40] for q in batch]}")
+
+        # Run all queries in this batch in parallel
+        tasks = [
+            _search_with_retry(q, query_types.get(q, "?"), topic)
+            for q in batch
+        ]
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for result in batch_results:
+            if isinstance(result, Exception):
+                logger.warning(f"Batch search exception: {result}")
+            elif isinstance(result, list):
+                all_papers.extend(result)
+
+        if batch_i + BATCH_SIZE < len(raw_queries):
+            logger.debug(f"Sleeping {BATCH_DELAY}s before next batch...")
+            await asyncio.sleep(BATCH_DELAY)
+
+    # Deduplicate by arxiv_id
+    seen = set()
+    unique_papers: List[PaperMetadata] = []
     for p in all_papers:
         if p.arxiv_id not in seen:
-            seen[p.arxiv_id] = p
+            seen.add(p.arxiv_id)
             unique_papers.append(p)
 
-    state["papers"] = unique_papers[:8]
-    state["papers_to_process"] = unique_papers[:8]
+    logger.info(
+        f"Search complete: {len(all_papers)} total → {len(unique_papers)} unique candidates"
+    )
+
+    # Relevance filtering with 4-tier scoring + negative_terms blocking
+    try:
+        relevant_papers = await relevance_filter_agent.filter(
+            unique_papers,
+            topic,
+            negative_terms=negative_terms if negative_terms else None,
+            fill_quota=True
+        )
+    except Exception as e:
+        logger.error(f"Relevance filter failed: {e}. Using all unique papers.")
+        relevant_papers = unique_papers
+
+    final_papers = relevant_papers[:MAX_FINAL_PAPERS]
+    logger.success(
+        f"Ingestion queue ready: {len(unique_papers)} candidates → "
+        f"{len(relevant_papers)} relevant → {len(final_papers)} queued"
+    )
+
+    state["papers"] = final_papers
+    state["papers_to_process"] = final_papers
     state["current_stage"] = "retrieve"
     return state
 
@@ -77,18 +160,15 @@ async def per_paper_pipeline(state_input: dict) -> dict:
     """Full per-paper pipeline + Layered Storage + Property Graph Extractor"""
     topic = state_input.get("topic", "unknown")
 
-    # Run extraction → summarization → critic
     output = await pdf_extractor_node(state_input)
     output = await summarizer_agent.run(output)
     output = await critic_agent.run(output)
 
-    # === Store using new layered Memory Manager ===
     try:
         await memory_manager.store_paper(output, topic)
     except Exception as e:
         logger.error(f"Memory Manager failed for {output.paper_id}: {e}")
 
-    # === Extract Property Graph Entities & Write to Neo4j ===
     try:
         from src.agents.extractor_agent import extractor_agent
         from src.db.neo4j_client import neo4j_client

@@ -1,51 +1,58 @@
 """
-Decomposer Agent: Turns high-level topic into smart keyword sets + search strategy.
-Instrumented with LangSmith tracing.
+Decomposer Agent (v2)
+======================
+Orchestrates the two-step Research Ontology → Query Builder pipeline.
+
+Step 1: ResearchOntologyAgent — LLM understands the domain and produces
+        a structured ontology (frameworks, tasks, synonyms, negatives, etc.)
+Step 2: SearchQueryBuilder — Pure Python converts ontology into 15-25
+        concise, typed arXiv keyword queries. No LLM involved.
+
+The decomposer no longer generates long English search sentences.
 """
 
-from typing import List
 from loguru import logger
-from src.gateway import gateway
+from src.agents.research_ontology_agent import research_ontology_agent, ResearchOntology
+from src.tools.query_builder import query_builder
 from src.models.schemas import ResearchState
 from src.observability.tracing import traced
 
 
 class DecomposerAgent:
-    """LLM-powered intent + keyword decomposer."""
+    """
+    Orchestrates ontology generation and deterministic query building.
+    Stores full ontology in state for downstream use (relevance filter, synthesis).
+    """
 
     @traced(name="decomposer_agent", run_type="chain")
     async def run(self, state: ResearchState) -> ResearchState:
-        """Decompose topic into multiple keyword strategies."""
         topic = state["topic"]
 
-        messages = [
-            {"role": "system", "content": "You are an expert research strategist.\n"
-                                         "Your goal is to break down a research topic into highly effective arXiv search queries.\n\n"
-                                         "Generate 4-6 diverse but targeted keyword/phrase combinations.\n"
-                                         "Focus on technical terms, key concepts, recent trends, and synonyms.\n\n"
-                                         "Output ONLY a plain list of keywords, one per line. No numbering, no markdown."},
-            {"role": "user", "content": f"Topic: {topic}\n\nProvide diverse, high-recall keyword sets."}
-        ]
+        # Step 1: Generate structured research ontology
+        ontology: ResearchOntology = await research_ontology_agent.generate(topic)
 
-        try:
-            response = await gateway.generate(
-                task="keyword_generation",
-                messages=messages,
-                temperature=0.3
-            )
-            text = response.text
-            keywords = [kw.strip() for kw in text.split("\n") if kw.strip()][:6]
-            if not keywords:
-                keywords = [topic]
-            logger.success(f"Decomposer generated {len(keywords)} keyword sets for '{topic}'")
-        except Exception as e:
-            logger.error(f"Decomposer failed: {e}. Using fallback.")
-            keywords = [topic, f"{topic} survey", f"{topic} review"]
+        # Step 2: Build concise arXiv queries deterministically
+        query_pairs = query_builder.build_queries(ontology)
 
-        state["keywords"] = keywords
-        state["search_strategy"] = f"Decomposed into {len(keywords)} strategies"
+        # Extract just the query strings (types stored separately for analytics)
+        queries = [q for q, _ in query_pairs]
+        query_types = {q: qt for q, qt in query_pairs}
+
+        logger.success(
+            f"Decomposer ready: {len(queries)} queries built for '{topic}'\n"
+            f"  Frameworks identified: {ontology.named_frameworks}\n"
+            f"  Negative terms (will block): {ontology.negative_terms}"
+        )
+
+        state["keywords"] = queries
+        state["query_types"] = query_types
+        state["research_ontology"] = ontology.model_dump()
+        state["search_strategy"] = (
+            f"Ontology-guided: {len(ontology.named_frameworks)} frameworks, "
+            f"{len(ontology.core_terms)} core terms, "
+            f"{len(queries)} queries"
+        )
         state["current_stage"] = "decompose"
-
         return state
 
 

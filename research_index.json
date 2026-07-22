@@ -199,6 +199,238 @@
       ],
       "first_seen": "2026-07-22T10:20:55.252693",
       "last_processed": "2026-07-22T10:20:55.252693"
+    },
+    "2409.09550v1": {
+      "title": "Swarm Algorithms for Dynamic Task Allocation in Unknown Environments",
+      "topics": [
+        "swarm ai agents for looping tasks"
+      ],
+      "first_seen": "2026-07-22T11:09:35.886795",
+      "last_processed": "2026-07-22T11:09:35.886795"
+    },
+    "2605.13006v1": {
+      "title": "Occlusion-Based Object Transportation Around Obstacles With a Swarm of Miniature Robots",
+      "topics": [
+        "swarm ai agents for looping tasks"
+      ],
+      "first_seen": "2026-07-22T11:09:40.967420",
+      "last_processed": "2026-07-22T11:09:40.967420"
+    },
+    "2302.14587v1": {
+      "title": "Decentralised construction of a global coordinate system in a large swarm of minimalistic robots",
+      "topics": [
+        "swarm ai agents for looping tasks"
+      ],
+      "first_seen": "2026-07-22T11:10:22.326945",
+      "last_processed": "2026-07-22T11:10:22.326945"
+    },
+    "2110.07276v3": {
+      "title": "Carousel Memory: Rethinking the Design of Episodic Memory for Continual Learning",
+      "topics": [
+        "memory architectures in ai agents"
+      ],
+      "first_seen": "2026-07-22T11:37:16.428934",
+      "last_processed": "2026-07-22T11:41:58.932524"
+    },
+    "2406.04710v2": {
+      "title": "Morescient GAI for Software Engineering (Extended Version)",
+      "topics": [
+        "code generation and software engineering agents"
+      ],
+      "first_seen": "2026-07-22T11:44:55.555910",
+      "last_processed": "2026-07-22T11:44:55.555910"
+    },
+    "1311.5108v1": {
+      "title": "A Methodology to Engineer and Validate Dynamic Multi-level Multi-agent Based Simulations",
+      "topics": [
+        "coding ai agents frameworks"
+      ],
+      "first_seen": "2026-07-22T11:49:14.728491",
+      "last_processed": "2026-07-22T11:49:14.728491"
+    },
+    "2512.09458v1": {
+      "title": "Architectures for Building Agentic AI",
+      "topics": [
+        "coding ai agents frameworks"
+      ],
+      "first_seen": "2026-07-22T11:49:24.468422",
+      "last_processed": "2026-07-22T11:49:24.468422"
+    },
+    "2203.08975v2": {
+      "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+      "topics": [
+        "coding ai agents frameworks"
+      ],
+      "first_seen": "2026-07-22T11:49:37.764798",
+      "last_processed": "2026-07-22T11:49:37.764798"
+    },
+    "2507.21638v3": {
+      "title": "Assistax: A Multi-Agent Hardware-Accelerated Reinforcement Learning Benchmark for Assistive Robotics",
+      "topics": [
+        "coding ai agents frameworks"
+      ],
+      "first_seen": "2026-07-22T11:50:10.609165",
+      "last_processed": "2026-07-22T11:50:10.609165"
+    },
+    "1906.10095v2": {
+      "title": "An Empirical Comparison of FAISS and FENSHSES for Nearest Neighbor Search in Hamming Space",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:00.817131",
+      "last_processed": "2026-07-22T16:15:00.817131"
+    },
+    "2411.01473v1": {
+      "title": "Efficient Medical Image Retrieval Using DenseNet and FAISS for BIRADS Classification",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:15.769891",
+      "last_processed": "2026-07-22T16:15:15.769891"
+    },
+    "2602.11443v1": {
+      "title": "Filtered Approximate Nearest Neighbor Search in Vector Databases: System Design and Performance Analysis",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:16.257469",
+      "last_processed": "2026-07-22T16:15:16.257469"
+    },
+    "2412.01555v1": {
+      "title": "Optimizing Domain-Specific Image Retrieval: A Benchmark of FAISS and Annoy with Fine-Tuned Features",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:26.672812",
+      "last_processed": "2026-07-22T16:15:26.672812"
+    },
+    "1412.3328v7": {
+      "title": "Memory vectors for similarity search in high-dimensional spaces",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:30.329231",
+      "last_processed": "2026-07-22T16:15:30.329231"
+    },
+    "2401.08281v4": {
+      "title": "The Faiss library",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:31.039620",
+      "last_processed": "2026-07-22T16:15:31.039620"
+    },
+    "1612.07710v2": {
+      "title": "Set Similarity Search Beyond MinHash",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:39.447059",
+      "last_processed": "2026-07-22T16:15:39.447059"
+    },
+    "2606.03151v1": {
+      "title": "ACRONYM: Accelerated Approximate Nearest Neighbor Search in Memory for Dynamic Vector Databases",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:40.574362",
+      "last_processed": "2026-07-22T16:15:40.574362"
+    },
+    "2502.12908v2": {
+      "title": "Graph Neural Networks for Databases: A Survey",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:49.104190",
+      "last_processed": "2026-07-22T16:15:49.104190"
+    },
+    "2009.13836v1": {
+      "title": "SIR: Similar Image Retrieval for Product Search in E-Commerce",
+      "topics": [
+        "vector databses for ai agents for similarity search"
+      ],
+      "first_seen": "2026-07-22T16:15:49.600176",
+      "last_processed": "2026-07-22T16:15:49.600176"
+    },
+    "2004.11045v1": {
+      "title": "Distilling Knowledge for Fast Retrieval-based Chat-bots",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:27:47.887077",
+      "last_processed": "2026-07-22T16:27:47.887077"
+    },
+    "2511.22858v1": {
+      "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:27:50.327093",
+      "last_processed": "2026-07-22T16:27:50.327093"
+    },
+    "2603.14541v1": {
+      "title": "Expert Mind: A Retrieval-Augmented Architecture for Expert Knowledge Preservation in the Energy Sector",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:27:51.375088",
+      "last_processed": "2026-07-22T16:27:51.375088"
+    },
+    "2401.15391v1": {
+      "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:27:55.262403",
+      "last_processed": "2026-07-22T16:27:55.262403"
+    },
+    "2404.07220v2": {
+      "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:27:59.290826",
+      "last_processed": "2026-07-22T16:27:59.290826"
+    },
+    "2510.22344v1": {
+      "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:28:07.826640",
+      "last_processed": "2026-07-22T16:28:07.826640"
+    },
+    "2601.05264v1": {
+      "title": "Engineering the RAG Stack: A Comprehensive Review of the Architecture and Trust Frameworks for Retrieval-Augmented Generation Systems",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:28:09.201109",
+      "last_processed": "2026-07-22T16:28:09.201109"
+    },
+    "2502.02464v3": {
+      "title": "Rankify: A Comprehensive Python Toolkit for Retrieval, Re-Ranking, and Retrieval-Augmented Generation",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:28:18.253503",
+      "last_processed": "2026-07-22T16:28:18.253503"
+    },
+    "2411.00744v2": {
+      "title": "CARROT: A Learned Cost-Constrained Retrieval Optimization System for RAG",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:28:27.292576",
+      "last_processed": "2026-07-22T16:28:27.292576"
+    },
+    "2505.21439v1": {
+      "title": "Towards Better Instruction Following Retrieval Models",
+      "topics": [
+        "ai agents retrieval quality"
+      ],
+      "first_seen": "2026-07-22T16:28:29.299518",
+      "last_processed": "2026-07-22T16:28:29.299518"
     }
   },
   "topics": {
@@ -250,6 +482,71 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-22T10:20:55.252693"
+    },
+    "swarm ai agents for looping tasks": {
+      "paper_ids": [
+        "2409.09550v1",
+        "2605.13006v1",
+        "2302.14587v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T11:10:22.326945"
+    },
+    "memory architectures in ai agents": {
+      "paper_ids": [
+        "2110.07276v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T11:41:58.932524"
+    },
+    "code generation and software engineering agents": {
+      "paper_ids": [
+        "2406.04710v2"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T11:44:55.555910"
+    },
+    "coding ai agents frameworks": {
+      "paper_ids": [
+        "1311.5108v1",
+        "2512.09458v1",
+        "2203.08975v2",
+        "2507.21638v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T11:50:10.609165"
+    },
+    "vector databses for ai agents for similarity search": {
+      "paper_ids": [
+        "1906.10095v2",
+        "2411.01473v1",
+        "2602.11443v1",
+        "2412.01555v1",
+        "1412.3328v7",
+        "2401.08281v4",
+        "1612.07710v2",
+        "2606.03151v1",
+        "2502.12908v2",
+        "2009.13836v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T16:15:49.600176"
+    },
+    "ai agents retrieval quality": {
+      "paper_ids": [
+        "2004.11045v1",
+        "2511.22858v1",
+        "2603.14541v1",
+        "2401.15391v1",
+        "2404.07220v2",
+        "2510.22344v1",
+        "2601.05264v1",
+        "2502.02464v3",
+        "2411.00744v2",
+        "2505.21439v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T16:28:29.299518"
     }
   }
 }

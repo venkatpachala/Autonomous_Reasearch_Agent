@@ -6,3 +6,5 @@ llama-index
 llama-parse
 pydantic-settings
 python-dotenv
+pinecone
+openai
