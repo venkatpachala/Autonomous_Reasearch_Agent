@@ -74,9 +74,9 @@ class StructuredPaperSummary(BaseModel):
     methodology: str = Field(..., description="High-level approach + key technical choices")
     key_contributions: List[str] = Field(..., min_items=3)
     achievements: str = Field(..., description="What was actually achieved (quantitative where possible)")
-    benchmarks: List[Dict[str, Any]] = Field(
+    benchmarks: List[str] = Field(
         default_factory=list,
-        description="Important benchmarks with numbers, datasets, SOTA comparison"
+        description="Benchmark/dataset names used in the paper (e.g. MMLU, WikiText-2, BEIR)"
     )
     limitations: List[str] = Field(default_factory=list)
     future_work: List[str] = Field(default_factory=list)
@@ -93,6 +93,14 @@ class KnowledgeNote(BaseModel):
     structured_data: StructuredPaperSummary
     key_quotes: List[str] = Field(default_factory=list)
     concepts: List[str] = Field(default_factory=list)  # extracted entities/concepts
+    hardware_devices: List[str] = Field(
+        default_factory=list,
+        description="Hardware, chips, edge devices, SoCs, or accelerators mentioned in the paper"
+    )
+    table_summaries: List[str] = Field(
+        default_factory=list,
+        description="Brief text descriptions of key tables (e.g. 'Table 1: accuracy comparison on MMLU')"
+    )
     criticality_score: float = Field(ge=0.0, le=1.0, description="How important/novel this paper is")
     tags: List[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -125,6 +133,9 @@ class ResearchState(TypedDict):
 
     # Decomposer output
     keywords: List[str]
+    tiered_queries: Dict[str, List]          # {"P1": [...], "P2": [...], "P3": [...]}
+    query_types: Dict[str, str]              # {query_string: query_type}
+    research_ontology: Dict[str, Any]        # serialized ResearchOntology
     search_strategy: Optional[str]
 
     # Retriever output

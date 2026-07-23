@@ -6,7 +6,7 @@ from src.models.schemas import ResearchState
 
 async def main():
     initial_state: ResearchState = {
-        "topic": "agentic RAG memory systems",
+        "topic": "Edge devices for running local LLM models",
         "keywords": [],
         "papers": [],
         "processed_papers": [],

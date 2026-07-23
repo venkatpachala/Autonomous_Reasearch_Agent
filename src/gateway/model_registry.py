@@ -42,6 +42,11 @@ TASK_MODEL_REGISTRY: Dict[str, ModelConfig] = {
         model_name="gpt-4o-mini",
         fallback="qwen2.5:7b"
     ),
+    "graph_extraction": ModelConfig(
+        provider="Ollama",
+        model_name="qwen2.5:7b",
+        fallback="gpt-4o-mini"
+    ),
     # Binary relevance classification — fast local
     "relevance_check": ModelConfig(
         provider="Ollama",

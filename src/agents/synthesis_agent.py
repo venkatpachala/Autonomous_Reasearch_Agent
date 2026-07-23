@@ -18,6 +18,10 @@ class PaperRelationship(BaseModel):
     paper_b: str = Field(..., description="Short title or arXiv ID of paper B")
     relationship: Literal["extends", "contradicts", "evaluates_same_data", "proposes_alternative", "builds_upon", "surveys"]
     description: str = Field(..., description="One sentence explaining the relationship.")
+    evidence_basis: str = Field(
+        default="inferred",
+        description="Exact quote or section from the papers that explicitly supports this relationship. Write 'inferred' if not directly stated."
+    )
 
 
 class ResearchSynthesis(BaseModel):
@@ -137,7 +141,11 @@ class SynthesisAgent:
                     "4. Identify clear research gaps and open problems\n"
                     "5. Cite specific papers using [arXiv:ID - Short Title] format\n"
                     "6. Write as an expert researcher would — thematic, analytical, NOT a list of summaries\n\n"
-                    "Do NOT simply summarize each paper individually. BUILD CONNECTIONS."
+                    "CRITICAL RULES FOR RELATIONSHIPS:\n"
+                    "- Only claim a relationship (BUILDS_UPON, CONTRADICTS, etc.) if there is explicit textual evidence in the provided paper summaries.\n"
+                    "- If you cannot find a direct citation or explicit statement connecting two papers, set evidence_basis to 'inferred' and downgrade confidence.\n"
+                    "- Do NOT fabricate citation connections between papers that never reference each other.\n\n"
+                    "Do NOT simply summarize each paper individually. BUILD CONNECTIONS based on the evidence."
                 )
             },
             {

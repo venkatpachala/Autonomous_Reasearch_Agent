@@ -1,79 +1,142 @@
-from typing import List, Dict, Any, Optional
+# src/agents/extractor_agent.py  (simplified version)
+
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from loguru import logger
 from src.gateway import gateway
-from src.models.schemas import PerPaperOutput
+
 
 class EntityNode(BaseModel):
-    name: str = Field(..., description="Normalized entity name, e.g., 'Qwen-2.5', 'MMLU', 'Accuracy', 'LangGraph'")
-    type: str = Field(..., description="Type: 'Method' (algorithm/tool/model), 'Dataset' (benchmark/test-set), 'Metric' (accuracy score/latency), 'Concept' (theory/field)")
-    description: Optional[str] = Field(None, description="Short context details")
+    name: str
+    type: str   # Method | Dataset | Metric | Concept
+
 
 class RelationshipEdge(BaseModel):
-    source: str = Field(..., description="Name of the source node")
-    target: str = Field(..., description="Name of the target node")
-    relation: str = Field(..., description="Relationship label, e.g. 'PROPOSES', 'EVALUATED_ON', 'IMPROVES', 'MENTIONS'")
-    value: Optional[str] = Field(None, description="Quantitative score or metric value if available, e.g. '84.2%', '120ms'")
+    source: str
+    target: str
+    relation: str
+    value: Optional[str] = None
+
 
 class GraphKnowledge(BaseModel):
     entities: List[EntityNode] = Field(default_factory=list)
     relationships: List[RelationshipEdge] = Field(default_factory=list)
 
+
+import json
+import re
+
 class ExtractorAgent:
-    """
-    LLM-powered Entity and Relationship extraction agent.
-    Parses structural paper summaries to build property graph triplets.
-    """
-    async def extract_graph_elements(self, output: PerPaperOutput) -> GraphKnowledge:
-        paper = output.metadata
-        summary = output.summary
+    def _repair_json(self, text: str) -> str:
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0]
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0]
+        text = text.strip()
+        text = text.replace("'", '"')
+        text = re.sub(r'\\(?!["\\/bfnrt])', r'\\\\', text) # fix unescaped backslashes
+        text = re.sub(r',\s*([\]}])', r'\1', text) # trailing commas
+        return text
 
-        if not summary:
-            logger.warning(f"No summary found for {output.paper_id}. Skipping entity extraction.")
-            return GraphKnowledge()
+    async def extract(self, paper_id: str, title: str, contributions: List[str], benchmarks: Optional[List[str]] = None) -> GraphKnowledge:
+        """
+        Lightweight extraction. Uses only title + contributions + benchmarks.
+        """
+        contrib_text = "\n".join(f"- {c}" for c in (contributions or [])[:6])
+        bench_text = "\n".join(f"- {b}" for b in (benchmarks or [])[:6]) if benchmarks else "None"
 
-        # Build comprehensive summary context
-        contributions = "\n".join(f"- {c}" for c in summary.key_contributions)
-        benchmarks = "\n".join(f"- {b}" for b in summary.benchmarks)
-        
-        system_content = """You are a specialized AI Knowledge Graph Engineer.
-Your goal is to parse structured academic paper summaries and extract exact Entity-Relationship triplets.
-
+        system_entities = """You are a knowledge graph extractor.
+Return ONLY valid JSON matching this schema:
+{
+  "entities": [{"name": "...", "type": "Method|Dataset|Metric|Concept"}]
+}
 Rules:
-1. Normalize node names: use title case and remove extra spaces or punctuation (e.g. 'gpt4' ➔ 'GPT-4', 'mmlu' ➔ 'MMLU').
-2. Keep entity types strictly to: 'Method', 'Dataset', 'Metric', or 'Concept'.
-3. Extract quantitative relationships where possible, detailing scores/percentages in the 'value' field.
-4. Output a valid JSON conforming to the requested schema. Do not generate markdown wrapping."""
+- Output pure JSON only. No markdown, no explanation.
+- Escape any backslashes properly.
+- Keep names short and normalized (e.g. "RAG", "BEIR", "dense retrieval").
+- Maximum 8 entities.
+"""
 
-        human_content = f"""Paper Title: {paper.title}
-Abstract: {paper.abstract}
-Objective: {summary.objective}
-Methodology: {summary.methodology}
+        user_entities = f"""Title: {title}
+
 Key Contributions:
-{contributions}
-Benchmarks/Achievements:
-{benchmarks}
+{contrib_text}
 
-Extract the graph entities and relationships."""
+Benchmarks:
+{bench_text}
 
-        messages = [
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": human_content}
+Extract entities now."""
+
+        messages_ent = [
+            {"role": "system", "content": system_entities},
+            {"role": "user", "content": user_entities}
         ]
 
+        entities = []
         try:
-            response = await gateway.generate(
-                task="evaluation",  # Routes to default Ollama model locally
-                messages=messages,
-                temperature=0.1,
-                schema_model=GraphKnowledge
+            resp_ent = await gateway.generate(
+                task="graph_extraction",
+                messages=messages_ent,
+                temperature=0.0,
+                retries=2
             )
-            if response.structured:
-                logger.success(f"Extracted {len(response.structured.entities)} nodes & {len(response.structured.relationships)} edges for {output.paper_id}")
-                return response.structured
+            raw_ent = self._repair_json(resp_ent.text)
+            parsed_ent = json.loads(raw_ent)
+            entities = [EntityNode(**e) for e in parsed_ent.get("entities", [])]
         except Exception as e:
-            logger.error(f"Entity extraction failed for {output.paper_id}: {e}")
-            
-        return GraphKnowledge()
+            logger.error(f"Entity extraction failed for {paper_id}: {e}")
+
+        if not entities:
+            return GraphKnowledge()
+
+        entities_json = json.dumps([e.model_dump() for e in entities], indent=2)
+
+        system_rels = """You are a knowledge graph extractor.
+Return ONLY valid JSON matching this schema:
+{
+  "relationships": [{"source": "...", "target": "...", "relation": "...", "value": null}]
+}
+Rules:
+- Output pure JSON only. No markdown, no explanation.
+- Escape any backslashes properly.
+- Maximum 10 relationships.
+- ONLY use entities from the provided list.
+"""
+
+        user_rels = f"""Title: {title}
+
+Key Contributions:
+{contrib_text}
+
+Benchmarks:
+{bench_text}
+
+Entities:
+{entities_json}
+
+Extract relationships now."""
+
+        messages_rel = [
+            {"role": "system", "content": system_rels},
+            {"role": "user", "content": user_rels}
+        ]
+
+        relationships = []
+        try:
+            resp_rel = await gateway.generate(
+                task="graph_extraction",
+                messages=messages_rel,
+                temperature=0.0,
+                retries=2
+            )
+            raw_rel = self._repair_json(resp_rel.text)
+            parsed_rel = json.loads(raw_rel)
+            relationships = [RelationshipEdge(**r) for r in parsed_rel.get("relationships", [])]
+        except Exception as e:
+            logger.error(f"Relationship extraction failed for {paper_id}: {e}")
+
+        logger.success(f"Graph extracted for {paper_id}: {len(entities)} entities, {len(relationships)} edges")
+        return GraphKnowledge(entities=entities, relationships=relationships)
+
 
 extractor_agent = ExtractorAgent()

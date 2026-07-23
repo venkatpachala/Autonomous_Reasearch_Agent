@@ -1,19 +1,25 @@
 """
-Semantic Retriever over the research knowledge base (Chroma + Artifact Store + Neo4j).
+Semantic Retriever over the research knowledge base (Pinecone + Artifact Store + Neo4j).
 Upgraded with:
   - Score threshold filtering (discards low-confidence matches)
   - Retrieval confidence estimation
   - Collection-mode: load ALL notes for a topic (for synthesis queries)
+  - Parallel disk I/O: full_note + metadata loaded concurrently per paper
 """
 
 from typing import List, Dict, Any, Optional
 from loguru import logger
 import json
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from src.db.pinecone_client import chroma_client  # Pinecone replaces ChromaDB (same interface)
 from src.storage.artifact_store import artifact_store
 from src.models.schemas import KnowledgeNote
+
+# Thread pool for non-blocking disk reads
+_disk_executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="retriever-disk")
 
 
 class ResearchRetriever:
@@ -25,7 +31,7 @@ class ResearchRetriever:
         self.artifact = artifact_store
         self.n_results = n_results
 
-    def search(
+    async def search(
         self,
         query: str,
         topic: Optional[str] = None,
@@ -33,20 +39,24 @@ class ResearchRetriever:
         min_score: Optional[float] = None
     ) -> Dict[str, Any]:
         """
-        Semantic search with score threshold filtering and graph traversal.
+        Async semantic search with score threshold filtering, parallel disk I/O,
+        and graph traversal.
         Returns: {papers, graph_triplets, retrieval_confidence}
         """
         n = n_results or self.n_results
         threshold = min_score if min_score is not None else self.MIN_SCORE_THRESHOLD
         where = {"topic": topic} if topic else None
 
-        # Retrieve more candidates from Chroma, then filter by quality
+        # Retrieve more candidates from Pinecone, then filter by quality
         candidate_n = max(n * 3, 20)
 
         try:
-            results = self.chroma.query(query_text=query, n_results=candidate_n, where=where)
+            results = await asyncio.get_event_loop().run_in_executor(
+                _disk_executor,
+                lambda: self.chroma.query(query_text=query, n_results=candidate_n, where=where)
+            )
         except Exception as e:
-            logger.error(f"Chroma query failed: {e}")
+            logger.error(f"Pinecone query failed: {e}")
             return {"papers": [], "graph_triplets": [], "retrieval_confidence": 0.0}
 
         if not results or not results.get("ids") or not results["ids"][0]:
@@ -57,17 +67,21 @@ class ResearchRetriever:
         metadatas = results["metadatas"][0]
         distances = results.get("distances", [[]])[0] if results.get("distances") else [None] * len(ids)
 
-        all_contexts = []
-        for i, paper_id in enumerate(ids):
+        # === PARALLEL DISK LOADS ===
+        async def _load_paper_context(i: int, paper_id: str) -> Dict:
             meta = metadatas[i] if i < len(metadatas) else {}
             doc = documents[i] if i < len(documents) else ""
             raw_dist = distances[i]
             score = (1 - raw_dist) if raw_dist is not None else 0.5
 
-            full_note = self._load_full_note(paper_id)
-            paper_meta = self._load_metadata(paper_id)
+            # Load full_note and metadata concurrently
+            loop = asyncio.get_event_loop()
+            full_note, paper_meta = await asyncio.gather(
+                loop.run_in_executor(_disk_executor, self._load_full_note, paper_id),
+                loop.run_in_executor(_disk_executor, self._load_metadata, paper_id)
+            )
 
-            all_contexts.append({
+            return {
                 "paper_id": paper_id,
                 "title": meta.get("title") or (full_note.title if full_note else "Unknown"),
                 "content": doc,
@@ -77,7 +91,11 @@ class ResearchRetriever:
                 "arxiv_url": f"https://arxiv.org/abs/{paper_id}",
                 "pdf_path": str(self.artifact.base_dir / paper_id / "paper.pdf")
                             if (self.artifact.base_dir / paper_id / "paper.pdf").exists() else None,
-            })
+            }
+
+        all_contexts = await asyncio.gather(*[
+            _load_paper_context(i, paper_id) for i, paper_id in enumerate(ids)
+        ])
 
         # === SCORE THRESHOLD FILTERING ===
         filtered = [c for c in all_contexts if c["score"] >= threshold]
@@ -124,32 +142,35 @@ class ResearchRetriever:
             "retrieval_confidence": retrieval_confidence
         }
 
-    def get_all_notes_for_topic(self, topic: str) -> List[KnowledgeNote]:
+    async def get_all_notes_for_topic(self, topic: str) -> List[KnowledgeNote]:
         """
         Load ALL KnowledgeNote objects indexed under a given topic.
         Used by the SynthesisAgent for collection-level queries.
+        Notes are loaded in parallel for speed.
         """
         try:
-            # Query Chroma with a broad topic description to get all paper IDs
-            results = self.chroma.query(
-                query_text=topic,
-                n_results=50,
-                where={"topic": topic}
+            loop = asyncio.get_event_loop()
+            results = await loop.run_in_executor(
+                _disk_executor,
+                lambda: self.chroma.query(
+                    query_text=topic,
+                    n_results=50,
+                    where={"topic": topic}
+                )
             )
             if not results or not results.get("ids") or not results["ids"][0]:
                 return []
 
-            notes = []
-            seen_ids = set()
-            for paper_id in results["ids"][0]:
-                if paper_id in seen_ids:
-                    continue
-                seen_ids.add(paper_id)
-                note = self._load_full_note(paper_id)
-                if note:
-                    notes.append(note)
+            unique_ids = list(dict.fromkeys(results["ids"][0]))  # preserve order, deduplicate
 
-            logger.info(f"Loaded {len(notes)} full notes for topic '{topic}'")
+            # Load all notes in parallel
+            async def _load(paper_id: str) -> Optional[KnowledgeNote]:
+                return await loop.run_in_executor(_disk_executor, self._load_full_note, paper_id)
+
+            notes_raw = await asyncio.gather(*[_load(pid) for pid in unique_ids])
+            notes = [n for n in notes_raw if n is not None]
+
+            logger.info(f"Loaded {len(notes)} full notes for topic '{topic}' (parallel)")
             return notes
 
         except Exception as e:

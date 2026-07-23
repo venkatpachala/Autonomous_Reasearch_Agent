@@ -147,10 +147,11 @@
     "2601.05960v2": {
       "title": "Distilling Feedback into Memory-as-a-Tool",
       "topics": [
-        "memory layers for ai agents 2026"
+        "memory layers for ai agents 2026",
+        "agentic rag memory systems"
       ],
       "first_seen": "2026-07-22T10:20:09.782554",
-      "last_processed": "2026-07-22T10:20:09.782554"
+      "last_processed": "2026-07-22T18:19:32.703054"
     },
     "2507.02910v1": {
       "title": "Causal-Paced Deep Reinforcement Learning",
@@ -363,10 +364,11 @@
     "2511.22858v1": {
       "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
       "topics": [
-        "ai agents retrieval quality"
+        "ai agents retrieval quality",
+        "agentic rag memory systems"
       ],
       "first_seen": "2026-07-22T16:27:50.327093",
-      "last_processed": "2026-07-22T16:27:50.327093"
+      "last_processed": "2026-07-22T18:19:29.208475"
     },
     "2603.14541v1": {
       "title": "Expert Mind: A Retrieval-Augmented Architecture for Expert Knowledge Preservation in the Energy Sector",
@@ -379,10 +381,11 @@
     "2401.15391v1": {
       "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
       "topics": [
-        "ai agents retrieval quality"
+        "ai agents retrieval quality",
+        "agentic rag memory systems"
       ],
       "first_seen": "2026-07-22T16:27:55.262403",
-      "last_processed": "2026-07-22T16:27:55.262403"
+      "last_processed": "2026-07-22T18:19:25.127846"
     },
     "2404.07220v2": {
       "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
@@ -431,6 +434,97 @@
       ],
       "first_seen": "2026-07-22T16:28:29.299518",
       "last_processed": "2026-07-22T16:28:29.299518"
+    },
+    "2402.07483v2": {
+      "title": "T-RAG: Lessons from the LLM Trenches",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T18:19:47.678737",
+      "last_processed": "2026-07-22T18:19:47.678737"
+    },
+    "2512.21309v2": {
+      "title": "A Plan Reuse Mechanism for LLM-Driven Agent",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T18:19:48.836314",
+      "last_processed": "2026-07-22T18:19:48.836314"
+    },
+    "2409.01907v1": {
+      "title": "Focus Agent: LLM-Powered Virtual Focus Group",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T18:20:05.596950",
+      "last_processed": "2026-07-22T18:20:05.596950"
+    },
+    "2412.12881v1": {
+      "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T18:20:07.181697",
+      "last_processed": "2026-07-22T18:20:07.181697"
+    },
+    "2504.01346v4": {
+      "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T18:20:20.229117",
+      "last_processed": "2026-07-22T18:20:20.229117"
+    },
+    "2510.25518v1": {
+      "title": "Retrieval Augmented Generation (RAG) for Fintech: Agentic Design and Evaluation",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T20:00:03.345254",
+      "last_processed": "2026-07-22T20:00:03.345254"
+    },
+    "2603.15642v1": {
+      "title": "CraniMem: Cranial Inspired Gated and Bounded Memory for Agentic Systems",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T20:00:05.857692",
+      "last_processed": "2026-07-22T20:00:05.857692"
+    },
+    "2601.07528v2": {
+      "title": "From RAG to Agentic RAG for Faithful Islamic Question Answering",
+      "topics": [
+        "agentic rag memory systems"
+      ],
+      "first_seen": "2026-07-22T20:00:10.739408",
+      "last_processed": "2026-07-22T20:00:10.739408"
+    },
+    "2606.05868v1": {
+      "title": "YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition",
+      "topics": [
+        "edge devices for running local llm models",
+        "edge devices running local llm models efficiently"
+      ],
+      "first_seen": "2026-07-22T20:02:23.545674",
+      "last_processed": "2026-07-22T20:39:32.364360"
+    },
+    "2506.09554v2": {
+      "title": "Understanding the Performance and Power of LLM Inferencing on Edge Accelerators",
+      "topics": [
+        "edge devices for running local llm models",
+        "edge devices running local llm models efficiently"
+      ],
+      "first_seen": "2026-07-22T20:02:25.377726",
+      "last_processed": "2026-07-22T20:39:38.221435"
+    },
+    "2410.00531v1": {
+      "title": "TPI-LLM: Serving 70B-scale LLMs Efficiently on Low-resource Edge Devices",
+      "topics": [
+        "edge devices for running local llm models",
+        "edge devices running local llm models efficiently"
+      ],
+      "first_seen": "2026-07-22T20:02:36.046624",
+      "last_processed": "2026-07-22T20:39:36.251357"
     }
   },
   "topics": {
@@ -443,10 +537,21 @@
         "2503.21676v2",
         "2603.01691v1",
         "2506.06962v3",
-        "2504.17204v1"
+        "2504.17204v1",
+        "2401.15391v1",
+        "2511.22858v1",
+        "2601.05960v2",
+        "2402.07483v2",
+        "2512.21309v2",
+        "2409.01907v1",
+        "2412.12881v1",
+        "2504.01346v4",
+        "2510.25518v1",
+        "2603.15642v1",
+        "2601.07528v2"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-21T09:17:24.606037"
+      "last_ingestion": "2026-07-22T20:00:10.739408"
     },
     "memory architectures for ai agents 2026": {
       "paper_ids": [
@@ -547,6 +652,24 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-22T16:28:29.299518"
+    },
+    "edge devices for running local llm models": {
+      "paper_ids": [
+        "2606.05868v1",
+        "2506.09554v2",
+        "2410.00531v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T20:02:36.046624"
+    },
+    "edge devices running local llm models efficiently": {
+      "paper_ids": [
+        "2606.05868v1",
+        "2410.00531v1",
+        "2506.09554v2"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-22T20:39:38.221435"
     }
   }
 }

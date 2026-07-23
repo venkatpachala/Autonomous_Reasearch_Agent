@@ -25,6 +25,15 @@ def clean_json_text(text: str) -> str:
         cleaned = match.group(1).strip()
     return cleaned
 
+class GroundednessError(ValueError):
+    """Exception raised when a factual consistency check fails after all retries.
+    Carries the last generated answer so callers can degrade gracefully.
+    """
+    def __init__(self, message: str, last_answer: str):
+        super().__init__(message)
+        self.last_answer = last_answer
+
+
 class AIGateway:
     """
     Main AI Gateway orchestrator managing caching, routing, retries,
@@ -40,7 +49,15 @@ class AIGateway:
         Fast LLM-as-a-judge consistency validation.
         """
         system_prompt = """You are a strict factual consistency judge.
-Analyze the provided Answer and Context. Determine if the Answer contains ANY claims, metrics, or facts that are NOT directly supported by the Context.
+Analyze the provided Answer and Context.
+
+Flag the Answer as NOT grounded ONLY if it invents, states, or implies specific 
+facts, numbers, metrics, or claims that are NOT present in the Context.
+
+Do NOT flag the Answer as ungrounded if it correctly states that certain 
+information (e.g. specific numbers, benchmark results) is missing, unavailable, 
+or not detailed in the Context — this is a truthful, desirable response, not a 
+hallucination.
 
 Return a JSON object matching this schema:
 {"is_grounded": true|false, "reason": "<explanation if not grounded>"}"""
@@ -166,8 +183,8 @@ Verify the Answer."""
                     })
                     raise ValueError(f"JSON schema validation failed: {val_err}")
 
-            # 5. Factual Groundedness Verification (for research answers)
-            if task == "research_answer":
+            # 5. Factual Groundedness Verification (for research answers and synthesis)
+            if task in ("research_answer", "synthesis"):
                 # Find the context in human message
                 user_msg = next((m["content"] for m in execution_messages if m["role"] == "user"), "")
                 is_grounded, reason = await self._verify_groundedness(text, user_msg, model)
@@ -180,7 +197,10 @@ Verify the Answer."""
                                    f"Please rewrite your answer ensuring that EVERY statement is strictly backed by the provided context. "
                                    f"Do not invent facts, numbers, or external info."
                     })
-                    raise ValueError(f"Factual consistency check failed: {reason}")
+                    raise GroundednessError(
+                        f"Factual consistency check failed: {reason}",
+                        last_answer=text
+                    )
 
             response["structured"] = structured_output
             return response

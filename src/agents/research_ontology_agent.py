@@ -1,47 +1,19 @@
-"""
-Research Ontology Agent
-========================
-Transforms a free-form research topic into a structured domain ontology.
-The ontology captures the terminology that researchers actually use —
-named frameworks, task types, benchmark datasets, synonyms, and negative terms.
-
-This is the critical upstream step before query building. The LLM's job here is
-domain understanding, NOT search query generation.
-"""
+# src/agents/research_ontology_agent.py
 
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from loguru import logger
+import json as _json
+import re
+import asyncio
 
 from src.gateway import gateway
 
 
 class ResearchOntology(BaseModel):
-    """
-    A structured domain map of a research topic.
-    Captures the exact vocabulary researchers use when writing about this topic.
-    """
-    topic_summary: str = Field(
-        ...,
-        description="One precise sentence describing what this research topic is about."
-    )
-    core_terms: List[str] = Field(
-        ...,
-        min_length=3,
-        max_length=8,
-        description=(
-            "Essential 1-3 word research terms. These are the backbone of the search. "
-            "Example: ['episodic memory', 'working memory', 'memory-augmented agent']"
-        )
-    )
-    named_frameworks: List[str] = Field(
-        default_factory=list,
-        description=(
-            "Specific named systems, frameworks, models, or tools in this space. "
-            "These often appear verbatim in paper titles. "
-            "Example: ['MemGPT', 'MemoryOS', 'MemoryBank', 'LightMem', 'Reflexion']"
-        )
-    )
+    topic_summary: str = Field(..., description="One precise sentence describing the topic.")
+    core_terms: List[str] = Field(..., min_length=3, max_length=8)
+
     task_types: List[str] = Field(
         default_factory=list,
         description=(
@@ -54,6 +26,13 @@ class ResearchOntology(BaseModel):
         description=(
             "Known benchmark datasets or evaluation suites used in this research area. "
             "Example: ['LoCoMo', 'LOCRET', 'MemGPT-eval', 'LongBench']"
+        )
+    )
+    evaluation_metrics: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Specific metrics used to evaluate models in this space. "
+            "Example: ['Recall@k', 'NDCG', 'Needle In A Haystack', 'BLEU']"
         )
     )
     methods: List[str] = Field(
@@ -70,6 +49,20 @@ class ResearchOntology(BaseModel):
             "Example: ['long-term memory LLM', 'persistent memory agent', 'external memory store']"
         )
     )
+    key_authors: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Last names of prominent researchers known for this specific topic. "
+            "Example: ['Lewis', 'Karpukhin', 'Izacard', 'Gao']"
+        )
+    )
+    venues: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Top conferences or journals where this research is published. "
+            "Example: ['ACL', 'EMNLP', 'NeurIPS', 'ICLR', 'SIGIR']"
+        )
+    )
     negative_terms: List[str] = Field(
         default_factory=list,
         description=(
@@ -80,123 +73,113 @@ class ResearchOntology(BaseModel):
 
 
 class ResearchOntologyAgent:
-    """
-    LLM-powered domain understanding agent.
-    Produces a structured ResearchOntology from a free-form topic string.
-    """
-
     async def generate(self, topic: str) -> ResearchOntology:
-        """Generate a structured research ontology for the given topic."""
-
-        # NOTE: We do NOT use schema_model= here because qwen2.5:7b confuses the
-        # injected JSON Schema spec with "what to return" and echoes it back.
-        # Instead we provide an explicit example-driven prompt and parse manually.
-
         example_json = '''{
-  "topic_summary": "Research on episodic and working memory mechanisms in LLM-powered autonomous agents.",
-  "core_terms": ["episodic memory", "working memory", "memory-augmented agent"],
-  "named_frameworks": ["MemGPT", "MemoryOS", "MemoryBank", "Reflexion"],
-  "task_types": ["context retrieval", "continual learning", "memory compression", "catastrophic forgetting"],
-  "benchmark_datasets": ["LoCoMo", "LOCRET", "MemGPT-eval", "LongBench"],
-  "methods": ["vector retrieval", "key-value memory", "hierarchical memory", "RAG"],
-  "synonyms": ["long-term memory LLM", "persistent memory agent", "external memory store"],
-  "negative_terms": ["memory management", "cache eviction", "RAM allocation", "memory leak"]
+  "topic_summary": "Research on running large language models efficiently on edge devices and mobile hardware.",
+  "core_terms": ["on-device LLM", "edge inference", "model quantization", "efficient LLM"],
+  "named_frameworks": ["TinyChat", "MLC-LLM", "llama.cpp", "TensorRT-LLM", "ExecuTorch", "ONNX Runtime"],
+  "task_types": ["4-bit quantization", "weight pruning", "speculative decoding", "memory-efficient inference"],
+  "benchmark_datasets": ["MMLU", "WikiText-2", "C4", "HellaSwag", "LMBench"],
+  "evaluation_metrics": ["tokens per second", "perplexity", "peak memory usage", "latency (ms)"],
+  "methods": ["AWQ", "GPTQ", "SmoothQuant", "knowledge distillation", "structured pruning"],
+  "synonyms": ["mobile LLM", "embedded AI inference", "tinyML language model", "resource-constrained LLM"],
+  "key_authors": ["Lin", "Han", "Zhu", "Guo"],
+  "venues": ["MLSys", "NeurIPS", "ICLR", "ASPLOS", "MobiSys"],
+  "negative_terms": ["memory management", "cache eviction", "RAM allocation", "operating system kernel", "network routing"]
 }'''
 
+        system = f"""You are a senior AI research librarian.
+
+Your ONLY job is to produce a grounded research ontology for arXiv search.
+
+STRICT RULES (must follow):
+1. Output ONLY valid JSON. No markdown, no explanations, no extra text.
+2. named_frameworks: Include well-known frameworks, libraries, or systems that are commonly published
+   about in this research area. Be generous but accurate — include names you have strong knowledge of
+   (e.g. TinyChat, MLC-LLM, llama.cpp, TensorRT-LLM, ExecuTorch for edge inference).
+   If truly uncertain, return an empty list.
+3. benchmark_datasets: Include real evaluation benchmarks or datasets used in the field.
+   Examples for edge AI: MMLU, WikiText-2, C4, HellaSwag, LMBench.
+4. ANTI-HALLUCINATION: Do not invent acronyms or made-up system names. Only list things you know exist.
+5. core_terms must be short (1-4 words) and likely to appear in paper titles/abstracts.
+6. Prefer specific, targeted terms over broad generic ones (e.g. 'on-device LLM' > 'LLM').
+7. negative_terms = generic CS/OS terms that would pollute results.
+
+Example for an edge AI inference topic:
+{example_json}
+"""
+
         messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are a senior AI research librarian with deep expertise across all subfields of "
-                    "machine learning, NLP, and systems AI.\n\n"
-                    "Your task: Given a research topic, output a JSON object that maps the exact vocabulary "
-                    "researchers use when publishing papers on this topic.\n\n"
-                    "RULES:\n"
-                    "1. Output ONLY valid JSON. No explanation, no markdown fences, no extra text.\n"
-                    "2. The JSON must have EXACTLY these keys:\n"
-                    "   - topic_summary (string): One precise sentence describing the topic.\n"
-                    "   - core_terms (list of strings): 3-8 essential 1-3 word research concepts.\n"
-                    "   - named_frameworks (list of strings): Specific named systems/models (e.g. 'MemGPT', 'AutoGen'). "
-                    "These appear verbatim in paper titles. Include at least 3 if they exist.\n"
-                    "   - task_types (list of strings): Concrete problems this research solves.\n"
-                    "   - benchmark_datasets (list of strings): Known benchmark datasets or evals.\n"
-                    "   - methods (list of strings): Specific algorithms or architectural patterns.\n"
-                    "   - synonyms (list of strings): Alternative phrasings for the topic.\n"
-                    "   - negative_terms (list of strings): Generic CS/OS terms that would pollute search "
-                    "results (e.g. 'memory management', 'cache eviction', 'scheduling').\n\n"
-                    f"Example output for topic 'memory architectures in AI agents':\n{example_json}"
-                )
-            },
+            {"role": "system", "content": system},
             {
                 "role": "user",
                 "content": (
                     f"Research Topic: {topic}\n\n"
-                    "Output the JSON ontology for this topic now. Start your response with {{ and end with }}."
+                    "Output ONLY the JSON object. Start with {{ and end with }}."
                 )
             }
         ]
 
-        import json as _json
-
         for attempt in range(3):
             try:
-                # Plain text response — no schema_model to avoid confusion
                 response = await gateway.generate(
                     task="keyword_generation",
                     messages=messages,
-                    temperature=0.1,
+                    temperature=0.05,   # lower temperature for more grounded output
                 )
+                raw = response.text.strip()
 
-                raw_text = response.text.strip()
-
-                # Extract JSON block if wrapped in markdown fences
-                if "```" in raw_text:
-                    import re
-                    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
+                # Clean markdown if present
+                if "```" in raw:
+                    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw, re.DOTALL)
                     if match:
-                        raw_text = match.group(1)
+                        raw = match.group(1)
 
-                # Find the outermost JSON object
-                start = raw_text.find("{")
-                end = raw_text.rfind("}") + 1
+                start, end = raw.find("{"), raw.rfind("}") + 1
                 if start != -1 and end > start:
-                    raw_text = raw_text[start:end]
+                    raw = raw[start:end]
 
-                parsed = _json.loads(raw_text)
+                parsed = _json.loads(raw)
                 ontology = ResearchOntology.model_validate(parsed)
 
+                # Extra safety: strip parentheticals and drop any framework that looks invented
+                ontology.named_frameworks = [
+                    re.sub(r"\s*\(.*?\)\s*", "", fw).strip()
+                    for fw in ontology.named_frameworks
+                ]
+                ontology.named_frameworks = [
+                    fw for fw in ontology.named_frameworks
+                    if len(fw) > 2 and (not fw.isupper() or fw in {"RAG", "DPR", "ANCE", "ColBERT", "MemGPT", "BERT", "GPT"})
+                ]
+
                 logger.success(
-                    f"Research Ontology generated for '{topic}':\n"
-                    f"  Core terms ({len(ontology.core_terms)}): {ontology.core_terms}\n"
-                    f"  Named frameworks ({len(ontology.named_frameworks)}): {ontology.named_frameworks}\n"
-                    f"  Task types ({len(ontology.task_types)}): {ontology.task_types}\n"
-                    f"  Datasets ({len(ontology.benchmark_datasets)}): {ontology.benchmark_datasets}\n"
-                    f"  Synonyms ({len(ontology.synonyms)}): {ontology.synonyms}\n"
-                    f"  Negative terms ({len(ontology.negative_terms)}): {ontology.negative_terms}"
+                    f"Ontology for '{topic}':\n"
+                    f"  Core: {ontology.core_terms}\n"
+                    f"  Frameworks: {ontology.named_frameworks}\n"
+                    f"  Datasets: {ontology.benchmark_datasets}"
                 )
                 return ontology
 
             except Exception as e:
-                logger.warning(f"Ontology generation attempt {attempt + 1}/3 failed: {e}")
+                logger.warning(f"Ontology attempt {attempt+1}/3 failed: {e}")
                 if attempt < 2:
-                    import asyncio
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(1.2)
 
-        logger.error(f"All 3 ontology generation attempts failed for '{topic}'. Using minimal fallback.")
-
-        # Minimal fallback — ensures pipeline always continues
-        topic_words = topic.lower().split()
+        # Safe minimal fallback
+        logger.error(f"Ontology failed for '{topic}'. Using minimal fallback.")
         return ResearchOntology(
             topic_summary=f"Research on {topic}",
             core_terms=[topic, f"{topic} survey", f"{topic} deep learning"][:3],
             named_frameworks=[],
             task_types=[],
             benchmark_datasets=[],
+            evaluation_metrics=[],
             methods=[],
             synonyms=[f"{topic} neural network", f"{topic} language model"],
-            negative_terms=[]
+            key_authors=[],
+            venues=[],
+            negative_terms=["memory management", "cache", "operating system"]
         )
-
 
 
 research_ontology_agent = ResearchOntologyAgent()

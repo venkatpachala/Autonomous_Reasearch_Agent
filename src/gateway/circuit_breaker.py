@@ -6,7 +6,7 @@ class CircuitBreaker:
     """
     Prevents cascading failures by tripping provider routes after repeated timeouts or errors.
     """
-    def __init__(self, failure_threshold: int = 3, cooldown_seconds: float = 60.0):
+    def __init__(self, failure_threshold: int = 5, cooldown_seconds: float = 30.0):
         self.failure_threshold = failure_threshold
         self.cooldown_seconds = cooldown_seconds
         

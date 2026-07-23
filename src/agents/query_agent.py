@@ -52,8 +52,32 @@ class QueryAgent:
             return await self._handle_collection_query(question, intent, topic)
         elif intent.intent == "comparison":
             return await self._handle_comparison_query(question, intent, topic)
+        elif intent.intent == "expand_collection":
+            return self._handle_expand_collection(question, intent, topic)
         else:
             return await self._handle_targeted_query(question, intent, topic)
+
+    # ------------------------------------------------------------------ #
+    # EXPAND COLLECTION HANDLER
+    # ------------------------------------------------------------------ #
+    def _handle_expand_collection(
+        self, question: str, intent: QueryIntent, topic: Optional[str]
+    ) -> Dict[str, Any]:
+        """User wants to fetch more papers. Redirect to /ingest."""
+        logger.info(f"Expand collection intent detected for topic '{topic}'")
+        return {
+            "answer": (
+                f"To fetch more papers for this session, use the `/ingest` command.\n\n"
+                f"This will run the full arXiv search pipeline for the current topic "
+                f"**'{topic}'** and add new papers to your knowledge base.\n\n"
+                "You can also type `/ingest <subtopic>` to search for a specific sub-area "
+                "within this research topic."
+            ),
+            "sources": [],
+            "contexts_used": 0,
+            "intent": "expand_collection",
+            "retrieval_confidence": 1.0
+        }
 
     # ------------------------------------------------------------------ #
     # COLLECTION-LEVEL HANDLER (overview / trends / gaps)
@@ -64,7 +88,7 @@ class QueryAgent:
         """Loads ALL notes for the topic and runs the SynthesisAgent."""
         logger.info(f"Collection-level query ({intent.intent}) — loading all notes for '{topic}'")
 
-        notes = self.retriever.get_all_notes_for_topic(topic) if topic else []
+        notes = await self.retriever.get_all_notes_for_topic(topic) if topic else []
 
         if not notes:
             return {
@@ -107,7 +131,7 @@ class QueryAgent:
         """Uses expanded query + comparison-specific prompt."""
         logger.info(f"Comparison query — expanded: {intent.expanded_query[:80]}")
 
-        retrieved = self.retriever.search(
+        retrieved = await self.retriever.search(
             intent.expanded_query, topic=topic, n_results=8
         )
         papers = retrieved.get("papers", [])
@@ -154,7 +178,7 @@ class QueryAgent:
         )
 
         # Use the expanded query for retrieval, not the raw question
-        retrieved = self.retriever.search(
+        retrieved = await self.retriever.search(
             intent.expanded_query, topic=topic, n_results=6
         )
         papers = retrieved.get("papers", [])

@@ -17,6 +17,7 @@ INTENT_DESCRIPTIONS = {
     "fact_lookup": "User wants a specific fact, number, or datum from the papers (e.g., 'what accuracy does model X achieve?', 'which dataset is used in paper 2?')",
     "trend_analysis": "User wants to understand emerging trends, evolution over time, or directions in the research area (e.g., 'what are the trends?', 'how has this field evolved?')",
     "gap_analysis": "User wants to understand what is missing, open problems, or future directions (e.g., 'what research gaps exist?', 'what is not yet solved?')",
+    "expand_collection": "User wants to fetch, find, search for, or add MORE papers to the current session (e.g., 'fetch more papers', 'find more papers on this', 'search for more', 'ingest more', 'add more papers')",
     "general_qa": "Any other research question that doesn't fit the above categories"
 }
 
@@ -29,6 +30,7 @@ class QueryIntent(BaseModel):
         "fact_lookup",
         "trend_analysis",
         "gap_analysis",
+        "expand_collection",
         "general_qa"
     ] = Field(..., description="The classified intent of the user's query.")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Classification confidence.")

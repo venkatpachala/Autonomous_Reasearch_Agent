@@ -21,13 +21,14 @@ from src.models.schemas import PaperMetadata
 
 
 class RelevanceScore(BaseModel):
-    tier: Literal["highly_relevant", "relevant", "weakly_relevant", "irrelevant"] = Field(
+    tier: Literal["highly_relevant", "relevant", "weakly_relevant", "irrelevant", "unknown"] = Field(
         ...,
         description=(
             "highly_relevant: paper directly addresses core topic. "
             "relevant: paper is clearly related. "
             "weakly_relevant: paper touches the topic tangentially. "
-            "irrelevant: paper is off-topic."
+            "irrelevant: paper is off-topic. "
+            "unknown: classification failed."
         )
     )
     score: float = Field(..., ge=0.0, le=1.0, description="Numeric confidence 0.0-1.0")
@@ -50,7 +51,14 @@ class RelevanceFilterAgent:
         "relevant": 0.75,
         "weakly_relevant": 0.4,
         "irrelevant": 0.0,
+        "unknown": 0.0,
     }
+
+    def _keyword_prefilter(self, paper: PaperMetadata, core_terms: List[str]) -> bool:
+        if not core_terms:
+            return True
+        text = f"{paper.title} {paper.abstract}".lower()
+        return any(term.lower() in text for term in core_terms)
 
     async def _classify_single(
         self,
@@ -77,6 +85,7 @@ class RelevanceFilterAgent:
                     "- relevant: paper clearly discusses the topic, even if not the sole focus\n"
                     "- weakly_relevant: paper mentions the topic but is primarily about something else\n"
                     "- irrelevant: paper is off-topic\n"
+                    f"The paper must be SPECIFICALLY about {topic}, not just tangentially related. Papers about tangentially related topics (e.g. 'legal RAG' for a query about 'AI agent memory') should be classified as irrelevant.\n"
                     f"{neg_section}"
                 )
             },
@@ -100,6 +109,7 @@ class RelevanceFilterAgent:
             )
             return response
 
+        # Inside _classify_single, replace the except block:
         try:
             if semaphore:
                 async with semaphore:
@@ -110,13 +120,13 @@ class RelevanceFilterAgent:
             if response.structured:
                 return paper, response.structured
         except Exception as e:
-            logger.debug(f"Classification failed for {paper.arxiv_id}: {e}")
+            logger.warning(f"Classification failed for {paper.arxiv_id}: {e}")
 
-        # Default to weakly_relevant on error — don't aggressively discard
+        # CRITICAL FIX: do NOT default to weakly_relevant
         return paper, RelevanceScore(
-            tier="weakly_relevant",
-            score=0.4,
-            reason="Classification failed — defaulting to weakly_relevant"
+            tier="unknown",
+            score=0.0,
+            reason=f"Classification failed: {str(e)[:80]}"
         )
 
     async def filter(
@@ -124,6 +134,7 @@ class RelevanceFilterAgent:
         papers: List[PaperMetadata],
         topic: str,
         negative_terms: Optional[List[str]] = None,
+        core_terms: Optional[List[str]] = None,
         fill_quota: bool = True
     ) -> List[PaperMetadata]:
         """
@@ -144,23 +155,34 @@ class RelevanceFilterAgent:
         # Semaphore limits concurrent Ollama calls — prevents circuit breaker from tripping
         semaphore = asyncio.Semaphore(self.MAX_CONCURRENT)
 
+        prefiltered_papers = []
+        results = []
+        for paper in papers:
+            if core_terms and not self._keyword_prefilter(paper, core_terms):
+                results.append((paper, RelevanceScore(tier="irrelevant", score=0.0, reason="Failed keyword pre-filter")))
+            else:
+                prefiltered_papers.append(paper)
+
         tasks = [
             self._classify_single(paper, topic, negative_terms, semaphore=semaphore)
-            for paper in papers
+            for paper in prefiltered_papers
         ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        gathered_results = await asyncio.gather(*tasks, return_exceptions=True)
+        results.extend(gathered_results)
 
         tiers: dict[str, List[PaperMetadata]] = {
             "highly_relevant": [],
             "relevant": [],
             "weakly_relevant": [],
-            "irrelevant": []
+            "irrelevant": [],
+            "unknown": []
         }
         icons = {
             "highly_relevant": "⭐",
             "relevant": "✅",
             "weakly_relevant": "🔵",
-            "irrelevant": "❌"
+            "irrelevant": "❌",
+            "unknown": "❓"
         }
 
         for result in results:
@@ -186,6 +208,14 @@ class RelevanceFilterAgent:
                 logger.info(
                     f"  Added {min(needed, len(tiers['weakly_relevant']))} weakly_relevant papers to meet MIN_QUOTA={self.MIN_QUOTA}"
                 )
+                
+        if fill_quota and len(final) < self.MIN_QUOTA:
+            needed = self.MIN_QUOTA - len(final)
+            final.extend(tiers["unknown"][:needed])
+            if tiers["unknown"]:
+                logger.info(
+                    f"  Added {min(needed, len(tiers['unknown']))} unknown papers to meet MIN_QUOTA={self.MIN_QUOTA}"
+                )
 
         final = final[:self.MAX_PAPERS]
 
@@ -193,7 +223,8 @@ class RelevanceFilterAgent:
             f"Relevance filter complete: "
             f"{len(tiers['highly_relevant'])} highly_relevant + "
             f"{len(tiers['relevant'])} relevant + "
-            f"{len(tiers['weakly_relevant'])} weakly_relevant (quota) | "
+            f"{len(tiers['weakly_relevant'])} weakly_relevant (quota) + "
+            f"{len(tiers['unknown'])} unknown (quota) | "
             f"{len(tiers['irrelevant'])} irrelevant discarded | "
             f"{len(final)} total accepted"
         )

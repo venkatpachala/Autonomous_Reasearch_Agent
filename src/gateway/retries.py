@@ -22,8 +22,8 @@ async def retry_with_backoff(
                 logger.error(f"Task execution failed after {attempt} attempts: {e}")
                 raise e
             logger.warning(
-                f"Attempt {attempt}/{retries} failed with error: {e}. "
-                f"Retrying in {delay:.2f} seconds..."
+                f"Attempt {attempt}/{retries} failed: [{type(e).__name__}] {e or 'No error message'}. "
+                f"Retrying in {delay:.2f}s..."
             )
             await asyncio.sleep(delay)
             delay *= exponential_factor
