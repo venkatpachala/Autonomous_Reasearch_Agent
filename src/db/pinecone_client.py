@@ -1,18 +1,10 @@
 """
 Pinecone Vector DB Client
 ==========================
-Drop-in replacement for chroma_client.py.
-Public interface is identical — callers do not need to change.
-
-Key differences vs ChromaDB:
-- Explicit embedding via OpenAI text-embedding-3-small (1536 dims)
-- Cloud-hosted, persistent, production-grade
-- Metadata filter syntax: {"topic": {"$eq": "..."}} instead of {"topic": "..."}
-- query() returns same dict structure as ChromaDB for compatibility
+Fully async embedding + chunk-ready storage.
+Fixed: No more asyncio.run() inside running event loop.
 """
 
-import os
-import asyncio
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
@@ -26,27 +18,14 @@ except ImportError:
 from src.config import settings
 
 
-def _get_embedding(text: str) -> List[float]:
+async def _get_embedding(text: str) -> List[float]:
     """
-    Generate embedding using OpenAI text-embedding-3-small via the gateway embedding module.
-    Falls back to a zero vector if unavailable.
+    Fully async embedding generation.
+    NEVER use asyncio.run() here.
     """
     try:
         from src.gateway.embeddings import embeddings_gateway
-        import asyncio
-        # Handle both sync and async contexts
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # We're inside an async context — use a thread pool
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    future = pool.submit(asyncio.run, embeddings_gateway.embed(text))
-                    return future.result()
-            else:
-                return loop.run_until_complete(embeddings_gateway.embed(text))
-        except RuntimeError:
-            return asyncio.run(embeddings_gateway.embed(text))
+        return await embeddings_gateway.embed(text)
     except Exception as e:
         logger.warning(f"Embedding generation failed: {e}. Using zero vector.")
         return [0.0] * settings.pinecone_embedding_dim
@@ -54,12 +33,8 @@ def _get_embedding(text: str) -> List[float]:
 
 class PineconeVectorClient:
     """
-    Production Pinecone client with the same interface as ChromaClient.
-    
-    Chroma compatibility mapping:
-      add_knowledge_note(note_id, document, metadata, embedding=None) → upsert
-      query(query_text, n_results, where=None) → returns same dict structure as Chroma
-      get_collection_stats() → {"count": N, "name": index_name}
+    Production Pinecone client with async interface.
+    Compatible with previous chroma_client API.
     """
 
     def __init__(self, index_name: Optional[str] = None):
@@ -77,17 +52,19 @@ class PineconeVectorClient:
         if not api_key:
             logger.error(
                 "PINECONE_API_KEY not set in .env. "
-                "Add it and set PINECONE_INDEX_NAME to enable Pinecone vector storage."
+                "Add it and set PINECONE_INDEX_NAME to enable Pinecone."
             )
             return
 
         try:
             self._pc = Pinecone(api_key=api_key)
 
-            # Create index if it doesn't exist
             existing = [idx.name for idx in self._pc.list_indexes()]
             if self.index_name not in existing:
-                logger.info(f"Creating Pinecone index '{self.index_name}' (dim={self.embedding_dim}, metric=cosine)...")
+                logger.info(
+                    f"Creating Pinecone index '{self.index_name}' "
+                    f"(dim={self.embedding_dim}, metric=cosine)..."
+                )
                 self._pc.create_index(
                     name=self.index_name,
                     dimension=self.embedding_dim,
@@ -103,6 +80,7 @@ class PineconeVectorClient:
 
             self._index = self._pc.Index(self.index_name)
             self._connected = True
+
             stats = self._index.describe_index_stats()
             logger.success(
                 f"Pinecone connected: index='{self.index_name}', "
@@ -117,24 +95,31 @@ class PineconeVectorClient:
     def is_connected(self) -> bool:
         return self._connected and self._index is not None
 
-    def add_knowledge_note(
+    async def add_knowledge_note(
         self,
         note_id: str,
         document: str,
         metadata: Dict[str, Any],
         embedding: Optional[List[float]] = None
     ):
-        """Upsert a knowledge note into Pinecone. Generates embedding if not provided."""
+        """
+        Async upsert of a document/chunk into Pinecone.
+        Generates embedding asynchronously if not provided.
+        """
         if not self.is_connected():
             logger.warning(f"Pinecone not connected. Skipping upsert for {note_id}.")
             return
 
         try:
-            # Generate embedding if not supplied
-            vector = embedding if embedding else _get_embedding(document)
+            # Fully async embedding
+            vector = embedding if embedding is not None else await _get_embedding(document)
 
-            # Pinecone metadata values must be str/int/float/bool/list[str]
-            # Sanitize metadata: coerce to safe types
+            # Safety: never send pure zero vector
+            if all(v == 0.0 for v in vector):
+                logger.warning(f"Skipping zero vector for {note_id}")
+                return
+
+            # Sanitize metadata (Pinecone only accepts str/int/float/bool/list[str])
             safe_meta = {}
             for k, v in metadata.items():
                 if isinstance(v, (str, int, float, bool)):
@@ -144,18 +129,18 @@ class PineconeVectorClient:
                 else:
                     safe_meta[k] = str(v)
 
-            # Store document text in metadata for retrieval
-            safe_meta["_document"] = document[:1000]  # Pinecone metadata limit
+            # Store a truncated version of the document for retrieval
+            safe_meta["_document"] = document[:1000]
 
             self._index.upsert(vectors=[{
                 "id": note_id,
                 "values": vector,
                 "metadata": safe_meta
             }])
-            logger.success(f"Stored note in Pinecone: {note_id}")
+            logger.debug(f"Stored in Pinecone: {note_id}")
 
         except Exception as e:
-            logger.error(f"Failed to store note {note_id} in Pinecone: {e}")
+            logger.error(f"Failed to store {note_id} in Pinecone: {e}")
             raise
 
     def query(
@@ -164,21 +149,30 @@ class PineconeVectorClient:
         n_results: int = 5,
         where: Optional[Dict] = None
     ) -> Dict[str, Any]:
-        """
-        Semantic search over Pinecone index.
-        Returns same structure as ChromaDB for full compatibility with ResearchRetriever.
-        """
         if not self.is_connected():
             logger.warning("Pinecone not connected. Returning empty results.")
             return {"ids": [[]], "documents": [[]], "metadatas": [[]], "distances": [[]]}
 
         try:
-            query_vector = _get_embedding(query_text)
+            # Generate embedding
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in async context
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    future = pool.submit(asyncio.run, _get_embedding(query_text))
+                    query_vector = future.result()
+            except RuntimeError:
+                query_vector = asyncio.run(_get_embedding(query_text))
 
-            # Convert Chroma-style where filter to Pinecone filter
+            # Convert filter
             pinecone_filter = None
             if where:
-                pinecone_filter = {k: {"$eq": v} for k, v in where.items()}
+                # Pinecone expects {"topic": {"$eq": "value"}}
+                pinecone_filter = {}
+                for k, v in where.items():
+                    pinecone_filter[k] = {"$eq": v}
 
             result = self._index.query(
                 vector=query_vector,
@@ -187,18 +181,15 @@ class PineconeVectorClient:
                 include_metadata=True
             )
 
-            # Convert Pinecone result format → ChromaDB-compatible format
             ids, documents, metadatas, distances = [], [], [], []
             for match in result.get("matches", []):
                 ids.append(match["id"])
                 meta = match.get("metadata", {})
-                # Extract document text stored in metadata
-                doc_text = meta.pop("_document", "")
+                doc_text = meta.pop("_document", "") or meta.get("text", "")
                 documents.append(doc_text)
                 metadatas.append(meta)
-                # Pinecone returns similarity score (1=identical). Convert to distance for Chroma compat.
                 score = match.get("score", 0.0)
-                distances.append(1.0 - score)  # distance = 1 - cosine_similarity
+                distances.append(1.0 - score)
 
             return {
                 "ids": [ids],
@@ -226,7 +217,6 @@ class PineconeVectorClient:
             return {"count": 0, "name": self.index_name, "error": str(e)}
 
 
-# Global singleton — same name as chroma_client for drop-in compatibility
+# Global singleton
 pinecone_client = PineconeVectorClient()
-# Alias so any code using chroma_client can import this directly
-chroma_client = pinecone_client
+chroma_client = pinecone_client  # backward compatibility

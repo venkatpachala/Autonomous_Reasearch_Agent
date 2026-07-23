@@ -1,21 +1,30 @@
-# src/agents/extractor_agent.py  (simplified version)
+"""
+Extractor Agent — Graph Entity & Relationship Extraction
+========================================================
+Works on FULL parsed paper text (not just summary).
+Produces clean EntityNode + RelationshipEdge for Neo4j.
+"""
 
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from loguru import logger
+import json
+import re
+
 from src.gateway import gateway
 
 
 class EntityNode(BaseModel):
-    name: str
-    type: str   # Method | Dataset | Metric | Concept
+    name: str = Field(..., description="Normalized entity name, e.g. 'RAG', 'BEIR', 'dense retrieval'")
+    type: str = Field(..., description="Method | Dataset | Metric | Concept")
+    description: Optional[str] = Field(None, description="Short context (optional)")
 
 
 class RelationshipEdge(BaseModel):
-    source: str
-    target: str
-    relation: str
-    value: Optional[str] = None
+    source: str = Field(..., description="Source entity name")
+    target: str = Field(..., description="Target entity name")
+    relation: str = Field(..., description="Relation label, e.g. PROPOSES, EVALUATED_ON, IMPROVES")
+    value: Optional[str] = Field(None, description="Optional quantitative value")
 
 
 class GraphKnowledge(BaseModel):
@@ -23,120 +32,97 @@ class GraphKnowledge(BaseModel):
     relationships: List[RelationshipEdge] = Field(default_factory=list)
 
 
-import json
-import re
-
 class ExtractorAgent:
-    def _repair_json(self, text: str) -> str:
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0]
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0]
-        text = text.strip()
-        text = text.replace("'", '"')
-        text = re.sub(r'\\(?!["\\/bfnrt])', r'\\\\', text) # fix unescaped backslashes
-        text = re.sub(r',\s*([\]}])', r'\1', text) # trailing commas
-        return text
+    """
+    Extracts entities and relationships from full paper text.
+    Designed to be robust against JSON formatting issues.
+    """
 
-    async def extract(self, paper_id: str, title: str, contributions: List[str], benchmarks: Optional[List[str]] = None) -> GraphKnowledge:
+    async def extract(
+        self,
+        paper_id: str,
+        title: str,
+        full_text: str = "",
+        contributions: Optional[List[str]] = None,
+        benchmarks: Optional[List[str]] = None,
+    ) -> GraphKnowledge:
         """
-        Lightweight extraction. Uses only title + contributions + benchmarks.
+        Main extraction entrypoint.
+        Prefers full_text; falls back to contributions if needed.
         """
-        contrib_text = "\n".join(f"- {c}" for c in (contributions or [])[:6])
-        bench_text = "\n".join(f"- {b}" for b in (benchmarks or [])[:6]) if benchmarks else "None"
-
-        system_entities = """You are a knowledge graph extractor.
-Return ONLY valid JSON matching this schema:
-{
-  "entities": [{"name": "...", "type": "Method|Dataset|Metric|Concept"}]
-}
-Rules:
-- Output pure JSON only. No markdown, no explanation.
-- Escape any backslashes properly.
-- Keep names short and normalized (e.g. "RAG", "BEIR", "dense retrieval").
-- Maximum 8 entities.
-"""
-
-        user_entities = f"""Title: {title}
-
-Key Contributions:
-{contrib_text}
-
-Benchmarks:
-{bench_text}
-
-Extract entities now."""
-
-        messages_ent = [
-            {"role": "system", "content": system_entities},
-            {"role": "user", "content": user_entities}
-        ]
-
-        entities = []
-        try:
-            resp_ent = await gateway.generate(
-                task="graph_extraction",
-                messages=messages_ent,
-                temperature=0.0,
-                retries=2
-            )
-            raw_ent = self._repair_json(resp_ent.text)
-            parsed_ent = json.loads(raw_ent)
-            entities = [EntityNode(**e) for e in parsed_ent.get("entities", [])]
-        except Exception as e:
-            logger.error(f"Entity extraction failed for {paper_id}: {e}")
-
-        if not entities:
+        if not full_text and not contributions:
+            logger.warning(f"No content for graph extraction on {paper_id}")
             return GraphKnowledge()
 
-        entities_json = json.dumps([e.model_dump() for e in entities], indent=2)
+        # Build compact context
+        content_parts = [f"Title: {title}"]
+        if contributions:
+            content_parts.append("Key Contributions:\n" + "\n".join(f"- {c}" for c in contributions[:6]))
+        if benchmarks:
+            content_parts.append("Benchmarks: " + ", ".join(benchmarks[:8]))
+        if full_text:
+            content_parts.append(f"Paper Content (excerpt):\n{full_text[:4500]}")
 
-        system_rels = """You are a knowledge graph extractor.
-Return ONLY valid JSON matching this schema:
+        context = "\n\n".join(content_parts)
+
+        system = """You are a knowledge graph extractor for academic papers.
+
+Return ONLY valid JSON matching this exact schema:
 {
-  "relationships": [{"source": "...", "target": "...", "relation": "...", "value": null}]
+  "entities": [
+    {"name": "...", "type": "Method|Dataset|Metric|Concept", "description": "optional short context"}
+  ],
+  "relationships": [
+    {"source": "...", "target": "...", "relation": "PROPOSES|EVALUATED_ON|IMPROVES|USES|COMPARED_TO", "value": null}
+  ]
 }
+
 Rules:
-- Output pure JSON only. No markdown, no explanation.
+- Output pure JSON only. No markdown fences. No explanations.
+- Maximum 10 entities and 12 relationships.
+- Normalize names (e.g. "Retrieval-Augmented Generation" → "RAG").
+- Prefer concrete technical terms over generic ones.
 - Escape any backslashes properly.
-- Maximum 10 relationships.
-- ONLY use entities from the provided list.
 """
 
-        user_rels = f"""Title: {title}
+        user = f"{context}\n\nExtract entities and relationships now."
 
-Key Contributions:
-{contrib_text}
-
-Benchmarks:
-{bench_text}
-
-Entities:
-{entities_json}
-
-Extract relationships now."""
-
-        messages_rel = [
-            {"role": "system", "content": system_rels},
-            {"role": "user", "content": user_rels}
-        ]
-
-        relationships = []
         try:
-            resp_rel = await gateway.generate(
+            response = await gateway.generate(
                 task="graph_extraction",
-                messages=messages_rel,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
                 temperature=0.0,
                 retries=2
             )
-            raw_rel = self._repair_json(resp_rel.text)
-            parsed_rel = json.loads(raw_rel)
-            relationships = [RelationshipEdge(**r) for r in parsed_rel.get("relationships", [])]
-        except Exception as e:
-            logger.error(f"Relationship extraction failed for {paper_id}: {e}")
 
-        logger.success(f"Graph extracted for {paper_id}: {len(entities)} entities, {len(relationships)} edges")
-        return GraphKnowledge(entities=entities, relationships=relationships)
+            raw = response.text.strip()
+
+            # Clean possible markdown
+            if "```" in raw:
+                match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw, re.DOTALL)
+                if match:
+                    raw = match.group(1)
+
+            start = raw.find("{")
+            end = raw.rfind("}") + 1
+            if start != -1 and end > start:
+                raw = raw[start:end]
+
+            parsed = json.loads(raw)
+            graph = GraphKnowledge.model_validate(parsed)
+
+            logger.success(
+                f"Graph extracted for {paper_id}: "
+                f"{len(graph.entities)} entities, {len(graph.relationships)} edges"
+            )
+            return graph
+
+        except Exception as e:
+            logger.error(f"Graph extraction failed for {paper_id}: {e}")
+            return GraphKnowledge()
 
 
 extractor_agent = ExtractorAgent()

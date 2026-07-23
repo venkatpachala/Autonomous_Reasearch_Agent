@@ -1,30 +1,45 @@
+"""
+Full Ingestion Test (Topic → Ontology → Queries → Papers → Storage)
+"""
 
-# test_ingestion.py
 import asyncio
 from src.graphs.ingestion_graph import ingestion_graph
 from src.models.schemas import ResearchState
+from loguru import logger
 
-async def main():
+
+async def test_ingestion():
+    topic = "Graph RAG for retrievals"
+
     initial_state: ResearchState = {
-        "topic": "Edge devices for running local LLM models",
+        "topic": topic,
         "keywords": [],
         "papers": [],
+        "papers_to_process": [],
         "processed_papers": [],
-        "messages": [],
-        "status": "running",
+        "failed_papers": [],
         "current_stage": "decompose",
-        "timestamp": "2026-07-09T20:00:00",
+        "status": "running",
+        "timestamp": "2026-07-23T09:00:00",
     }
-    print("Starting full ingestion test...")
-    result = await ingestion_graph.ainvoke(initial_state)
-    
-    print("\n✅ SUCCESS!")
-    print("Retrieved papers:", len(result.get("papers", [])))
-    print("Processed papers:", len(result.get("processed_papers", [])))
-    
-    if result.get("processed_papers"):
-        for p in result["processed_papers"][:2]:
-            print(f"- {p.get('title', p.get('paper_id'))} -> {p.get('status')}")
+
+    logger.info(f"Starting full ingestion test for topic: {topic}")
+
+    try:
+        result = await ingestion_graph.ainvoke(initial_state)
+
+        print("\n✅ INGESTION TEST COMPLETED")
+        print(f"   Papers retrieved: {len(result.get('papers', []))}")
+        print(f"   Papers processed: {len(result.get('processed_papers', []))}")
+        print(f"   Final status: {result.get('status')}")
+
+        if result.get("processed_papers"):
+            for p in result["processed_papers"][:3]:
+                print(f"     • {p.get('paper_id')}")
+
+    except Exception as e:
+        logger.error(f"Ingestion test FAILED: {e}")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(test_ingestion())

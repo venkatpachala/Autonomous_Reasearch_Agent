@@ -1,675 +1,113 @@
 {
   "papers": {
-    "2504.14689v1": {
-      "title": "Designing AI Systems that Augment Human Performed vs. Demonstrated Critical Thinking",
+    "2210.09877v1": {
+      "title": "Towards Proactive Information Retrieval in Noisy Text with Wikipedia Concepts",
       "topics": [
-        "agentic rag memory systems"
+        "retrieval frameworks for ai agents",
+        "retrieval startegies for ai agents"
       ],
-      "first_seen": "2026-07-21T09:17:03.702364",
-      "last_processed": "2026-07-21T09:17:03.702364"
+      "first_seen": "2026-07-23T07:14:42.567009",
+      "last_processed": "2026-07-23T07:49:13.587233"
     },
-    "2412.16365v1": {
-      "title": "Overview of the First Workshop on Language Models for Low-Resource Languages (LoResLM 2025)",
+    "1601.04605v1": {
+      "title": "Dynamic Information Retrieval: Theoretical Framework and Application",
       "topics": [
-        "agentic rag memory systems"
+        "retrieval frameworks for ai agents",
+        "retrieval startegies for ai agents"
       ],
-      "first_seen": "2026-07-21T09:17:03.976535",
-      "last_processed": "2026-07-21T09:17:03.976535"
+      "first_seen": "2026-07-23T07:15:07.717394",
+      "last_processed": "2026-07-23T07:49:17.803601"
     },
-    "2409.02228v1": {
-      "title": "Unforgettable Generalization in Language Models",
+    "2404.14464v1": {
+      "title": "Tree of Reviews: A Tree-based Dynamic Iterative Retrieval Framework for Multi-hop Question Answering",
       "topics": [
-        "agentic rag memory systems"
+        "retrieval frameworks for ai agents"
       ],
-      "first_seen": "2026-07-21T09:17:04.874614",
-      "last_processed": "2026-07-21T09:17:04.874614"
+      "first_seen": "2026-07-23T07:15:36.229160",
+      "last_processed": "2026-07-23T07:15:36.229160"
     },
-    "2504.13684v1": {
-      "title": "Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation",
+    "2504.05181v2": {
+      "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
       "topics": [
-        "agentic rag memory systems"
+        "retrieval frameworks for ai agents",
+        "retrieval startegies for ai agents"
       ],
-      "first_seen": "2026-07-21T09:17:05.864457",
-      "last_processed": "2026-07-21T09:17:05.864457"
+      "first_seen": "2026-07-23T07:15:36.253520",
+      "last_processed": "2026-07-23T07:49:19.405517"
     },
-    "2503.21676v2": {
-      "title": "How do language models learn facts? Dynamics, curricula and hallucinations",
+    "2503.12687v1": {
+      "title": "AI Agents: Evolution, Architecture, and Real-World Applications",
       "topics": [
-        "agentic rag memory systems"
+        "retrieval frameworks for ai agents",
+        "retrieval startegies for ai agents"
       ],
-      "first_seen": "2026-07-21T09:17:06.734983",
-      "last_processed": "2026-07-21T09:17:06.734983"
+      "first_seen": "2026-07-23T07:17:03.677493",
+      "last_processed": "2026-07-23T07:50:27.038182"
     },
-    "2603.01691v1": {
-      "title": "Building a Strong Instruction Language Model for a Less-Resourced Language",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-21T09:17:16.142068",
-      "last_processed": "2026-07-21T09:17:16.142068"
-    },
-    "2506.06962v3": {
-      "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-21T09:17:21.258067",
-      "last_processed": "2026-07-21T09:17:21.258067"
-    },
-    "2504.17204v1": {
-      "title": "Factually: Exploring Wearable Fact-Checking for Augmented Truth Discernment",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-21T09:17:24.606037",
-      "last_processed": "2026-07-21T09:17:24.606037"
-    },
-    "1808.06100v6": {
-      "title": "On the solution existence and stability of polynomial optimization problems",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:27.710845",
-      "last_processed": "2026-07-22T07:55:27.710845"
-    },
-    "2306.03369v3": {
-      "title": "Event Encryption: Rethinking Privacy Exposure for Neuromorphic Imaging",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:30.263035",
-      "last_processed": "2026-07-22T07:55:30.263035"
-    },
-    "2502.20729v1": {
-      "title": "NeuroMorse: A Temporally Structured Dataset For Neuromorphic Computing",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:33.271827",
-      "last_processed": "2026-07-22T07:55:33.271827"
-    },
-    "2303.08710v1": {
-      "title": "Two-Scale Optimization of Graded Lattice Structures respecting Buckling on Micro- and Macroscale",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:36.802142",
-      "last_processed": "2026-07-22T07:55:36.802142"
-    },
-    "2201.02491v3": {
-      "title": "An efficient and easy-to-extend Matlab code of the Moving Morphable Component (MMC) method for three-dimensional topology optimization",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:37.851161",
-      "last_processed": "2026-07-22T07:55:37.851161"
-    },
-    "2304.04640v5": {
-      "title": "NeuroBench: A Framework for Benchmarking Neuromorphic Computing Algorithms and Systems",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:38.844755",
-      "last_processed": "2026-07-22T07:55:38.844755"
-    },
-    "2504.10053v2": {
-      "title": "Synthetic Biology meets Neuromorphic Computing: Towards a bio-inspired Olfactory Perception System",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:41.276239",
-      "last_processed": "2026-07-22T07:55:41.276239"
-    },
-    "2501.00258v1": {
-      "title": "Optimal design of frame structures with mixed categorical and continuous design variables using the Gumbel-Softmax method",
-      "topics": [
-        "memory architectures for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T07:55:45.255021",
-      "last_processed": "2026-07-22T07:55:45.255021"
-    },
-    "2501.0001": {
-      "title": "Evaluating Qwen-2.5 on Cognitive Benchmarks",
-      "topics": [
-        "llm benchmarks"
-      ],
-      "first_seen": "2026-07-22T08:06:08.701617",
-      "last_processed": "2026-07-22T10:16:13.747670"
-    },
-    "1308.2881v1": {
-      "title": "Opacity of Memory Management in Software Transactional Memory",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:00.953277",
-      "last_processed": "2026-07-22T10:20:00.953277"
-    },
-    "2601.05960v2": {
-      "title": "Distilling Feedback into Memory-as-a-Tool",
-      "topics": [
-        "memory layers for ai agents 2026",
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T10:20:09.782554",
-      "last_processed": "2026-07-22T18:19:32.703054"
-    },
-    "2507.02910v1": {
-      "title": "Causal-Paced Deep Reinforcement Learning",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:12.475039",
-      "last_processed": "2026-07-22T10:20:12.475039"
-    },
-    "1807.05037v1": {
-      "title": "Exploring Hierarchy-Aware Inverse Reinforcement Learning",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:14.754180",
-      "last_processed": "2026-07-22T10:20:14.754180"
-    },
-    "1509.00070v1": {
-      "title": "In-Line-Test of Variability and Bit-Error-Rate of HfOx-Based Resistive Memory",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:23.163087",
-      "last_processed": "2026-07-22T10:20:23.163087"
-    },
-    "2607.18488v1": {
-      "title": "The Open Ant: A Robot Platform for Reinforcement Learning Research",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:31.633867",
-      "last_processed": "2026-07-22T10:20:31.633867"
-    },
-    "2602.12375v1": {
-      "title": "Value Bonuses using Ensemble Errors for Exploration in Reinforcement Learning",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:33.519395",
-      "last_processed": "2026-07-22T10:20:33.519395"
-    },
-    "2202.02626v3": {
-      "title": "Layer-wise Regularized Adversarial Training using Layers Sustainability Analysis (LSA) framework",
-      "topics": [
-        "memory layers for ai agents 2026"
-      ],
-      "first_seen": "2026-07-22T10:20:55.252693",
-      "last_processed": "2026-07-22T10:20:55.252693"
-    },
-    "2409.09550v1": {
-      "title": "Swarm Algorithms for Dynamic Task Allocation in Unknown Environments",
-      "topics": [
-        "swarm ai agents for looping tasks"
-      ],
-      "first_seen": "2026-07-22T11:09:35.886795",
-      "last_processed": "2026-07-22T11:09:35.886795"
-    },
-    "2605.13006v1": {
-      "title": "Occlusion-Based Object Transportation Around Obstacles With a Swarm of Miniature Robots",
-      "topics": [
-        "swarm ai agents for looping tasks"
-      ],
-      "first_seen": "2026-07-22T11:09:40.967420",
-      "last_processed": "2026-07-22T11:09:40.967420"
-    },
-    "2302.14587v1": {
-      "title": "Decentralised construction of a global coordinate system in a large swarm of minimalistic robots",
-      "topics": [
-        "swarm ai agents for looping tasks"
-      ],
-      "first_seen": "2026-07-22T11:10:22.326945",
-      "last_processed": "2026-07-22T11:10:22.326945"
-    },
-    "2110.07276v3": {
-      "title": "Carousel Memory: Rethinking the Design of Episodic Memory for Continual Learning",
+    "1805.09354v1": {
+      "title": "Working Memory Networks: Augmenting Memory Networks with a Relational Reasoning Module",
       "topics": [
         "memory architectures in ai agents"
       ],
-      "first_seen": "2026-07-22T11:37:16.428934",
-      "last_processed": "2026-07-22T11:41:58.932524"
+      "first_seen": "2026-07-23T07:35:49.875161",
+      "last_processed": "2026-07-23T07:35:49.875161"
     },
-    "2406.04710v2": {
-      "title": "Morescient GAI for Software Engineering (Extended Version)",
+    "2207.13219v4": {
+      "title": "Dalorex: A Data-Local Program Execution and Architecture for Memory-bound Applications",
       "topics": [
-        "code generation and software engineering agents"
+        "memory architectures in ai agents"
       ],
-      "first_seen": "2026-07-22T11:44:55.555910",
-      "last_processed": "2026-07-22T11:44:55.555910"
+      "first_seen": "2026-07-23T07:36:44.182011",
+      "last_processed": "2026-07-23T07:36:44.182011"
     },
-    "1311.5108v1": {
-      "title": "A Methodology to Engineer and Validate Dynamic Multi-level Multi-agent Based Simulations",
+    "2606.17328v1": {
+      "title": "MemTrace: Probing What Final Accuracy Misses in Long-Term Memory",
       "topics": [
-        "coding ai agents frameworks"
+        "memory architectures in ai agents"
       ],
-      "first_seen": "2026-07-22T11:49:14.728491",
-      "last_processed": "2026-07-22T11:49:14.728491"
+      "first_seen": "2026-07-23T07:37:13.219549",
+      "last_processed": "2026-07-23T07:37:13.219549"
     },
-    "2512.09458v1": {
-      "title": "Architectures for Building Agentic AI",
+    "2508.09736v4": {
+      "title": "Seeing, Listening, Remembering, and Reasoning: A Multimodal Agent with Long-Term Memory",
       "topics": [
-        "coding ai agents frameworks"
+        "memory architectures in ai agents"
       ],
-      "first_seen": "2026-07-22T11:49:24.468422",
-      "last_processed": "2026-07-22T11:49:24.468422"
-    },
-    "2203.08975v2": {
-      "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
-      "topics": [
-        "coding ai agents frameworks"
-      ],
-      "first_seen": "2026-07-22T11:49:37.764798",
-      "last_processed": "2026-07-22T11:49:37.764798"
-    },
-    "2507.21638v3": {
-      "title": "Assistax: A Multi-Agent Hardware-Accelerated Reinforcement Learning Benchmark for Assistive Robotics",
-      "topics": [
-        "coding ai agents frameworks"
-      ],
-      "first_seen": "2026-07-22T11:50:10.609165",
-      "last_processed": "2026-07-22T11:50:10.609165"
-    },
-    "1906.10095v2": {
-      "title": "An Empirical Comparison of FAISS and FENSHSES for Nearest Neighbor Search in Hamming Space",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:00.817131",
-      "last_processed": "2026-07-22T16:15:00.817131"
-    },
-    "2411.01473v1": {
-      "title": "Efficient Medical Image Retrieval Using DenseNet and FAISS for BIRADS Classification",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:15.769891",
-      "last_processed": "2026-07-22T16:15:15.769891"
-    },
-    "2602.11443v1": {
-      "title": "Filtered Approximate Nearest Neighbor Search in Vector Databases: System Design and Performance Analysis",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:16.257469",
-      "last_processed": "2026-07-22T16:15:16.257469"
-    },
-    "2412.01555v1": {
-      "title": "Optimizing Domain-Specific Image Retrieval: A Benchmark of FAISS and Annoy with Fine-Tuned Features",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:26.672812",
-      "last_processed": "2026-07-22T16:15:26.672812"
-    },
-    "1412.3328v7": {
-      "title": "Memory vectors for similarity search in high-dimensional spaces",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:30.329231",
-      "last_processed": "2026-07-22T16:15:30.329231"
-    },
-    "2401.08281v4": {
-      "title": "The Faiss library",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:31.039620",
-      "last_processed": "2026-07-22T16:15:31.039620"
-    },
-    "1612.07710v2": {
-      "title": "Set Similarity Search Beyond MinHash",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:39.447059",
-      "last_processed": "2026-07-22T16:15:39.447059"
-    },
-    "2606.03151v1": {
-      "title": "ACRONYM: Accelerated Approximate Nearest Neighbor Search in Memory for Dynamic Vector Databases",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:40.574362",
-      "last_processed": "2026-07-22T16:15:40.574362"
-    },
-    "2502.12908v2": {
-      "title": "Graph Neural Networks for Databases: A Survey",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:49.104190",
-      "last_processed": "2026-07-22T16:15:49.104190"
-    },
-    "2009.13836v1": {
-      "title": "SIR: Similar Image Retrieval for Product Search in E-Commerce",
-      "topics": [
-        "vector databses for ai agents for similarity search"
-      ],
-      "first_seen": "2026-07-22T16:15:49.600176",
-      "last_processed": "2026-07-22T16:15:49.600176"
-    },
-    "2004.11045v1": {
-      "title": "Distilling Knowledge for Fast Retrieval-based Chat-bots",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:27:47.887077",
-      "last_processed": "2026-07-22T16:27:47.887077"
-    },
-    "2511.22858v1": {
-      "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
-      "topics": [
-        "ai agents retrieval quality",
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T16:27:50.327093",
-      "last_processed": "2026-07-22T18:19:29.208475"
-    },
-    "2603.14541v1": {
-      "title": "Expert Mind: A Retrieval-Augmented Architecture for Expert Knowledge Preservation in the Energy Sector",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:27:51.375088",
-      "last_processed": "2026-07-22T16:27:51.375088"
-    },
-    "2401.15391v1": {
-      "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
-      "topics": [
-        "ai agents retrieval quality",
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T16:27:55.262403",
-      "last_processed": "2026-07-22T18:19:25.127846"
-    },
-    "2404.07220v2": {
-      "title": "Blended RAG: Improving RAG (Retriever-Augmented Generation) Accuracy with Semantic Search and Hybrid Query-Based Retrievers",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:27:59.290826",
-      "last_processed": "2026-07-22T16:27:59.290826"
-    },
-    "2510.22344v1": {
-      "title": "FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:28:07.826640",
-      "last_processed": "2026-07-22T16:28:07.826640"
-    },
-    "2601.05264v1": {
-      "title": "Engineering the RAG Stack: A Comprehensive Review of the Architecture and Trust Frameworks for Retrieval-Augmented Generation Systems",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:28:09.201109",
-      "last_processed": "2026-07-22T16:28:09.201109"
-    },
-    "2502.02464v3": {
-      "title": "Rankify: A Comprehensive Python Toolkit for Retrieval, Re-Ranking, and Retrieval-Augmented Generation",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:28:18.253503",
-      "last_processed": "2026-07-22T16:28:18.253503"
-    },
-    "2411.00744v2": {
-      "title": "CARROT: A Learned Cost-Constrained Retrieval Optimization System for RAG",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:28:27.292576",
-      "last_processed": "2026-07-22T16:28:27.292576"
-    },
-    "2505.21439v1": {
-      "title": "Towards Better Instruction Following Retrieval Models",
-      "topics": [
-        "ai agents retrieval quality"
-      ],
-      "first_seen": "2026-07-22T16:28:29.299518",
-      "last_processed": "2026-07-22T16:28:29.299518"
-    },
-    "2402.07483v2": {
-      "title": "T-RAG: Lessons from the LLM Trenches",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T18:19:47.678737",
-      "last_processed": "2026-07-22T18:19:47.678737"
-    },
-    "2512.21309v2": {
-      "title": "A Plan Reuse Mechanism for LLM-Driven Agent",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T18:19:48.836314",
-      "last_processed": "2026-07-22T18:19:48.836314"
-    },
-    "2409.01907v1": {
-      "title": "Focus Agent: LLM-Powered Virtual Focus Group",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T18:20:05.596950",
-      "last_processed": "2026-07-22T18:20:05.596950"
-    },
-    "2412.12881v1": {
-      "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T18:20:07.181697",
-      "last_processed": "2026-07-22T18:20:07.181697"
-    },
-    "2504.01346v4": {
-      "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T18:20:20.229117",
-      "last_processed": "2026-07-22T18:20:20.229117"
-    },
-    "2510.25518v1": {
-      "title": "Retrieval Augmented Generation (RAG) for Fintech: Agentic Design and Evaluation",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T20:00:03.345254",
-      "last_processed": "2026-07-22T20:00:03.345254"
-    },
-    "2603.15642v1": {
-      "title": "CraniMem: Cranial Inspired Gated and Bounded Memory for Agentic Systems",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T20:00:05.857692",
-      "last_processed": "2026-07-22T20:00:05.857692"
-    },
-    "2601.07528v2": {
-      "title": "From RAG to Agentic RAG for Faithful Islamic Question Answering",
-      "topics": [
-        "agentic rag memory systems"
-      ],
-      "first_seen": "2026-07-22T20:00:10.739408",
-      "last_processed": "2026-07-22T20:00:10.739408"
-    },
-    "2606.05868v1": {
-      "title": "YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition",
-      "topics": [
-        "edge devices for running local llm models",
-        "edge devices running local llm models efficiently"
-      ],
-      "first_seen": "2026-07-22T20:02:23.545674",
-      "last_processed": "2026-07-22T20:39:32.364360"
-    },
-    "2506.09554v2": {
-      "title": "Understanding the Performance and Power of LLM Inferencing on Edge Accelerators",
-      "topics": [
-        "edge devices for running local llm models",
-        "edge devices running local llm models efficiently"
-      ],
-      "first_seen": "2026-07-22T20:02:25.377726",
-      "last_processed": "2026-07-22T20:39:38.221435"
-    },
-    "2410.00531v1": {
-      "title": "TPI-LLM: Serving 70B-scale LLMs Efficiently on Low-resource Edge Devices",
-      "topics": [
-        "edge devices for running local llm models",
-        "edge devices running local llm models efficiently"
-      ],
-      "first_seen": "2026-07-22T20:02:36.046624",
-      "last_processed": "2026-07-22T20:39:36.251357"
+      "first_seen": "2026-07-23T07:37:57.744075",
+      "last_processed": "2026-07-23T07:37:57.744075"
     }
   },
   "topics": {
-    "agentic rag memory systems": {
+    "retrieval frameworks for ai agents": {
       "paper_ids": [
-        "2504.14689v1",
-        "2412.16365v1",
-        "2409.02228v1",
-        "2504.13684v1",
-        "2503.21676v2",
-        "2603.01691v1",
-        "2506.06962v3",
-        "2504.17204v1",
-        "2401.15391v1",
-        "2511.22858v1",
-        "2601.05960v2",
-        "2402.07483v2",
-        "2512.21309v2",
-        "2409.01907v1",
-        "2412.12881v1",
-        "2504.01346v4",
-        "2510.25518v1",
-        "2603.15642v1",
-        "2601.07528v2"
+        "2210.09877v1",
+        "1601.04605v1",
+        "2404.14464v1",
+        "2504.05181v2",
+        "2503.12687v1"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-22T20:00:10.739408"
-    },
-    "memory architectures for ai agents 2026": {
-      "paper_ids": [
-        "1808.06100v6",
-        "2306.03369v3",
-        "2502.20729v1",
-        "2303.08710v1",
-        "2201.02491v3",
-        "2304.04640v5",
-        "2504.10053v2",
-        "2501.00258v1"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T07:55:45.255021"
-    },
-    "llm benchmarks": {
-      "paper_ids": [
-        "2501.0001"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T10:16:13.747670"
-    },
-    "memory layers for ai agents 2026": {
-      "paper_ids": [
-        "1308.2881v1",
-        "2601.05960v2",
-        "2507.02910v1",
-        "1807.05037v1",
-        "1509.00070v1",
-        "2607.18488v1",
-        "2602.12375v1",
-        "2202.02626v3"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T10:20:55.252693"
-    },
-    "swarm ai agents for looping tasks": {
-      "paper_ids": [
-        "2409.09550v1",
-        "2605.13006v1",
-        "2302.14587v1"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T11:10:22.326945"
+      "last_ingestion": "2026-07-23T07:17:03.677493"
     },
     "memory architectures in ai agents": {
       "paper_ids": [
-        "2110.07276v3"
+        "1805.09354v1",
+        "2207.13219v4",
+        "2606.17328v1",
+        "2508.09736v4"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-22T11:41:58.932524"
+      "last_ingestion": "2026-07-23T07:37:57.744075"
     },
-    "code generation and software engineering agents": {
+    "retrieval startegies for ai agents": {
       "paper_ids": [
-        "2406.04710v2"
+        "2210.09877v1",
+        "1601.04605v1",
+        "2504.05181v2",
+        "2503.12687v1"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-22T11:44:55.555910"
-    },
-    "coding ai agents frameworks": {
-      "paper_ids": [
-        "1311.5108v1",
-        "2512.09458v1",
-        "2203.08975v2",
-        "2507.21638v3"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T11:50:10.609165"
-    },
-    "vector databses for ai agents for similarity search": {
-      "paper_ids": [
-        "1906.10095v2",
-        "2411.01473v1",
-        "2602.11443v1",
-        "2412.01555v1",
-        "1412.3328v7",
-        "2401.08281v4",
-        "1612.07710v2",
-        "2606.03151v1",
-        "2502.12908v2",
-        "2009.13836v1"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T16:15:49.600176"
-    },
-    "ai agents retrieval quality": {
-      "paper_ids": [
-        "2004.11045v1",
-        "2511.22858v1",
-        "2603.14541v1",
-        "2401.15391v1",
-        "2404.07220v2",
-        "2510.22344v1",
-        "2601.05264v1",
-        "2502.02464v3",
-        "2411.00744v2",
-        "2505.21439v1"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T16:28:29.299518"
-    },
-    "edge devices for running local llm models": {
-      "paper_ids": [
-        "2606.05868v1",
-        "2506.09554v2",
-        "2410.00531v1"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T20:02:36.046624"
-    },
-    "edge devices running local llm models efficiently": {
-      "paper_ids": [
-        "2606.05868v1",
-        "2410.00531v1",
-        "2506.09554v2"
-      ],
-      "last_monitored": null,
-      "last_ingestion": "2026-07-22T20:39:38.221435"
+      "last_ingestion": "2026-07-23T07:50:27.038182"
     }
   }
 }

@@ -1,6 +1,6 @@
 """
 Core Pydantic schemas and LangGraph state definition for the Research Agent.
-Production-grade with strict typing and structured outputs.
+Updated for full parsed content storage.
 """
 
 from __future__ import annotations
@@ -19,8 +19,9 @@ from pydantic import BaseModel, Field, HttpUrl
 class PaperStatus(str, Enum):
     PENDING = "pending"
     EXTRACTING = "extracting"
-    SUMMARIZING = "summarizing"
-    CRITIQUING = "critiquing"
+    CHUNKING = "chunking"
+    SUMMARIZING = "summarizing"      # optional / chat-time
+    CRITIQUING = "critiquing"        # optional
     COMPLETED = "completed"
     FAILED = "failed"
 
@@ -35,7 +36,7 @@ class ProcessingStage(str, Enum):
 
 
 # =============================================================================
-# PYDANTIC MODELS (Structured Outputs for LLMs)
+# PYDANTIC MODELS
 # =============================================================================
 class Author(BaseModel):
     name: str
@@ -44,8 +45,7 @@ class Author(BaseModel):
 
 
 class PaperMetadata(BaseModel):
-    """Core metadata from arXiv / Semantic Scholar"""
-    arxiv_id: str = Field(..., description="e.g. 2405.12345")
+    arxiv_id: str
     title: str
     authors: List[Author]
     abstract: str
@@ -60,118 +60,68 @@ class PaperMetadata(BaseModel):
 
 
 class ExtractedContent(BaseModel):
-    """Raw + structured content after PDF parsing"""
+    """Full parsed content from PDF — this is the source of truth"""
     full_text: str = Field(..., min_length=100)
-    sections: Dict[str, str] = Field(default_factory=dict)  # e.g. {"Introduction": "...", "Methods": "..."}
+    markdown: str = Field(default="", description="Markdown version if available")
+    sections: Dict[str, str] = Field(default_factory=dict)   # heading -> content
     tables: List[Dict[str, Any]] = Field(default_factory=list)
-    figures: List[Dict[str, Any]] = Field(default_factory=list)  # description + caption if available
+    figures: List[Dict[str, Any]] = Field(default_factory=list)
     references: List[str] = Field(default_factory=list)
+    page_count: int = 0
 
 
 class StructuredPaperSummary(BaseModel):
-    """Senior-engineer level structured breakdown of the paper"""
-    objective: str = Field(..., description="Clear research objective / problem statement")
-    methodology: str = Field(..., description="High-level approach + key technical choices")
-    key_contributions: List[str] = Field(..., min_items=3)
-    achievements: str = Field(..., description="What was actually achieved (quantitative where possible)")
-    benchmarks: List[str] = Field(
-        default_factory=list,
-        description="Benchmark/dataset names used in the paper (e.g. MMLU, WikiText-2, BEIR)"
-    )
+    """Optional — generated on demand for chat"""
+    objective: str
+    methodology: str
+    key_contributions: List[str] = Field(..., min_items=2)
+    achievements: str
+    benchmarks: List[str] = Field(default_factory=list)
     limitations: List[str] = Field(default_factory=list)
     future_work: List[str] = Field(default_factory=list)
-    practical_implications: Optional[str] = None
-    reproducibility_notes: Optional[str] = None
 
 
 class KnowledgeNote(BaseModel):
-    """Rich, embeddable note optimized for long-term memory + retrieval"""
-    paper_id: str  # arxiv_id
+    """Optional rich note — not used for primary indexing"""
+    paper_id: str
     title: str
     one_sentence_summary: str
-    detailed_summary: str  # rich markdown
-    structured_data: StructuredPaperSummary
-    key_quotes: List[str] = Field(default_factory=list)
-    concepts: List[str] = Field(default_factory=list)  # extracted entities/concepts
-    hardware_devices: List[str] = Field(
-        default_factory=list,
-        description="Hardware, chips, edge devices, SoCs, or accelerators mentioned in the paper"
-    )
-    table_summaries: List[str] = Field(
-        default_factory=list,
-        description="Brief text descriptions of key tables (e.g. 'Table 1: accuracy comparison on MMLU')"
-    )
-    criticality_score: float = Field(ge=0.0, le=1.0, description="How important/novel this paper is")
+    detailed_summary: str
+    structured_data: Optional[StructuredPaperSummary] = None
+    criticality_score: float = Field(ge=0.0, le=1.0)
     tags: List[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    version: int = 1  # for arXiv v1, v2 updates
-
-
-class TopicConfig(BaseModel):
-    """User preference / watched topic"""
-    topic_id: str
-    name: str
-    description: str
-    keywords: List[str]
-    last_ingested: Optional[datetime] = None
-    is_active: bool = True
-    alert_enabled: bool = True
 
 
 # =============================================================================
 # LANGGRAPH STATE
 # =============================================================================
 class ResearchState(TypedDict):
-    """
-    Main state for the Research Agent graph.
-    Uses Annotated reducers for safe parallel updates.
-    """
-
-    # Input
     topic: str
-    topic_config: Optional[TopicConfig]
-
-    # Decomposer output
     keywords: List[str]
-    tiered_queries: Dict[str, List]          # {"P1": [...], "P2": [...], "P3": [...]}
-    query_types: Dict[str, str]              # {query_string: query_type}
-    research_ontology: Dict[str, Any]        # serialized ResearchOntology
+    research_ontology: Dict[str, Any]
     search_strategy: Optional[str]
 
-    # Retriever output
-    papers: Annotated[List[PaperMetadata], operator.add]          # raw papers from search
-    papers_to_process: List[PaperMetadata]               # filtered / deduped
+    papers: Annotated[List[PaperMetadata], operator.add]
+    papers_to_process: List[PaperMetadata]
 
-    # Parallel per-paper pipeline results
-    processed_papers: Annotated[List[Dict[str, Any]], operator.add]  # final enriched paper dicts
+    processed_papers: Annotated[List[Dict[str, Any]], operator.add]
     failed_papers: Annotated[List[Dict[str, Any]], operator.add]
 
-    # Storage
-    vector_ids: Annotated[List[str], operator.add]
-    graph_node_ids: Annotated[List[str], operator.add]
+    # New: full parsed content per paper
+    extracted_contents: Annotated[List[Dict[str, Any]], operator.add]
 
-    # Query / Chat
     messages: Annotated[list, add_messages]
-    current_query: Optional[str]
-    query_results: Optional[List[Dict[str, Any]]]
-
-    # Continuous monitoring
-    new_papers_found: Annotated[List[PaperMetadata], operator.add]
-    alerts: Annotated[List[Dict[str, Any]], operator.add]
-
-    # Control / Meta
     current_stage: ProcessingStage
     status: Literal["running", "completed", "failed", "partial"]
     error: Optional[str]
-    run_id: Optional[str]
     timestamp: datetime
 
 
 # =============================================================================
-# HELPER MODELS
+# INPUT / OUTPUT FOR PER-PAPER PIPELINE
 # =============================================================================
 class PerPaperInput(BaseModel):
-    """Input for one parallel paper processing branch"""
     paper: PaperMetadata
     topic: str
 
@@ -179,9 +129,9 @@ class PerPaperInput(BaseModel):
 class PerPaperOutput(BaseModel):
     paper_id: str
     metadata: PaperMetadata
-    extracted: ExtractedContent
-    summary: Optional[StructuredPaperSummary] = None      # ← Made Optional
-    knowledge_note: Optional[KnowledgeNote] = None        # ← Made Optional
+    extracted: ExtractedContent                     # ← Full parsed content (primary)
+    summary: Optional[StructuredPaperSummary] = None   # ← Optional
+    knowledge_note: Optional[KnowledgeNote] = None     # ← Optional
     local_pdf_path: Optional[str] = None
-    status: PaperStatus = PaperStatus.EXTRACTING          # ← Use valid default
+    status: PaperStatus = PaperStatus.EXTRACTING
     error: Optional[str] = None

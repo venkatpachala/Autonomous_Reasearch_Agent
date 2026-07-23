@@ -1,11 +1,6 @@
 """
 Critic + Knowledge Note Generator v2
-======================================
-Generates a rich KnowledgeNote from the paper's extracted content and summary.
-Extracts: detailed_summary, concepts, hardware_devices, table_summaries,
-key_quotes, criticality_score.
-
-v2: Real LLM call via gateway (previously a placeholder stub).
+Updated to safely access full extracted content.
 """
 
 import json
@@ -19,56 +14,53 @@ from src.observability.tracing import traced
 
 class CriticNoteAgent:
     def __init__(self):
-        pass  # Uses centralized gateway
+        pass
 
     @traced(name="critic_note_agent", run_type="chain")
     async def run(self, output: PerPaperOutput) -> PerPaperOutput:
         paper = output.metadata
         summary = output.summary
 
-        # Build content for the LLM — PDF text is richer than abstract
-        content = ""
-        if output.extracted and output.extracted.text:
-            content = output.extracted.text[:5000].strip()
-        if not content and paper.abstract:
-            content = paper.abstract
+        # SAFE FULL TEXT EXTRACTION
+        extracted_text = ""
+        if output.extracted:
+            extracted_text = (
+                getattr(output.extracted, "full_text", "")
+                or getattr(output.extracted, "text", "")
+                or getattr(output.extracted, "text_content", "")
+                or getattr(output.extracted, "content", "")
+                or ""
+            )
 
-        # Pull known benchmarks/hardware from summarizer output (if available)
+        # Pull known benchmarks/hardware from summarizer
         known_benchmarks = summary.benchmarks if summary else []
         known_contributions = summary.key_contributions if summary else []
         known_hardware = []
-        if summary and summary.achievements and "Hardware/Devices mentioned:" in summary.achievements:
-            hw_line = summary.achievements.split("Hardware/Devices mentioned:")[-1].strip()
-            known_hardware = [h.strip() for h in hw_line.split(",") if h.strip()]
 
         system_prompt = (
             "You are a research librarian creating a rich knowledge note for long-term retrieval.\n\n"
             "Return ONLY valid JSON matching exactly this schema:\n"
             "{\n"
-            '  "one_sentence_summary": "One crisp sentence capturing the paper\'s main contribution.",\n'
-            '  "detailed_summary": "3-5 sentence rich markdown summary covering objective, method, results.",\n'
-            '  "concepts": ["concept1", "concept2", "concept3"],\n'
+            '  "one_sentence_summary": "...",\n'
+            '  "detailed_summary": "...",\n'
+            '  "concepts": ["concept1", "concept2"],\n'
             '  "hardware_devices": ["device1", "device2"],\n'
-            '  "table_summaries": ["Table 1: description", "Table 2: description"],\n'
-            '  "key_quotes": ["notable quote or claim from paper"],\n'
+            '  "table_summaries": ["Table 1: description"],\n'
+            '  "key_quotes": ["quote"],\n'
             '  "criticality_score": 0.75,\n'
             '  "tags": ["tag1", "tag2"]\n'
             "}\n\n"
             "Rules:\n"
-            "- concepts: specific technical entities (methods, architectures, datasets, metrics). Max 10.\n"
-            "- hardware_devices: name every specific device, chip, GPU, NPU, SoC, or board mentioned. Empty if none.\n"
-            "- table_summaries: briefly describe each table's purpose if visible in the content.\n"
-            "- criticality_score: 0.0-1.0 float rating novelty/impact (0.9=breakthrough, 0.5=incremental, 0.2=minor).\n"
-            "- Output ONLY raw JSON. No markdown, no explanation."
+            "- Output ONLY raw JSON. No markdown.\n"
+            "- concepts: specific technical entities.\n"
+            "- hardware_devices: name every device/chip mentioned.\n"
+            "- criticality_score: 0.0-1.0 float."
         )
 
         user_prompt = (
             f"Paper Title: {paper.title}\n"
             f"Abstract: {paper.abstract[:500] if paper.abstract else 'N/A'}\n\n"
-            f"Known Contributions: {'; '.join(known_contributions[:3])}\n"
-            f"Known Benchmarks: {', '.join(known_benchmarks[:5])}\n"
-            f"Known Hardware: {', '.join(known_hardware[:5]) if known_hardware else 'None identified yet'}\n\n"
-            f"Paper Content:\n{content[:3000]}\n\n"
+            f"Full Content (first 4000 chars):\n{extracted_text[:4000]}\n\n"
             "Generate the knowledge note now."
         )
 
@@ -95,7 +87,6 @@ class CriticNoteAgent:
 
             parsed = json.loads(raw)
 
-            # Build the structured_data — merge with existing summary or create a minimal one
             structured = summary or StructuredPaperSummary(
                 objective=paper.abstract[:300] if paper.abstract else "Not specified.",
                 methodology="Not extracted.",
@@ -110,7 +101,7 @@ class CriticNoteAgent:
                 paper_id=output.paper_id,
                 title=paper.title,
                 one_sentence_summary=parsed.get("one_sentence_summary", paper.title),
-                detailed_summary=parsed.get("detailed_summary", paper.abstract[:600] if paper.abstract else ""),
+                detailed_summary=parsed.get("detailed_summary", extracted_text[:600]),
                 structured_data=structured,
                 concepts=parsed.get("concepts", [])[:12],
                 hardware_devices=parsed.get("hardware_devices", known_hardware)[:8],
@@ -120,12 +111,7 @@ class CriticNoteAgent:
                 tags=parsed.get("tags", ["research", "ai"])[:6],
             )
 
-            logger.success(
-                f"Knowledge Note created for {output.paper_id}: "
-                f"{len(output.knowledge_note.concepts)} concepts, "
-                f"{len(output.knowledge_note.hardware_devices)} hardware, "
-                f"{len(output.knowledge_note.table_summaries)} tables"
-            )
+            logger.success(f"Knowledge Note created for {output.paper_id}")
 
         except Exception as e:
             logger.warning(f"LLM critic failed for {output.paper_id}: {e}. Using stub.")

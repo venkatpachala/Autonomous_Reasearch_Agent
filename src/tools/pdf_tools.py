@@ -1,15 +1,16 @@
 """
 PDF download + extraction tools.
-Primary: LlamaParse (multimodal), fallback: PyMuPDF + vision.
+Primary: LlamaParse, fallback: PyMuPDF.
+Updated: robust redirect handling + full content return.
 """
 
 import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
+import httpx
 import fitz  # PyMuPDF
 from loguru import logger
-from llama_parse import LlamaParse
 
 from src.config import settings
 from src.models.schemas import ExtractedContent
@@ -22,15 +23,19 @@ class PDFTools:
         self.llamaparse_api_key = settings.llamaparse_api_key
         self.parser = None
         if self.llamaparse_api_key:
-            self.parser = LlamaParse(
-                api_key=self.llamaparse_api_key,
-                result_type="markdown",
-                num_workers=4,
-                verbose=True,
-            )
+            try:
+                from llama_parse import LlamaParse
+                self.parser = LlamaParse(
+                    api_key=self.llamaparse_api_key,
+                    result_type="markdown",
+                    num_workers=4,
+                    verbose=True,
+                )
+            except ImportError:
+                logger.warning("LlamaParse not installed. Install with: pip install llama-parse")
 
     async def download_pdf(self, pdf_url: str, arxiv_id: str, topic: str) -> Optional[Path]:
-        """Download PDF and save to organized path."""
+        """Download PDF with proper redirect handling."""
         topic_slug = topic.lower().replace(" ", "_").replace("/", "_")
         dir_path = settings.papers_dir / topic_slug
         dir_path.mkdir(parents=True, exist_ok=True)
@@ -38,12 +43,17 @@ class PDFTools:
         pdf_path = dir_path / f"{arxiv_id}.pdf"
 
         if pdf_path.exists():
-            logger.info(f"PDF already exists: {pdf_path}")
+            logger.info(f"PDF already exists: {pdf_path.name}")
             return pdf_path
 
+        logger.info(f"Downloading PDF: {arxiv_id} from {pdf_url}")
+
         try:
-            import httpx
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            # Normalize arXiv URL
+            if "arxiv.org" in pdf_url and not pdf_url.endswith(".pdf"):
+                pdf_url = pdf_url.replace("/abs/", "/pdf/") + ".pdf"
+
+            async with httpx.AsyncClient(follow_redirects=True, timeout=60.0) as client:
                 response = await client.get(pdf_url)
                 response.raise_for_status()
 
@@ -55,19 +65,21 @@ class PDFTools:
             logger.error(f"Failed to download PDF {arxiv_id}: {e}")
             return None
 
-    async def extract_content(self, pdf_path: Path, use_vision_fallback: bool = True) -> ExtractedContent:
-        """Extract structured content from PDF."""
+    async def extract_content(self, pdf_path: Path) -> ExtractedContent:
+        """Extract full structured content from PDF."""
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
         try:
+            # Try LlamaParse first (best for tables + layout)
             if self.parser:
-                logger.info("Using LlamaParse for extraction")
+                logger.info(f"Using LlamaParse for {pdf_path.name}")
                 documents = await self.parser.aload_data(str(pdf_path))
                 full_text = "\n\n".join([doc.text for doc in documents])
 
                 return ExtractedContent(
-                    full_text=full_text,
+                    full_text=full_text.strip(),
+                    markdown=full_text.strip(),
                     sections={},
                     tables=[],
                     figures=[],
@@ -75,7 +87,7 @@ class PDFTools:
                 )
 
             # Fallback: PyMuPDF
-            logger.info("Using PyMuPDF fallback")
+            logger.info(f"Using PyMuPDF fallback for {pdf_path.name}")
             doc = fitz.open(pdf_path)
             full_text = ""
             for page in doc:
@@ -83,6 +95,7 @@ class PDFTools:
 
             return ExtractedContent(
                 full_text=full_text.strip(),
+                markdown=full_text.strip(),
                 sections={},
                 tables=[],
                 figures=[],
@@ -91,87 +104,7 @@ class PDFTools:
 
         except Exception as e:
             logger.error(f"PDF extraction failed for {pdf_path}: {e}")
-            raise
-
-    def chunk_text(self, text: str, paper_id: str, topic: str, chunk_size: int = 1500, overlap: int = 250) -> List[Dict[str, Any]]:
-        """
-        Split raw text into semantic paragraph-based chunks.
-        Extracts markdown tables separately to keep them as contiguous chunks.
-        """
-        import re
-
-        # Regex to locate markdown table structures (lines starting/ending with | or containing multiple |)
-        table_pattern = re.compile(r'((?:\n\|[^\n]+\|)+)', re.MULTILINE)
-        
-        tables = []
-        raw_text_without_tables = text
-        for i, match in enumerate(table_pattern.finditer(text)):
-            table_str = match.group(1).strip()
-            tables.append({
-                "chunk_id": f"{paper_id}_table_{i}",
-                "text": f"[Document: {paper_id} | Table {i}] \n{table_str}",
-                "metadata": {
-                    "paper_id": paper_id,
-                    "topic": topic,
-                    "chunk_index": i,
-                    "is_table": True,
-                    "table_index": i
-                }
-            })
-            raw_text_without_tables = raw_text_without_tables.replace(table_str, "")
-
-        chunks = []
-        paragraphs = [p.strip() for p in raw_text_without_tables.split("\n\n") if p.strip()]
-        
-        current_chunk = []
-        current_length = 0
-        chunk_idx = 0
-        
-        for p in paragraphs:
-            if current_length + len(p) > chunk_size and current_chunk:
-                chunk_text = "\n\n".join(current_chunk)
-                chunks.append({
-                    "chunk_id": f"{paper_id}_chunk_{chunk_idx}",
-                    "text": f"[Document: {paper_id}] \n{chunk_text}",
-                    "metadata": {
-                        "paper_id": paper_id,
-                        "topic": topic,
-                        "chunk_index": chunk_idx,
-                        "is_table": False
-                    }
-                })
-                chunk_idx += 1
-                
-                # Build overlap paragraphs
-                overlap_chars = 0
-                new_chunk = []
-                for prev in reversed(current_chunk):
-                    if overlap_chars + len(prev) < overlap:
-                        new_chunk.insert(0, prev)
-                        overlap_chars += len(prev)
-                    else:
-                        break
-                current_chunk = new_chunk
-                current_length = sum(len(x) for x in current_chunk)
-            
-            current_chunk.append(p)
-            current_length += len(p)
-            
-        if current_chunk:
-            chunk_text = "\n\n".join(current_chunk)
-            chunks.append({
-                "chunk_id": f"{paper_id}_chunk_{chunk_idx}",
-                "text": f"[Document: {paper_id}] \n{chunk_text}",
-                "metadata": {
-                    "paper_id": paper_id,
-                    "topic": topic,
-                    "chunk_index": chunk_idx,
-                    "is_table": False
-                }
-            })
-
-        return chunks + tables
+            return ExtractedContent(full_text="")
 
 
-# Global singleton
 pdf_tools = PDFTools()

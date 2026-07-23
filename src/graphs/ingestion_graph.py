@@ -1,11 +1,16 @@
 """
-Main Ingestion Graph v3 — Faster, Adaptive Retrieval + Parallel Post-Processing
-==============================================================================
-Changes from v2:
-- Early-stop when enough high-quality candidates are found
-- Lower batch delay (3.5s)
-- Query prioritization (frameworks & core terms first)
-- Graph extraction made non-blocking / safer
+Main Ingestion Graph v4 — Full Content First Architecture
+=========================================================
+New design:
+  PDF → Full Parsed Content → Chunk → Pinecone
+  PDF → Entity Extraction → Neo4j
+  Summarizer / Critic → Only when needed (chat-time)
+
+Changes from v3:
+- Removed summarizer + critic from critical path
+- Graph extraction now works on full extracted text
+- Memory manager stores full chunks
+- Summarizer is optional / deferred
 """
 
 from typing import Dict, Any, List
@@ -17,21 +22,18 @@ from langgraph.types import Send
 
 from src.agents.decomposer import decomposer_agent
 from src.agents.pdf_extractor import pdf_extractor_node
-from src.agents.summarizer import summarizer_agent
-from src.agents.critic_note import critic_agent
 from src.agents.memory_manager import memory_manager
 from src.agents.relevance_filter import relevance_filter_agent
 from src.tools.query_builder import query_builder
-from src.models.schemas import ResearchState, PaperMetadata
+from src.models.schemas import ResearchState, PaperMetadata, PaperStatus
 from src.tools.arxiv_tool import arxiv_tool
 
 # Tunable constants
-BATCH_SIZE = 5          # Parallel queries per batch
-BATCH_DELAY = 4.0       # Seconds between batches (reduced from 8.0s)
-MAX_RESULTS_PER_QUERY = 6 # Raised from 4 for better recall
+BATCH_SIZE = 5
+BATCH_DELAY = 3.5
+MAX_RESULTS_PER_QUERY = 6
 MAX_FINAL_PAPERS = 10
-EARLY_STOP_THRESHOLD = 15 # Stop search if we have this many unique papers from high-priority tiers
-PRIORITY_QUERY_TYPES = {"A:framework", "B:core", "B:core_term", "D:dataset"}
+EARLY_STOP_THRESHOLD = 18
 
 
 async def _search_with_retry(query: str, query_type: str, topic: str) -> List[PaperMetadata]:
@@ -45,7 +47,6 @@ async def _search_with_retry(query: str, query_type: str, topic: str) -> List[Pa
         logger.warning(f"  [{query_type}] '{query}' failed: {e}")
         return []
 
-    # Fallback chain
     fallbacks = query_builder.build_fallback_chain(query)
     for fallback in fallbacks:
         try:
@@ -55,26 +56,25 @@ async def _search_with_retry(query: str, query_type: str, topic: str) -> List[Pa
                 return results
         except Exception:
             continue
-
     return []
 
 
 async def retriever_node(state: ResearchState) -> ResearchState:
-    """
-    Adaptive batch-parallel arXiv search with priority tiers and early stopping.
-    """
+    """Adaptive batch-parallel arXiv search with early stopping."""
     topic = state["topic"]
-    # Only use fallback if state truly has no tiered_queries key at all
     tiered_queries = state.get("tiered_queries")
     if not tiered_queries:
         flat_keywords = state.get("keywords", [topic])
         query_types_map = state.get("query_types", {})
-        tiered_queries = {"P1": [(q, query_types_map.get(q, "?")) for q in flat_keywords], "P2": [], "P3": []}
-        
+        tiered_queries = {
+            "P1": [(q, query_types_map.get(q, "?")) for q in flat_keywords],
+            "P2": [],
+            "P3": []
+        }
+
     ontology_dict = state.get("research_ontology", {})
     core_terms = ontology_dict.get("core_terms", [])
     negative_terms = ontology_dict.get("negative_terms", [])
-
 
     all_papers: List[PaperMetadata] = []
     seen_arxiv_ids = set()
@@ -93,11 +93,7 @@ async def retriever_node(state: ResearchState) -> ResearchState:
 
             logger.info(f"Tier {tier} - Batch {batch_num}/{total_batches}: {[q[0][:40] for q in batch]}")
 
-            # Run batch in parallel
-            tasks = [
-                _search_with_retry(q[0], q[1], topic)
-                for q in batch
-            ]
+            tasks = [_search_with_retry(q[0], q[1], topic) for q in batch]
             batch_results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for result in batch_results:
@@ -110,7 +106,7 @@ async def retriever_node(state: ResearchState) -> ResearchState:
                             all_papers.append(p)
 
             if len(seen_arxiv_ids) >= EARLY_STOP_THRESHOLD:
-                logger.success(f"Early stop triggered: found {len(seen_arxiv_ids)} unique papers.")
+                logger.success(f"Early stop: found {len(seen_arxiv_ids)} unique papers.")
                 break
 
             if batch_i + BATCH_SIZE < len(queries):
@@ -119,9 +115,8 @@ async def retriever_node(state: ResearchState) -> ResearchState:
         if len(seen_arxiv_ids) >= EARLY_STOP_THRESHOLD:
             break
 
-    logger.info(f"Search complete: {len(all_papers)} unique candidates found")
+    logger.info(f"Search complete: {len(all_papers)} unique candidates")
 
-    # Relevance filtering with 4-tier scoring + negative_terms blocking
     try:
         relevant_papers = await relevance_filter_agent.filter(
             all_papers,
@@ -131,12 +126,12 @@ async def retriever_node(state: ResearchState) -> ResearchState:
             fill_quota=True
         )
     except Exception as e:
-        logger.error(f"Relevance filter failed: {e}. Using all unique papers.")
+        logger.error(f"Relevance filter failed: {e}")
         relevant_papers = all_papers[:MAX_FINAL_PAPERS]
 
     final_papers = relevant_papers[:MAX_FINAL_PAPERS]
     logger.success(
-        f"Ingestion queue ready: {len(all_papers)} candidates → "
+        f"Queue ready: {len(all_papers)} candidates → "
         f"{len(relevant_papers)} relevant → {len(final_papers)} queued"
     )
 
@@ -152,65 +147,100 @@ def route_to_parallel(state: ResearchState):
         for paper in state.get("papers_to_process", [])
     ]
 
+
+async def _safe_memory_store(output, topic: str):
+    """Store full parsed content as chunks in Pinecone + Artifact Store."""
+    try:
+        await memory_manager.store_paper(output, topic)
+    except Exception as e:
+        logger.error(f"Memory Manager failed for {getattr(output, 'paper_id', '?')}: {e}")
+
+
 async def _safe_graph_extract(output, topic: str):
-    """Isolates graph extraction to prevent it from crashing the pipeline."""
+    """Extract entities from FULL parsed content and write to Neo4j."""
     try:
         from src.agents.extractor_agent import extractor_agent
         from src.db.neo4j_client import neo4j_client
-        if neo4j_client.is_connected():
-            # Build inputs from the per-paper output
-            paper_id = output.paper_id
-            title = output.metadata.title if output.metadata else paper_id
-            contributions = []
-            benchmarks = []
-            if output.summary:
-                contributions = output.summary.key_contributions or []
-                benchmarks = output.summary.benchmarks or []
-            elif output.knowledge_note:
-                contributions = output.knowledge_note.structured_data.key_contributions if output.knowledge_note.structured_data else []
-            
-            graph_data = await extractor_agent.extract(
-                paper_id=paper_id,
-                title=title,
-                contributions=contributions,
-                benchmarks=benchmarks
+
+        if not neo4j_client.is_connected():
+            return
+
+        paper_id = output.paper_id
+        title = output.metadata.title if output.metadata else paper_id
+
+        # Use full extracted text (preferred) or fall back to abstract
+        full_text = ""
+        if output.extracted:
+            full_text = (
+                getattr(output.extracted, "full_text", "")
+                or getattr(output.extracted, "text", "")
+                or ""
             )
+
+        if not full_text and output.metadata:
+            full_text = output.metadata.abstract or ""
+
+        graph_data = await extractor_agent.extract(
+            paper_id=paper_id,
+            title=title,
+            full_text=full_text[:6000],  # limit for LLM context
+        )
+
+        if graph_data and (graph_data.entities or graph_data.relationships):
             neo4j_client.write_extracted_graph(
-                paper_id, graph_data.entities, graph_data.relationships
+                paper_id,
+                graph_data.entities,
+                graph_data.relationships
+            )
+            logger.success(
+                f"Graph written for {paper_id}: "
+                f"{len(graph_data.entities)} entities, "
+                f"{len(graph_data.relationships)} relationships"
             )
     except Exception as e:
         logger.error(f"Failed to compile property graph for {getattr(output, 'paper_id', '?')}: {e}")
 
-async def _safe_memory_store(output, topic: str):
-    """Isolates memory storage to prevent it from crashing the pipeline."""
-    try:
-        await memory_manager.store_paper(output, topic)
-    except Exception as e:
-        logger.error(f"Memory Manager failed for {output.paper_id}: {e}")
 
 async def per_paper_pipeline(state_input: dict) -> dict:
     """
-    Per-paper pipeline with safer, non-blocking parallel graph extraction and memory storage.
+    Per-paper pipeline with robust error handling.
+    One failed paper does not crash the whole run.
     """
     topic = state_input.get("topic", "unknown")
 
-    # Sequential critical path
-    output = await pdf_extractor_node(state_input)
-    output = await summarizer_agent.run(output)
-    output = await critic_agent.run(output)
+    try:
+        # 1. Extract full content
+        output = await pdf_extractor_node(state_input)
 
-    # Parallel execution of independent downstream storage tasks
-    logger.info(f"Running parallel graph and memory extraction for {output.paper_id}")
-    await asyncio.gather(
-        _safe_memory_store(output, topic),
-        _safe_graph_extract(output, topic)
-    )
+        if output.status == PaperStatus.FAILED:
+            logger.warning(f"Skipping failed paper: {output.paper_id} - {output.error}")
+            return {
+                "processed_papers": [output.model_dump() if hasattr(output, "model_dump") else output],
+                "failed_papers": [output.model_dump() if hasattr(output, "model_dump") else output]
+            }
 
-    return {
-        "processed_papers": [
-            output.model_dump() if hasattr(output, "model_dump") else output
-        ]
-    }
+        # 2. Parallel: storage + graph extraction
+        logger.info(f"Processing full content for {output.paper_id}")
+        await asyncio.gather(
+            _safe_memory_store(output, topic),
+            _safe_graph_extract(output, topic),
+            return_exceptions=True
+        )
+
+        output.status = PaperStatus.COMPLETED
+
+        return {
+            "processed_papers": [output.model_dump() if hasattr(output, "model_dump") else output]
+        }
+
+    except Exception as e:
+        logger.error(f"Unexpected error in per-paper pipeline for {getattr(output, 'paper_id', 'unknown')}: {e}")
+        return {
+            "failed_papers": [{
+                "paper_id": getattr(output, 'paper_id', 'unknown'),
+                "error": str(e)
+            }]
+        }
 
 
 def build_ingestion_graph():

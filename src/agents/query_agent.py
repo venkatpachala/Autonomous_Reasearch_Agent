@@ -1,19 +1,6 @@
 """
 Query / Chat Agent - Talks to Helix Research using intent-routed RAG.
-
-Pipeline:
-  User Query
-      ↓
-  Intent Classifier  (7 intent types + query expansion)
-      ↓
-  Collection-level?  ──yes──> Load ALL notes → Synthesis Agent
-      │ no
-      ↓
-  Vector Search (with expanded query + score threshold)
-      ↓
-  Graph RAG Enrichment
-      ↓
-  Grounded RAG Answer (with confidence warning if weak)
+Updated for chunk-based retrieval (no longer depends on KnowledgeNote objects).
 """
 
 from typing import List, Dict, Any, Optional
@@ -39,15 +26,8 @@ class QueryAgent:
         topic: Optional[str] = None,
         chat_history: Optional[List] = None
     ) -> Dict[str, Any]:
-        """
-        Main entry point. Classifies intent, routes to appropriate handler,
-        and generates a grounded, cited, insight-rich answer.
-        """
-
-        # === STEP 1: Intent Classification + Query Expansion ===
         intent: QueryIntent = await intent_classifier.classify(question, topic=topic)
 
-        # === STEP 2: Route by Intent ===
         if intent_classifier.is_collection_level(intent):
             return await self._handle_collection_query(question, intent, topic)
         elif intent.intent == "comparison":
@@ -63,15 +43,12 @@ class QueryAgent:
     def _handle_expand_collection(
         self, question: str, intent: QueryIntent, topic: Optional[str]
     ) -> Dict[str, Any]:
-        """User wants to fetch more papers. Redirect to /ingest."""
         logger.info(f"Expand collection intent detected for topic '{topic}'")
         return {
             "answer": (
                 f"To fetch more papers for this session, use the `/ingest` command.\n\n"
                 f"This will run the full arXiv search pipeline for the current topic "
-                f"**'{topic}'** and add new papers to your knowledge base.\n\n"
-                "You can also type `/ingest <subtopic>` to search for a specific sub-area "
-                "within this research topic."
+                f"**'{topic}'** and add new papers to your knowledge base."
             ),
             "sources": [],
             "contexts_used": 0,
@@ -85,8 +62,8 @@ class QueryAgent:
     async def _handle_collection_query(
         self, question: str, intent: QueryIntent, topic: Optional[str]
     ) -> Dict[str, Any]:
-        """Loads ALL notes for the topic and runs the SynthesisAgent."""
-        logger.info(f"Collection-level query ({intent.intent}) — loading all notes for '{topic}'")
+        """Loads ALL chunks for the topic and runs the SynthesisAgent."""
+        logger.info(f"Collection-level query ({intent.intent}) — loading all chunks for '{topic}'")
 
         notes = await self.retriever.get_all_notes_for_topic(topic) if topic else []
 
@@ -94,7 +71,7 @@ class QueryAgent:
             return {
                 "answer": (
                     f"No papers are indexed for the topic '{topic}' yet. "
-                    "Please ingest papers on this topic first using the Research button."
+                    "Please ingest papers on this topic first using `/ingest`."
                 ),
                 "sources": [],
                 "contexts_used": 0,
@@ -102,15 +79,11 @@ class QueryAgent:
                 "retrieval_confidence": 0.0
             }
 
-        # Enrich with graph triplets from all concept entities
-        all_concepts = []
-        for note in notes:
-            all_concepts.extend(note.concepts or [])
-        all_concepts = list(set(all_concepts))[:30]
-
+        # Safe graph enrichment (works with dict-based chunks)
         graph_triplets = []
-        if neo4j_client.is_connected() and all_concepts:
-            graph_triplets = neo4j_client.get_related_triplets(all_concepts)
+        if neo4j_client.is_connected() and notes:
+            paper_ids = list({n.get("paper_id") for n in notes if n.get("paper_id")})
+            graph_triplets = neo4j_client.get_related_triplets(paper_ids[:20])
 
         result = await synthesis_agent.synthesize(
             notes=notes,
@@ -119,7 +92,7 @@ class QueryAgent:
             graph_triplets=graph_triplets
         )
         result["intent"] = intent.intent
-        result["retrieval_confidence"] = 1.0  # Full collection — confidence is high
+        result["retrieval_confidence"] = 1.0
         return result
 
     # ------------------------------------------------------------------ #
@@ -128,7 +101,6 @@ class QueryAgent:
     async def _handle_comparison_query(
         self, question: str, intent: QueryIntent, topic: Optional[str]
     ) -> Dict[str, Any]:
-        """Uses expanded query + comparison-specific prompt."""
         logger.info(f"Comparison query — expanded: {intent.expanded_query[:80]}")
 
         retrieved = await self.retriever.search(
@@ -166,20 +138,15 @@ class QueryAgent:
         return self._build_response(answer, papers, intent.intent, confidence)
 
     # ------------------------------------------------------------------ #
-    # TARGETED QUERY HANDLER (fact_lookup / paper_summary / general_qa)
+    # TARGETED QUERY HANDLER
     # ------------------------------------------------------------------ #
     async def _handle_targeted_query(
         self, question: str, intent: QueryIntent, topic: Optional[str]
     ) -> Dict[str, Any]:
-        """Standard RAG: vector search on expanded query + grounded generation."""
-        logger.info(
-            f"Targeted query ({intent.intent}) — "
-            f"expanded: {intent.expanded_query[:80]}"
-        )
+        logger.info(f"Targeted query ({intent.intent}) — expanded: {intent.expanded_query[:80]}")
 
-        # Use the expanded query for retrieval, not the raw question
         retrieved = await self.retriever.search(
-            intent.expanded_query, topic=topic, n_results=6
+            intent.expanded_query, topic=topic, n_results=8
         )
         papers = retrieved.get("papers", [])
         graph_triplets = retrieved.get("graph_triplets", [])
@@ -192,10 +159,10 @@ class QueryAgent:
         graph_section = self._format_graph_section(graph_triplets)
 
         confidence_warning = ""
-        if confidence < 0.35:
+        if confidence < 0.40:
             confidence_warning = (
-                "\n\n⚠️ **Low retrieval confidence** — the retrieved papers may not be "
-                "closely related to this specific question. Consider ingesting more relevant papers."
+                "\n\n⚠️ **Note**: Retrieval confidence is low. "
+                "Consider ingesting more papers on this sub-topic."
             )
 
         system_prompt = (
@@ -242,27 +209,14 @@ class QueryAgent:
     def _format_contexts(self, contexts: List[Dict[str, Any]]) -> str:
         parts = []
         for i, ctx in enumerate(contexts, 1):
-            note = ctx.get("full_note")
-            title = ctx["title"]
-            paper_id = ctx["paper_id"]
-            content = ctx["content"]
-            score_str = f"[relevance: {ctx['score']:.3f}]" if ctx.get("score") else ""
-
-            extra = ""
-            if note:
-                extra = f"\nSummary: {note.one_sentence_summary}"
-                if note.structured_data:
-                    sd = note.structured_data
-                    if sd.key_contributions:
-                        extra += f"\nKey Contributions: {'; '.join(sd.key_contributions[:3])}"
-                    if sd.limitations:
-                        extra += f"\nLimitations: {'; '.join(sd.limitations[:2])}"
-                    if sd.benchmarks:
-                        extra += f"\nBenchmarks: {sd.benchmarks[:2]}"
+            paper_id = ctx.get("paper_id", "unknown")
+            title = ctx.get("title", "Untitled")
+            score = ctx.get("score", 0.0)
+            content = ctx.get("content") or ctx.get("text") or ""
 
             parts.append(
-                f"--- Paper {i} {score_str}: [{paper_id}] {title} ---\n"
-                f"{content}{extra}\n"
+                f"--- Paper {i} [arXiv:{paper_id}] {title} [score: {score:.3f}] ---\n"
+                f"{content.strip()}\n"
             )
         return "\n".join(parts)
 
@@ -295,9 +249,9 @@ class QueryAgent:
     ) -> Dict[str, Any]:
         sources = [
             {
-                "paper_id": c["paper_id"],
-                "title": c["title"],
-                "arxiv_url": c["arxiv_url"],
+                "paper_id": c.get("paper_id"),
+                "title": c.get("title", "Untitled"),
+                "arxiv_url": c.get("arxiv_url", f"https://arxiv.org/abs/{c.get('paper_id')}"),
                 "score": c.get("score"),
             }
             for c in papers

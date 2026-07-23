@@ -121,13 +121,11 @@ class RelevanceFilterAgent:
                 return paper, response.structured
         except Exception as e:
             logger.warning(f"Classification failed for {paper.arxiv_id}: {e}")
-
-        # CRITICAL FIX: do NOT default to weakly_relevant
-        return paper, RelevanceScore(
-            tier="unknown",
-            score=0.0,
-            reason=f"Classification failed: {str(e)[:80]}"
-        )
+            return paper, RelevanceScore(
+                tier="irrelevant",
+                score=0.0,
+                reason=f"Classification failed: {str(e)[:80]}"
+            )
 
     async def filter(
         self,

@@ -1,0 +1,28 @@
+{
+  "session_id": "3c75e662",
+  "topic": "Memory Architectures in AI Agents",
+  "created_at": "2026-07-23T07:33:29.260191",
+  "last_active": "2026-07-23T07:42:09.222034",
+  "papers_ingested": [
+    "1805.09354v1",
+    "2508.09736v4",
+    "2207.13219v4",
+    "2606.17328v1"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "What are these papers all about",
+      "timestamp": "2026-07-23T07:38:28.004560",
+      "sources": null
+    },
+    {
+      "role": "user",
+      "content": "clear",
+      "timestamp": "2026-07-23T07:42:09.222020",
+      "sources": null
+    }
+  ],
+  "status": "active",
+  "description": null
+}
