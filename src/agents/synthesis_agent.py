@@ -71,32 +71,60 @@ class SynthesisAgent:
     Used for collection-level queries like 'what are all these papers about?'
     """
 
-    def _build_collection_context(self, notes: List[KnowledgeNote]) -> str:
-        """Format all notes into a compact collection context string."""
+    def _build_collection_context(self, notes: List[Any]) -> str:
+        """
+        Format all notes into a compact collection context string.
+
+        `notes` is expected to be ONE ENTRY PER PAPER (e.g. from
+        retriever.get_grouped_notes_for_topic()), each shaped as either:
+          - a dict: {"paper_id", "title", "content", ...}   (current, chunk-based storage)
+          - a KnowledgeNote object with .structured_data     (legacy / monitor_agent path)
+
+        Both shapes are handled so this keeps working regardless of which
+        ingestion path produced the data.
+        """
         parts = []
         for i, note in enumerate(notes, 1):
-            sd = note.structured_data
-            contributions = (
-                "\n".join(f"    - {c}" for c in sd.key_contributions[:3])
-                if sd and sd.key_contributions else "    - N/A"
-            )
-            limitations = (
-                ", ".join(sd.limitations[:2])
-                if sd and sd.limitations else "Not specified"
-            )
-            benchmarks = (
-                str(sd.benchmarks[:2])
-                if sd and sd.benchmarks else "Not specified"
-            )
-            parts.append(
-                f"Paper {i}: [{note.paper_id}] {note.title}\n"
-                f"  Summary: {note.one_sentence_summary}\n"
-                f"  Objective: {sd.objective if sd else 'N/A'}\n"
-                f"  Key Contributions:\n{contributions}\n"
-                f"  Benchmarks: {benchmarks}\n"
-                f"  Limitations: {limitations}\n"
-                f"  Concepts: {', '.join(note.concepts[:6])}\n"
-            )
+            is_dict = isinstance(note, dict)
+
+            paper_id = note.get("paper_id") if is_dict else getattr(note, "paper_id", "unknown")
+            title = note.get("title") if is_dict else getattr(note, "title", "Untitled")
+
+            sd = None if is_dict else getattr(note, "structured_data", None)
+
+            if sd:
+                # Rich path — a real KnowledgeNote with structured_data was available.
+                contributions = (
+                    "\n".join(f"    - {c}" for c in sd.key_contributions[:3])
+                    if sd.key_contributions else "    - N/A"
+                )
+                limitations = ", ".join(sd.limitations[:2]) if sd.limitations else "Not specified"
+                benchmarks = str(sd.benchmarks[:2]) if sd.benchmarks else "Not specified"
+                summary = getattr(note, "one_sentence_summary", "N/A")
+                concepts = ", ".join(getattr(note, "concepts", [])[:6]) or "N/A"
+
+                parts.append(
+                    f"Paper {i}: [{paper_id}] {title}\n"
+                    f"  Summary: {summary}\n"
+                    f"  Objective: {sd.objective}\n"
+                    f"  Key Contributions:\n{contributions}\n"
+                    f"  Benchmarks: {benchmarks}\n"
+                    f"  Limitations: {limitations}\n"
+                    f"  Concepts: {concepts}\n"
+                )
+            else:
+                # Fallback path — no structured KnowledgeNote exists (this is the
+                # common case today, since critic_agent no longer runs in the
+                # main /ingest pipeline). Use the representative raw content
+                # instead, e.g. from get_grouped_notes_for_topic().
+                content = (note.get("content") if is_dict else str(note)) or "No content available."
+                num_chunks = note.get("num_chunks") if is_dict else None
+                chunk_note = f" ({num_chunks} chunks)" if num_chunks else ""
+
+                parts.append(
+                    f"Paper {i}: [{paper_id}] {title}{chunk_note}\n"
+                    f"  Content excerpt:\n{content[:2500]}\n"
+                )
         return "\n\n".join(parts)
 
     async def synthesize(

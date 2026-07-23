@@ -7,21 +7,19 @@ from src.config import settings
 
 class EmbeddingsGateway:
     """
-    Unified entry point for generating document and query embeddings.
+    Unified embedding gateway.
     
-    Provider priority:
-      1. OpenAI text-embedding-3-small (dimensions=PINECONE_EMBEDDING_DIM) — if OPENAI_API_KEY set
-      2. Ollama nomic-embed-text (768 dims) — local fallback only
-    
-    IMPORTANT: Pinecone index dimension must match the embedding dimension.
-    Set PINECONE_EMBEDDING_DIM in .env to match your Pinecone index.
+    Rules:
+      - If OPENAI_API_KEY is set → always use OpenAI (1024-dim)
+      - If OpenAI fails → raise error (do NOT fall back to 768-dim Ollama)
+      - Only use Ollama when no OpenAI key is present AND the index is 768-dim
     """
+
     def __init__(self):
         self.ollama = OllamaProvider()
         self.openai = OpenAIProvider()
-        self.target_dim = settings.pinecone_embedding_dim
+        self.target_dim = settings.pinecone_embedding_dim  # should be 1024
 
-        # Log embedding strategy on startup
         if os.environ.get("OPENAI_API_KEY"):
             logger.info(
                 f"Embeddings: Using OpenAI text-embedding-3-small "
@@ -29,9 +27,8 @@ class EmbeddingsGateway:
             )
         else:
             logger.warning(
-                "OPENAI_API_KEY not set. Embeddings will use Ollama nomic-embed-text (768 dims). "
-                f"Set PINECONE_EMBEDDING_DIM=768 in .env to match, or provide OpenAI key for "
-                f"{self.target_dim}-dim embeddings."
+                "OPENAI_API_KEY not set. Will use Ollama nomic-embed-text (768 dims). "
+                "Make sure your Pinecone index is also 768-dimensional."
             )
 
     async def embed(
@@ -40,46 +37,44 @@ class EmbeddingsGateway:
         model: Optional[str] = None,
         provider: Optional[str] = None
     ) -> List[float]:
-        """
-        Generate embedding vector for a given text input.
-        Defaults to OpenAI text-embedding-3-small if API key is available.
-        Falls back to Ollama nomic-embed-text (768 dims) otherwise.
-        """
         has_openai = bool(os.environ.get("OPENAI_API_KEY"))
 
-        # Determine provider and model
+        # Decide which provider to use
         if provider:
-            chosen_provider = provider
-            chosen_model = model or ("text-embedding-3-small" if provider.lower() == "openai" else "nomic-embed-text")
+            chosen_provider = provider.lower()
         elif has_openai:
             chosen_provider = "openai"
-            chosen_model = model or "text-embedding-3-small"
         else:
             chosen_provider = "ollama"
-            chosen_model = model or "nomic-embed-text"
+
+        chosen_model = model or (
+            "text-embedding-3-small" if chosen_provider == "openai" else "nomic-embed-text"
+        )
 
         try:
-            if chosen_provider.lower() == "openai":
-                # Pass dimensions to OpenAI for truncated embeddings matching Pinecone index
+            if chosen_provider == "openai":
                 return await self.openai.embed(
-                    chosen_model, text,
+                    chosen_model,
+                    text,
                     dimensions=self.target_dim
                 )
             else:
+                # Only allowed when no OpenAI key is present
                 return await self.ollama.embed(chosen_model, text)
 
         except Exception as e:
             logger.error(f"Embedding via {chosen_provider}/{chosen_model} failed: {e}")
 
-            # Fallback: if OpenAI failed, try Ollama
-            if chosen_provider.lower() == "openai":
-                logger.warning("Falling back to Ollama nomic-embed-text (768 dims). "
-                               "NOTE: If Pinecone index is not 768 dims, upsert will fail.")
-                try:
-                    return await self.ollama.embed("nomic-embed-text", text)
-                except Exception as inner_err:
-                    logger.error(f"Ollama fallback embedding also failed: {inner_err}")
-                    raise inner_err
+            # CRITICAL: Never fall back from OpenAI (1024) → Ollama (768)
+            if chosen_provider == "openai":
+                raise RuntimeError(
+                    f"OpenAI embedding failed: {e}\n"
+                    "Refusing to fall back to Ollama (768-dim) because the Pinecone index "
+                    f"is configured for {self.target_dim} dimensions.\n"
+                    "Fix the OpenAI API key / quota, or recreate the index with matching dimensions."
+                ) from e
+
+            # If we were already using Ollama and it failed, just raise
             raise e
 
 

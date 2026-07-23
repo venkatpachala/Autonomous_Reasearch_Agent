@@ -1,4 +1,5 @@
 from typing import Dict, Any, List
+from typing import Optional
 from pydantic import BaseModel, Field
 
 class ModelConfig(BaseModel):
@@ -10,7 +11,6 @@ class ModelPricing(BaseModel):
     input_cost_per_1m: float = 0.0  # USD per million tokens
     output_cost_per_1m: float = 0.0  # USD per million tokens
 
-from typing import Optional
 
 # Mapping of task types to primary and fallback model specifications
 TASK_MODEL_REGISTRY: Dict[str, ModelConfig] = {

@@ -62,10 +62,10 @@ class QueryAgent:
     async def _handle_collection_query(
         self, question: str, intent: QueryIntent, topic: Optional[str]
     ) -> Dict[str, Any]:
-        """Loads ALL chunks for the topic and runs the SynthesisAgent."""
-        logger.info(f"Collection-level query ({intent.intent}) — loading all chunks for '{topic}'")
+        """Loads ONE grouped entry per paper for the topic and runs the SynthesisAgent."""
+        logger.info(f"Collection-level query ({intent.intent}) — loading grouped papers for '{topic}'")
 
-        notes = await self.retriever.get_all_notes_for_topic(topic) if topic else []
+        notes = await self.retriever.get_grouped_notes_for_topic(topic) if topic else []
 
         if not notes:
             return {

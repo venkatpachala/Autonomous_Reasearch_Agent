@@ -96,5 +96,95 @@ class ResearchRetriever:
             logger.error(f"get_all_notes_for_topic failed: {e}")
             return []
 
+    async def get_grouped_notes_for_topic(
+        self,
+        topic: Optional[str],
+        max_chars_per_paper: int = 2500,
+        max_chunks_per_paper: int = 4,
+    ) -> List[Dict]:
+        """
+        Collection-level retrieval, grouped by PAPER (not by chunk).
+
+        get_all_notes_for_topic() returns one entry per vector chunk — with
+        chunk-based storage a single paper can produce 10-20 chunks, which
+        breaks any consumer that expects "one entry = one paper" (e.g.
+        SynthesisAgent's collection overview). This method fetches the same
+        raw chunks, groups them by paper_id, and returns exactly one summary
+        entry per unique paper — preferring table/section chunks over plain
+        text chunks when picking representative content, since those are the
+        highest-signal pieces of a paper.
+        """
+        raw_chunks = await self.get_all_notes_for_topic(topic)
+        if not raw_chunks:
+            return []
+
+        # Group chunks by paper_id, preserving first-seen order
+        by_paper: Dict[str, List[Dict]] = {}
+        order: List[str] = []
+        for chunk in raw_chunks:
+            pid = chunk.get("paper_id")
+            if not pid:
+                continue
+            if pid not in by_paper:
+                by_paper[pid] = []
+                order.append(pid)
+            by_paper[pid].append(chunk)
+
+        # Resolve real titles from the research index (chunk metadata
+        # currently has no "title" field, so this is otherwise always
+        # "Untitled")
+        titles: Dict[str, str] = {}
+        try:
+            from src.tools.research_index import research_index
+            for pid in order:
+                info = research_index.data.get("papers", {}).get(pid, {})
+                if info.get("title"):
+                    titles[pid] = info["title"]
+        except Exception as e:
+            logger.warning(f"Could not resolve titles from research_index: {e}")
+
+        grouped: List[Dict] = []
+        for pid in order:
+            chunks = by_paper[pid]
+
+            # Prefer table/section chunks as representative content —
+            # they carry the highest information density per character.
+            def _priority(c: Dict) -> int:
+                ctype = c.get("chunk_type")
+                if ctype == "table":
+                    return 0
+                if ctype == "section":
+                    return 1
+                return 2
+
+            chunks_sorted = sorted(chunks, key=_priority)
+
+            combined_parts = []
+            total_len = 0
+            for c in chunks_sorted[:max_chunks_per_paper]:
+                text = (c.get("content") or "").strip()
+                if not text:
+                    continue
+                if total_len + len(text) > max_chars_per_paper:
+                    text = text[: max(0, max_chars_per_paper - total_len)]
+                combined_parts.append(text)
+                total_len += len(text)
+                if total_len >= max_chars_per_paper:
+                    break
+
+            grouped.append({
+                "paper_id": pid,
+                "title": titles.get(pid, chunks[0].get("title", "Untitled")),
+                "content": "\n\n".join(combined_parts),
+                "arxiv_url": f"https://arxiv.org/abs/{pid}",
+                "num_chunks": len(chunks),
+                "score": 1.0,
+            })
+
+        logger.info(
+            f"Grouped {len(raw_chunks)} chunks into {len(grouped)} papers for topic '{topic}'"
+        )
+        return grouped
+
 
 research_retriever = ResearchRetriever()

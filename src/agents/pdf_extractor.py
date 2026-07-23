@@ -1,13 +1,14 @@
 """
-PDF Extractor Agent — Robust Failure Handling
+PDF Extractor Agent — Robust version
 """
 
 from src.tools.pdf_tools import pdf_tools
-from src.models.schemas import ExtractedContent, PerPaperInput, PerPaperOutput, PaperStatus
+from src.models.schemas import ExtractedContent, PerPaperOutput, PaperStatus
 from loguru import logger
 
 
 async def pdf_extractor_node(input_data) -> PerPaperOutput:
+    # Handle both dict (from Send) and Pydantic model
     if isinstance(input_data, dict):
         paper = input_data["paper"]
         topic = input_data.get("topic", "")
@@ -17,37 +18,26 @@ async def pdf_extractor_node(input_data) -> PerPaperOutput:
 
     logger.info(f"Extracting PDF for {paper.arxiv_id}")
 
-    pdf_path = await pdf_tools.download_pdf(str(paper.pdf_url), paper.arxiv_id, topic)
-
-    if not pdf_path:
-        logger.warning(f"Download failed for {paper.arxiv_id}")
-        return PerPaperOutput(
-            paper_id=paper.arxiv_id,
-            metadata=paper,
-            extracted=ExtractedContent(full_text=""),  # empty but valid
-            summary=None,
-            knowledge_note=None,
-            local_pdf_path=None,
-            status=PaperStatus.FAILED,
-            error="PDF download failed (404 or network error)"
+    try:
+        pdf_path = await pdf_tools.download_pdf(
+            str(paper.pdf_url), paper.arxiv_id, topic
         )
 
-    try:
-        extracted = await pdf_tools.extract_content(pdf_path)
-
-        # Ensure we have some content
-        if not extracted.full_text or len(extracted.full_text.strip()) < 50:
-            logger.warning(f"Extraction produced almost no text for {paper.arxiv_id}")
+        if not pdf_path:
+            logger.warning(f"Download failed for {paper.arxiv_id}")
             return PerPaperOutput(
                 paper_id=paper.arxiv_id,
                 metadata=paper,
-                extracted=ExtractedContent(full_text=extracted.full_text or ""),
+                extracted=None,                     # ← DO NOT create empty ExtractedContent
                 summary=None,
                 knowledge_note=None,
-                local_pdf_path=str(pdf_path),
+                local_pdf_path=None,
                 status=PaperStatus.FAILED,
-                error="Extraction produced insufficient text"
+                error="Download failed"
             )
+
+        # Extract full content
+        extracted = await pdf_tools.extract_content(pdf_path)
 
         return PerPaperOutput(
             paper_id=paper.arxiv_id,
@@ -61,14 +51,14 @@ async def pdf_extractor_node(input_data) -> PerPaperOutput:
         )
 
     except Exception as e:
-        logger.error(f"Extraction failed for {paper.arxiv_id}: {e}")
+        logger.error(f"PDF extractor failed for {paper.arxiv_id}: {e}")
         return PerPaperOutput(
             paper_id=paper.arxiv_id,
             metadata=paper,
-            extracted=ExtractedContent(full_text=""),
+            extracted=None,
             summary=None,
             knowledge_note=None,
-            local_pdf_path=str(pdf_path) if pdf_path else None,
+            local_pdf_path=None,
             status=PaperStatus.FAILED,
-            error=f"Extraction error: {str(e)[:200]}"
+            error=str(e)
         )

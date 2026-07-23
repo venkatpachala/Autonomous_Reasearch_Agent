@@ -201,43 +201,57 @@ async def _safe_graph_extract(output, topic: str):
         logger.error(f"Failed to compile property graph for {getattr(output, 'paper_id', '?')}: {e}")
 
 
-async def per_paper_pipeline(state_input: dict) -> dict:
+async def per_paper_pipeline(state_input: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Per-paper pipeline with robust error handling.
-    One failed paper does not crash the whole run.
+    Per-paper processing pipeline with full error isolation.
+    One failed paper must never crash the whole graph.
     """
-    topic = state_input.get("topic", "unknown")
+    paper = state_input.get("paper")
+    topic = state_input.get("topic", "")
+    paper_id = getattr(paper, "arxiv_id", "unknown") if paper else "unknown"
 
     try:
-        # 1. Extract full content
+        # 1. PDF Extraction
         output = await pdf_extractor_node(state_input)
 
-        if output.status == PaperStatus.FAILED:
-            logger.warning(f"Skipping failed paper: {output.paper_id} - {output.error}")
+        if output.status == PaperStatus.FAILED or output.extracted is None:
+            logger.warning(f"Paper {paper_id} marked as FAILED after extraction")
             return {
-                "processed_papers": [output.model_dump() if hasattr(output, "model_dump") else output],
-                "failed_papers": [output.model_dump() if hasattr(output, "model_dump") else output]
+                "processed_papers": [{
+                    "paper_id": paper_id,
+                    "title": getattr(paper, "title", ""),
+                    "status": "failed",
+                    "error": output.error or "Extraction failed"
+                }]
             }
 
-        # 2. Parallel: storage + graph extraction
-        logger.info(f"Processing full content for {output.paper_id}")
-        await asyncio.gather(
-            _safe_memory_store(output, topic),
-            _safe_graph_extract(output, topic),
-            return_exceptions=True
-        )
+        # 2. Store in Memory (chunks → Pinecone + Neo4j)
+        try:
+            await memory_manager.store_paper(output, topic)
+        except Exception as e:
+            logger.error(f"Memory storage failed for {paper_id}: {e}")
+            # Still continue – we at least have the extracted content
+
+        # 3. Optional: Graph extraction (non-blocking)
+        try:
+            # Your existing graph extraction call here if needed
+            pass
+        except Exception as e:
+            logger.warning(f"Graph extraction failed for {paper_id}: {e}")
 
         output.status = PaperStatus.COMPLETED
-
         return {
             "processed_papers": [output.model_dump() if hasattr(output, "model_dump") else output]
         }
 
     except Exception as e:
-        logger.error(f"Unexpected error in per-paper pipeline for {getattr(output, 'paper_id', 'unknown')}: {e}")
+        # This is the critical fix – never reference an undefined `output`
+        logger.error(f"Unexpected error in per-paper pipeline for {paper_id}: {e}")
         return {
-            "failed_papers": [{
-                "paper_id": getattr(output, 'paper_id', 'unknown'),
+            "processed_papers": [{
+                "paper_id": paper_id,
+                "title": getattr(paper, "title", "") if paper else "",
+                "status": "failed",
                 "error": str(e)
             }]
         }

@@ -75,6 +75,134 @@
       ],
       "first_seen": "2026-07-23T07:37:57.744075",
       "last_processed": "2026-07-23T07:37:57.744075"
+    },
+    "2401.02879v2": {
+      "title": "Efficient Parameter Optimisation for Quantum Kernel Alignment: A Sub-sampling Approach in Variational Training",
+      "topics": [
+        "quantum computing for ai"
+      ],
+      "first_seen": "2026-07-23T08:48:34.049370",
+      "last_processed": "2026-07-23T08:48:34.049370"
+    },
+    "2110.03861v3": {
+      "title": "QTN-VQC: An End-to-End Learning framework for Quantum Neural Networks",
+      "topics": [
+        "quantum computing for ai"
+      ],
+      "first_seen": "2026-07-23T08:48:34.149579",
+      "last_processed": "2026-07-23T08:48:34.149579"
+    },
+    "2602.11092v2": {
+      "title": "MerLin: A Discovery Engine for Photonic and Hybrid Quantum Machine Learning",
+      "topics": [
+        "quantum computing for ai"
+      ],
+      "first_seen": "2026-07-23T08:48:34.190053",
+      "last_processed": "2026-07-23T08:48:34.190053"
+    },
+    "2308.00583v2": {
+      "title": "Semisupervised Anomaly Detection using Support Vector Regression with Quantum Kernel",
+      "topics": [
+        "quantum computing for ai"
+      ],
+      "first_seen": "2026-07-23T08:48:35.462021",
+      "last_processed": "2026-07-23T08:48:35.462021"
+    },
+    "2603.18914v1": {
+      "title": "Security, privacy, and agentic AI in a regulatory view: From definitions and distinctions to provisions and reflections",
+      "topics": [
+        "agentic ai for loop tasks"
+      ],
+      "first_seen": "2026-07-23T09:09:09.610940",
+      "last_processed": "2026-07-23T09:09:09.610940"
+    },
+    "1709.08071v2": {
+      "title": "Autonomous Agents Modelling Other Agents: A Comprehensive Survey and Open Problems",
+      "topics": [
+        "agentic ai for loop tasks"
+      ],
+      "first_seen": "2026-07-23T09:09:48.894270",
+      "last_processed": "2026-07-23T09:09:48.894270"
+    },
+    "2504.00727v1": {
+      "title": "Personality-Driven Decision-Making in LLM-Based Autonomous Agents",
+      "topics": [
+        "agentic ai for loop tasks"
+      ],
+      "first_seen": "2026-07-23T09:11:27.998827",
+      "last_processed": "2026-07-23T09:11:27.998827"
+    },
+    "2605.23989v1": {
+      "title": "Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security",
+      "topics": [
+        "agentic ai for loop tasks"
+      ],
+      "first_seen": "2026-07-23T09:11:43.857180",
+      "last_processed": "2026-07-23T09:11:43.857180"
+    },
+    "0906.0391v2": {
+      "title": "Curse of Dimensionality in Pivot-based Indexes",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:28:45.692824",
+      "last_processed": "2026-07-23T10:28:45.692824"
+    },
+    "1307.2669v1": {
+      "title": "Text Categorization via Similarity Search: An Efficient and Effective Novel Algorithm",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:29:19.941067",
+      "last_processed": "2026-07-23T10:29:19.941067"
+    },
+    "2306.15295v2": {
+      "title": "Synthesis of Quantum Vector Databases Based on Grovers Algorithm",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:29:38.288022",
+      "last_processed": "2026-07-23T10:29:38.288022"
+    },
+    "1612.07710v2": {
+      "title": "Set Similarity Search Beyond MinHash",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:29:45.543304",
+      "last_processed": "2026-07-23T10:29:45.543304"
+    },
+    "2402.00943v2": {
+      "title": "Approximate Nearest Neighbor Search with Window Filters",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:30:50.672368",
+      "last_processed": "2026-07-23T10:30:50.672368"
+    },
+    "2009.13836v1": {
+      "title": "SIR: Similar Image Retrieval for Product Search in E-Commerce",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:31:42.382748",
+      "last_processed": "2026-07-23T10:31:42.382748"
+    },
+    "2110.13151v2": {
+      "title": "Self-supervised similarity search for large scientific datasets",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:32:01.605862",
+      "last_processed": "2026-07-23T10:32:01.605862"
+    },
+    "2602.21514v2": {
+      "title": "I/O Optimizations for Graph-Based Disk-Resident Approximate Nearest Neighbor Search: A Design Space Exploration",
+      "topics": [
+        "vector database for similarity seach"
+      ],
+      "first_seen": "2026-07-23T10:32:04.094112",
+      "last_processed": "2026-07-23T10:32:04.094112"
     }
   },
   "topics": {
@@ -108,6 +236,40 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-23T07:50:27.038182"
+    },
+    "quantum computing for ai": {
+      "paper_ids": [
+        "2401.02879v2",
+        "2110.03861v3",
+        "2602.11092v2",
+        "2308.00583v2"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-23T08:48:35.462021"
+    },
+    "agentic ai for loop tasks": {
+      "paper_ids": [
+        "2603.18914v1",
+        "1709.08071v2",
+        "2504.00727v1",
+        "2605.23989v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-23T09:11:43.857180"
+    },
+    "vector database for similarity seach": {
+      "paper_ids": [
+        "0906.0391v2",
+        "1307.2669v1",
+        "2306.15295v2",
+        "1612.07710v2",
+        "2402.00943v2",
+        "2009.13836v1",
+        "2110.13151v2",
+        "2602.21514v2"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-23T10:32:04.094112"
     }
   }
 }

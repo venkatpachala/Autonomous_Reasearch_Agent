@@ -1,0 +1,321 @@
+{
+  "session_id": "9ae38ef4",
+  "topic": "Agentic AI For Loop tasks",
+  "created_at": "2026-07-23T09:05:54.961838",
+  "last_active": "2026-07-23T09:28:10.573092",
+  "papers_ingested": [
+    "2605.23989v1",
+    "2603.18914v1",
+    "2504.00727v1",
+    "1709.08071v2"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Summarise the paper",
+      "timestamp": "2026-07-23T09:15:30.667082",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The paper provides a comprehensive examination of trustworthy agentic AI systems, which are defined as Large Language Models (LLMs) enhanced with capabilities such as planning, tool use, memory, and long-horizon interactions. These systems can autonomously execute complex tasks, but their multi-step trajectories introduce new failure modes that challenge their trustworthiness. The survey focuses on two critical dimensions for high-risk deployments: Safety and Robustness, and Privacy and System Security. \n\nFor each dimension, the paper clarifies key concepts, identifies risks that emerge throughout the agent workflow, and summarizes targeted mitigation strategies. It also discusses other aspects of trustworthiness, including value alignment, transparency, fairness, and accountability, although these are treated as contextual rather than core chapters. To facilitate consistent evaluation and deployment decisions, the authors propose a unified metrics-and-benchmarks hub that emphasizes both outcome and process signals, such as constraint violations and trace completeness [arXiv:2605.23989v1 - Untitled].\n\nThe motivation behind this research stems from a paradigm shift where agentic systems are increasingly deployed in critical applications, transforming them from passive tools into active agents capable of fulfilling high-level goals autonomously [arXiv:2603.18914v1 - Untitled]. However, this increased autonomy raises significant challenges related to security and privacy, as agents gain direct access to external tools and databases, thereby expanding their attack surface and introducing vulnerabilities [arXiv:2603.18914v1 - Untitled]. \n\nIn summary, the paper highlights the need for robust frameworks to ensure the trustworthiness of agentic AI systems, addressing both the technical capabilities and the regulatory landscape surrounding their deployment.",
+      "timestamp": "2026-07-23T09:15:54.545600",
+      "sources": [
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.601220489
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.589663446
+        },
+        {
+          "paper_id": "1709.08071v2",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/1709.08071v2",
+          "score": 0.583168626
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.574255109
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.574172437
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.56992352
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.565262437
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.562400877
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "Summarise the paper 1",
+      "timestamp": "2026-07-23T09:16:50.358490",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The paper [arXiv:2605.23989v1] discusses the current state and challenges of agentic AI, which represents a significant evolution from traditional AI systems. It highlights that while there has been rapid progress in developing agentic AI capable of perceiving, reasoning, and executing complex tasks autonomously, several critical limitations persist before these systems can be reliably deployed at scale.\n\nOne of the primary concerns is that current agents are not yet reliable lifelong learners. They struggle with long-horizon generalization and are vulnerable to issues related to reward and specification, indicating that their learning and decision-making processes are not robust enough for real-world applications [arXiv:2605.23989v1, Section 7.1].\n\nThe paper outlines a five-stage agentic loop that includes Perceive, Plan, Act, Reflect, and Learn, which is essential for the functioning of agentic AI. Each stage plays a crucial role in enabling agents to interact with their environment effectively and adaptively. For instance, the \"Perceive\" stage involves ingesting observations and quantifying uncertainty, while the \"Learn\" stage focuses on updating policies and memory based on experiences [arXiv:2605.23989v1, Section 5].\n\nMoreover, the paper emphasizes the need for standardized components and workflows to address the unique challenges posed by agentic AI, such as long-horizon decision-making and explicit uncertainty handling [arXiv:2605.23989v1, Section 2.1.4]. The implications of these findings suggest that while agentic AI has the potential to transform various domains, including healthcare and finance, significant research and development efforts are required to ensure their trustworthiness and reliability [arXiv:2605.23989v1, Section 1.1]. \n\nIn summary, the paper identifies key open problems in the deployment of agentic AI, particularly in the areas of lifelong learning and robustness, while proposing a structured approach to enhance the trustworthiness of these systems.",
+      "timestamp": "2026-07-23T09:17:07.316594",
+      "sources": [
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.599492908
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.574022591
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.558079362
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.54881072
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.545547187
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.544760644
+        },
+        {
+          "paper_id": "2504.00727v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2504.00727v1",
+          "score": 0.539262712
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.538172841
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What paper 1 says about Assurance hooks across the agent workflow",
+      "timestamp": "2026-07-23T09:20:18.688755",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "Paper 1 discusses assurance hooks as critical control points within the agent workflow, specifically in the context of agentic AI systems. These assurance hooks are integrated at various stages of the workflow—validation, verification, safeguards, diagnostics, and logging—serving as mechanisms for risk mitigation throughout the agent's operations. This integration is particularly relevant for agents trained using reinforcement learning (RL), as RL provides a mathematical foundation for optimizing decision-making under uncertainty and constraints, which are essential for ensuring trustworthiness in agentic systems [arXiv:2605.23989v1 - Untitled].\n\nThe paper outlines a five-stage workflow for agentic AI: Perceive, Plan, Act, Reflect, and Learn. Assurance hooks are specifically highlighted in the context of the Act stage, where they enforce constraints and permissions during tool usage, and in the Reflect stage, where they facilitate self-evaluation and error detection [arXiv:2605.23989v1 - Untitled]. The presence of these hooks is crucial for maintaining safety and robustness, as they help to identify and mitigate risks that may arise during the agent's interactions with its environment.\n\nFurthermore, the assurance hooks are part of a broader assurance stack that frames the discussions on trustworthiness dimensions, such as Safety and Robustness, and Privacy and System Security. This structured approach allows for a comprehensive evaluation of risks and the implementation of targeted mitigation strategies across the agent's workflow [arXiv:2605.23989v1 - Untitled]. \n\nIn summary, assurance hooks are integral to the agent workflow, providing essential checkpoints for risk management and contributing to the overall trustworthiness of agentic AI systems.",
+      "timestamp": "2026-07-23T09:20:34.715294",
+      "sources": [
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.557950675
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.535937369
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.531962872
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.530427396
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.512795627
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.506002
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.505706489
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.4949224
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What is the detailed description mentioned in the figure 3 of paper 1",
+      "timestamp": "2026-07-23T09:22:49.492186",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The context provided does not include a detailed description of Figure 3 from Paper 1 [arXiv:2605.23989v1]. The sections referenced discuss the overall structure of the paper, the organization of content, and the architecture of agentic AI systems, but there is no specific mention or description of Figure 3. Therefore, I cannot provide the detailed description you requested.",
+      "timestamp": "2026-07-23T09:23:03.976175",
+      "sources": [
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.567118824
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.561513424
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.553667068
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.543221176
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.53489238
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.528731346
+        },
+        {
+          "paper_id": "1709.08071v2",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/1709.08071v2",
+          "score": 0.526161075
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.524664521
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What are the risks mentioned in paper 1",
+      "timestamp": "2026-07-23T09:27:53.982497",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The risks mentioned in Paper 1 [arXiv:2603.18914v1] primarily revolve around security and privacy challenges associated with increasing AI autonomy. Key risks identified include:\n\n1. **Expanded Attack Surface**: As AI agents gain direct access to external tools, databases, and APIs, the potential for exploitation increases, leading to a broader attack surface [16].\n\n2. **Security Vulnerabilities**: The introduction of agentic behaviors can lead to specific vulnerabilities, such as:\n   - **Prompt Injection**: This risk involves malicious inputs that can propagate through multi-agent ecosystems, potentially compromising their functionality [17].\n   - **Unauthorized Data Exfiltration**: During autonomous collaboration, agents may inadvertently or maliciously extract sensitive data without authorization [18].\n   - **Bypassing Safety Guardrails**: Agents might pursue misaligned sub-goals, leading to actions that circumvent established safety protocols [19].\n\n3. **Supply Chain Risks**: The reliance on third-party libraries, APIs, and model components can introduce vulnerabilities, such as:\n   - **Poisoning Attacks**: Malicious alterations to data or models can compromise the outputs and actions of agents [21].\n   - **Dependency Confusion**: This occurs when an agent mistakenly uses a compromised or malicious dependency, leading to unintended consequences [20].\n\n4. **Privacy Risks**: The implications for privacy are significant, extending beyond traditional model-centric leakage to include pipeline-centric exposure. Agents that operate on behalf of users may require access to personal data, raising concerns about data protection and user consent [22].\n\nThese risks highlight the complexities and challenges of deploying autonomous AI systems, emphasizing the need for robust security and privacy measures in their design and implementation.",
+      "timestamp": "2026-07-23T09:28:10.573075",
+      "sources": [
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.653742492
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.622122109
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.6122455
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.611423612
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.608446419
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.605335534
+        },
+        {
+          "paper_id": "2603.18914v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2603.18914v1",
+          "score": 0.595121622
+        },
+        {
+          "paper_id": "2605.23989v1",
+          "title": "Untitled",
+          "arxiv_url": "https://arxiv.org/abs/2605.23989v1",
+          "score": 0.592402816
+        }
+      ]
+    }
+  ],
+  "status": "active",
+  "description": null
+}

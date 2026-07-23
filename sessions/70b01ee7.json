@@ -1,0 +1,26 @@
+{
+  "session_id": "70b01ee7",
+  "topic": "Vector Database for similarity seach",
+  "created_at": "2026-07-23T10:26:25.610500",
+  "last_active": "2026-07-23T10:34:55.709696",
+  "papers_ingested": [
+    "2009.13836v1",
+    "2110.13151v2",
+    "2306.15295v2",
+    "1612.07710v2",
+    "1307.2669v1",
+    "0906.0391v2",
+    "2602.21514v2",
+    "2402.00943v2"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Summarise all the papers in depth",
+      "timestamp": "2026-07-23T10:34:55.709678",
+      "sources": null
+    }
+  ],
+  "status": "active",
+  "description": null
+}

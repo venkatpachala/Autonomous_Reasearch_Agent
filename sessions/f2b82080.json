@@ -1,0 +1,22 @@
+{
+  "session_id": "f2b82080",
+  "topic": "Quantum Computing for AI",
+  "created_at": "2026-07-23T08:47:18.923037",
+  "last_active": "2026-07-23T08:48:51.321578",
+  "papers_ingested": [
+    "2110.03861v3",
+    "2401.02879v2",
+    "2602.11092v2",
+    "2308.00583v2"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Sumamrise these papers",
+      "timestamp": "2026-07-23T08:48:51.321563",
+      "sources": null
+    }
+  ],
+  "status": "active",
+  "description": null
+}

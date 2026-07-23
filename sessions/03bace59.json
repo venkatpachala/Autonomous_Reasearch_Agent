@@ -1,0 +1,30 @@
+{
+  "session_id": "03bace59",
+  "topic": "Robotics arm",
+  "created_at": "2026-07-23T10:15:08.736491",
+  "last_active": "2026-07-23T10:24:29.110046",
+  "papers_ingested": [
+    "2005.11994v1",
+    "0705.1394v1",
+    "2512.17568v1",
+    "2307.10079v1",
+    "2207.10457v3",
+    "2012.00950v4"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "What are all these papers about give me detailed description",
+      "timestamp": "2026-07-23T10:24:13.407655",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "No papers are indexed for the topic 'Robotics arm' yet. Please ingest papers on this topic first using `/ingest`.",
+      "timestamp": "2026-07-23T10:24:29.110034",
+      "sources": []
+    }
+  ],
+  "status": "active",
+  "description": null
+}
