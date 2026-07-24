@@ -1,5 +1,6 @@
 ﻿"""
 Research Retriever — Final Fixed Version
+Includes Paper Resolver support via get_chunks_for_paper().
 """
 
 from typing import List, Dict, Any, Optional
@@ -86,7 +87,9 @@ class ResearchRetriever:
                     "title": meta.get("title", "Untitled"),
                     "content": doc,
                     "arxiv_url": f"https://arxiv.org/abs/{meta.get('paper_id')}",
-                    "score": 1.0
+                    "score": 1.0,
+                    "chunk_type": meta.get("chunk_type"),
+                    "section": meta.get("section"),
                 })
 
             logger.info(f"Loaded {len(notes)} chunks for topic '{topic}'")
@@ -96,6 +99,79 @@ class ResearchRetriever:
             logger.error(f"get_all_notes_for_topic failed: {e}")
             return []
 
+    async def get_chunks_for_paper(
+        self,
+        paper_id: str,
+        topic: Optional[str] = None,
+        n_results: int = 50) -> List[Dict]:
+        """
+    Return ALL available chunks for a specific paper_id.
+
+    For ordinal questions ("describe paper 5") we want the whole paper,
+    not a similarity-ranked subset. So:
+      - Filter strictly by paper_id (and topic if given)
+      - Use a neutral query only to satisfy the vector API
+      - Do NOT apply a high min_score cutoff
+    """
+        if not pinecone_client.is_connected():
+            return []
+
+        try:
+            where_filter: Dict[str, Any] = {"paper_id": paper_id}
+            if topic:
+                where_filter = {
+                    "$and": [
+                        {"paper_id": paper_id},
+                        {"topic": topic},
+                    ]
+                }
+
+        # Neutral query — we only care about the metadata filter
+            result = pinecone_client.query(
+                query_text=f"overview of paper {paper_id}",
+                n_results=n_results,
+                where=where_filter,
+            )
+
+            docs = result.get("documents", [[]])[0]
+            metas = result.get("metadatas", [[]])[0]
+            distances = result.get("distances", [[]])[0]
+
+            papers = []
+            for doc, meta, dist in zip(docs, metas, distances):
+                # Hard filter again in case the backend ignored part of the where clause
+                if meta.get("paper_id") != paper_id:
+                    continue
+
+                score = 1.0 - dist if dist is not None else 0.5
+                papers.append({
+                    "paper_id": meta.get("paper_id"),
+                    "title": meta.get("title", "Untitled"),
+                    "content": doc,
+                    "score": score,
+                    "arxiv_url": f"https://arxiv.org/abs/{meta.get('paper_id')}",
+                    "chunk_type": meta.get("chunk_type"),
+                    "section": meta.get("section"),
+                })
+
+        # Prefer section/table chunks first for better coverage
+            def _priority(c: Dict) -> int:
+                ctype = c.get("chunk_type")
+                if ctype == "table":
+                    return 0
+                if ctype == "section":
+                    return 1
+                return 2
+
+            papers = sorted(papers, key=_priority)
+
+            logger.info(f"get_chunks_for_paper({paper_id}) → {len(papers)} chunks")
+            return papers
+
+        except Exception as e:
+            logger.error(f"get_chunks_for_paper failed: {e}")
+        return []
+
     async def get_grouped_notes_for_topic(
         self,
         topic: Optional[str],
@@ -104,21 +180,12 @@ class ResearchRetriever:
     ) -> List[Dict]:
         """
         Collection-level retrieval, grouped by PAPER (not by chunk).
-
-        get_all_notes_for_topic() returns one entry per vector chunk — with
-        chunk-based storage a single paper can produce 10-20 chunks, which
-        breaks any consumer that expects "one entry = one paper" (e.g.
-        SynthesisAgent's collection overview). This method fetches the same
-        raw chunks, groups them by paper_id, and returns exactly one summary
-        entry per unique paper — preferring table/section chunks over plain
-        text chunks when picking representative content, since those are the
-        highest-signal pieces of a paper.
+        Returns exactly one entry per unique paper.
         """
         raw_chunks = await self.get_all_notes_for_topic(topic)
         if not raw_chunks:
             return []
 
-        # Group chunks by paper_id, preserving first-seen order
         by_paper: Dict[str, List[Dict]] = {}
         order: List[str] = []
         for chunk in raw_chunks:
@@ -130,9 +197,7 @@ class ResearchRetriever:
                 order.append(pid)
             by_paper[pid].append(chunk)
 
-        # Resolve real titles from the research index (chunk metadata
-        # currently has no "title" field, so this is otherwise always
-        # "Untitled")
+        # Resolve real titles from research index
         titles: Dict[str, str] = {}
         try:
             from src.tools.research_index import research_index
@@ -147,8 +212,6 @@ class ResearchRetriever:
         for pid in order:
             chunks = by_paper[pid]
 
-            # Prefer table/section chunks as representative content —
-            # they carry the highest information density per character.
             def _priority(c: Dict) -> int:
                 ctype = c.get("chunk_type")
                 if ctype == "table":

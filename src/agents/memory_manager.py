@@ -1,8 +1,8 @@
 """
 Memory Manager - Layered Storage (Artifact + Vector + Graph + Research Index)
-Updated for full parsed content + chunk storage.
+Updated for full parsed content + chunk storage + real paper titles.
 """
-
+import re
 from typing import List, Dict, Any
 from loguru import logger
 
@@ -27,6 +27,10 @@ class MemoryManager:
         """
         paper_id = output.paper_id
         extracted = output.extracted
+        title = (
+            getattr(output.metadata, "title", None)
+            if output.metadata else None
+        ) or paper_id
 
         if not extracted or not getattr(extracted, "full_text", None):
             logger.warning(f"No extracted content for {paper_id} — skipping storage")
@@ -39,7 +43,7 @@ class MemoryManager:
             logger.warning(f"Artifact store failed for {paper_id}: {e}")
 
         # 2. Vector DB — Chunk + Store full content
-        await self._store_chunks_in_vector(output, topic)
+        await self._store_chunks_in_vector(output, topic, title)
 
         # 3. Knowledge Graph (optional)
         self._update_graph(output, topic)
@@ -48,7 +52,7 @@ class MemoryManager:
         try:
             self.index.register_paper(
                 arxiv_id=paper_id,
-                title=output.metadata.title if output.metadata else paper_id,
+                title=title,
                 topic=topic
             )
         except Exception as e:
@@ -59,13 +63,20 @@ class MemoryManager:
             f"({len(extracted.full_text)} chars)"
         )
 
-    async def _store_chunks_in_vector(self, output: PerPaperOutput, topic: str):
+    async def _store_chunks_in_vector(
+        self, output: PerPaperOutput, topic: str, title: str
+    ):
         """Chunk the full extracted content and store in Pinecone."""
         extracted = output.extracted
         if not extracted:
             return
 
-        chunks = self._create_chunks(extracted, output.paper_id, topic)
+        chunks = self._create_chunks(
+            extracted=extracted,
+            paper_id=output.paper_id,
+            topic=topic,
+            title=title,
+        )
 
         for chunk in chunks:
             try:
@@ -82,6 +93,7 @@ class MemoryManager:
         extracted: ExtractedContent,
         paper_id: str,
         topic: str,
+        title: str = "Untitled",
         chunk_size: int = 1200,
         overlap: int = 200
     ) -> List[Dict[str, Any]]:
@@ -93,13 +105,22 @@ class MemoryManager:
 
         # 1. Prefer section-based chunks (best quality)
         if extracted.sections:
-            for section_name, content in extracted.sections.items():
+            for idx, (section_name, content) in enumerate(extracted.sections.items()):
                 if content and content.strip():
+                    # Sanitize section name → ASCII-only, safe for IDs
+                    safe_section = (
+                        re.sub(r"[^\x00-\x7F]+", "", section_name)[:40]
+                        .strip()
+                        .replace(" ", "_")
+                        or f"sec{idx}"
+                    )
+
                     chunks.append({
-                        "chunk_id": f"{paper_id}_section_{section_name[:40].replace(' ', '_')}",
+                        "chunk_id": f"{paper_id}_section_{safe_section}",
                         "text": f"Section: {section_name}\n\n{content.strip()}",
                         "metadata": {
                             "paper_id": paper_id,
+                            "title": title,
                             "topic": topic,
                             "chunk_type": "section",
                             "section": section_name,
@@ -124,6 +145,7 @@ class MemoryManager:
                         "text": f"[Document: {paper_id}]\n{chunk_text}",
                         "metadata": {
                             "paper_id": paper_id,
+                            "title": title,
                             "topic": topic,
                             "chunk_index": chunk_idx,
                             "chunk_type": "text",
@@ -154,6 +176,7 @@ class MemoryManager:
                     "text": f"[Document: {paper_id}]\n{chunk_text}",
                     "metadata": {
                         "paper_id": paper_id,
+                        "title": title,
                         "topic": topic,
                         "chunk_index": chunk_idx,
                         "chunk_type": "text",

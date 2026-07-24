@@ -143,18 +143,20 @@
     "0906.0391v2": {
       "title": "Curse of Dimensionality in Pivot-based Indexes",
       "topics": [
-        "vector database for similarity seach"
+        "vector database for similarity seach",
+        "similarity search for vectordb for ai agents"
       ],
       "first_seen": "2026-07-23T10:28:45.692824",
-      "last_processed": "2026-07-23T10:28:45.692824"
+      "last_processed": "2026-07-23T11:13:23.928014"
     },
     "1307.2669v1": {
       "title": "Text Categorization via Similarity Search: An Efficient and Effective Novel Algorithm",
       "topics": [
-        "vector database for similarity seach"
+        "vector database for similarity seach",
+        "similarity search for vectordb for ai agents"
       ],
       "first_seen": "2026-07-23T10:29:19.941067",
-      "last_processed": "2026-07-23T10:29:19.941067"
+      "last_processed": "2026-07-23T11:13:31.711220"
     },
     "2306.15295v2": {
       "title": "Synthesis of Quantum Vector Databases Based on Grovers Algorithm",
@@ -162,15 +164,16 @@
         "vector database for similarity seach"
       ],
       "first_seen": "2026-07-23T10:29:38.288022",
-      "last_processed": "2026-07-23T10:29:38.288022"
+      "last_processed": "2026-07-23T10:43:33.789322"
     },
     "1612.07710v2": {
       "title": "Set Similarity Search Beyond MinHash",
       "topics": [
-        "vector database for similarity seach"
+        "vector database for similarity seach",
+        "similarity search for vectordb for ai agents"
       ],
       "first_seen": "2026-07-23T10:29:45.543304",
-      "last_processed": "2026-07-23T10:29:45.543304"
+      "last_processed": "2026-07-23T11:14:22.185233"
     },
     "2402.00943v2": {
       "title": "Approximate Nearest Neighbor Search with Window Filters",
@@ -178,7 +181,7 @@
         "vector database for similarity seach"
       ],
       "first_seen": "2026-07-23T10:30:50.672368",
-      "last_processed": "2026-07-23T10:30:50.672368"
+      "last_processed": "2026-07-23T10:45:11.995274"
     },
     "2009.13836v1": {
       "title": "SIR: Similar Image Retrieval for Product Search in E-Commerce",
@@ -186,15 +189,16 @@
         "vector database for similarity seach"
       ],
       "first_seen": "2026-07-23T10:31:42.382748",
-      "last_processed": "2026-07-23T10:31:42.382748"
+      "last_processed": "2026-07-23T10:43:36.617518"
     },
     "2110.13151v2": {
       "title": "Self-supervised similarity search for large scientific datasets",
       "topics": [
-        "vector database for similarity seach"
+        "vector database for similarity seach",
+        "similarity search for vectordb for ai agents"
       ],
       "first_seen": "2026-07-23T10:32:01.605862",
-      "last_processed": "2026-07-23T10:32:01.605862"
+      "last_processed": "2026-07-23T11:14:04.341069"
     },
     "2602.21514v2": {
       "title": "I/O Optimizations for Graph-Based Disk-Resident Approximate Nearest Neighbor Search: A Design Space Exploration",
@@ -202,7 +206,63 @@
         "vector database for similarity seach"
       ],
       "first_seen": "2026-07-23T10:32:04.094112",
-      "last_processed": "2026-07-23T10:32:04.094112"
+      "last_processed": "2026-07-23T10:45:04.541966"
+    },
+    "2411.01473v1": {
+      "title": "Efficient Medical Image Retrieval Using DenseNet and FAISS for BIRADS Classification",
+      "topics": [
+        "similarity search for vectordb for ai agents"
+      ],
+      "first_seen": "2026-07-23T11:14:56.580889",
+      "last_processed": "2026-07-23T11:14:56.580889"
+    },
+    "2401.08281v4": {
+      "title": "The Faiss library",
+      "topics": [
+        "similarity search for vectordb for ai agents"
+      ],
+      "first_seen": "2026-07-23T11:14:56.994581",
+      "last_processed": "2026-07-23T11:14:56.994581"
+    },
+    "2503.17911v3": {
+      "title": "VSAG: An Optimized Search Framework for Graph-based Approximate Nearest Neighbor Search",
+      "topics": [
+        "similarity search for vectordb for ai agents"
+      ],
+      "first_seen": "2026-07-23T11:15:26.805855",
+      "last_processed": "2026-07-23T11:15:26.805855"
+    },
+    "1705.08449v4": {
+      "title": "Developing an edge computing platform for real-time descriptive analytics",
+      "topics": [
+        "edge devices for running local models optimised way"
+      ],
+      "first_seen": "2026-07-24T07:53:37.161828",
+      "last_processed": "2026-07-24T07:53:37.161828"
+    },
+    "2306.14152v1": {
+      "title": "Low-Rank Prune-And-Factorize for Language Model Compression",
+      "topics": [
+        "edge devices for running local models optimised way"
+      ],
+      "first_seen": "2026-07-24T07:54:53.899359",
+      "last_processed": "2026-07-24T07:54:53.899359"
+    },
+    "2607.14489v1": {
+      "title": "EdgeFaaS: A Function-based Framework for Edge Computing",
+      "topics": [
+        "edge devices for running local models optimised way"
+      ],
+      "first_seen": "2026-07-24T07:55:08.089885",
+      "last_processed": "2026-07-24T07:55:08.089885"
+    },
+    "2410.02367v9": {
+      "title": "SageAttention: Accurate 8-Bit Attention for Plug-and-play Inference Acceleration",
+      "topics": [
+        "edge devices for running local models optimised way"
+      ],
+      "first_seen": "2026-07-24T07:55:30.431761",
+      "last_processed": "2026-07-24T07:55:30.431761"
     }
   },
   "topics": {
@@ -269,7 +329,30 @@
         "2602.21514v2"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-23T10:32:04.094112"
+      "last_ingestion": "2026-07-23T10:45:11.995274"
+    },
+    "similarity search for vectordb for ai agents": {
+      "paper_ids": [
+        "0906.0391v2",
+        "1307.2669v1",
+        "2110.13151v2",
+        "1612.07710v2",
+        "2411.01473v1",
+        "2401.08281v4",
+        "2503.17911v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-23T11:15:26.805855"
+    },
+    "edge devices for running local models optimised way": {
+      "paper_ids": [
+        "1705.08449v4",
+        "2306.14152v1",
+        "2607.14489v1",
+        "2410.02367v9"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-24T07:55:30.431761"
     }
   }
 }

@@ -1,11 +1,12 @@
 """
 Session Manager - Handles Research Sessions (topic-scoped workspaces)
+Updated with paper number mapping for "paper 1 / paper 3" resolution.
 """
 
 import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 from loguru import logger
 
 from src.models.session import ResearchSession, ChatMessage
@@ -31,7 +32,6 @@ class SessionManager:
                 sessions.append(ResearchSession(**data))
             except Exception as e:
                 logger.warning(f"Failed to load session {f.name}: {e}")
-        # Sort by last_active descending
         sessions.sort(key=lambda s: s.last_active, reverse=True)
         return sessions
 
@@ -56,7 +56,6 @@ class SessionManager:
         path.write_text(session.model_dump_json(indent=2), encoding="utf-8")
 
     def get_or_create_session(self, topic: str) -> ResearchSession:
-        # Try to find an existing active session with the same topic
         for s in self.list_sessions():
             if s.topic.lower() == topic.lower() and s.status == "active":
                 logger.info(f"Reusing existing session {s.session_id} for topic '{topic}'")
@@ -64,11 +63,19 @@ class SessionManager:
                 return s
         return self.create_session(topic)
 
+    def build_paper_number_map(self, session: Optional[ResearchSession] = None) -> Dict[int, str]:
+        """
+        Stable mapping:
+            1 → first paper_id in session.papers_ingested
+            2 → second paper_id
+            ...
+        """
+        s = session or self.current_session
+        if not s or not s.papers_ingested:
+            return {}
+        return {i + 1: pid for i, pid in enumerate(s.papers_ingested)}
+
     async def ensure_papers_ingested(self, session: ResearchSession, force: bool = False) -> ResearchSession:
-        """
-        Check if we need to run ingestion for this topic.
-        Simple heuristic: if no papers yet OR last activity > 7 days and force=False
-        """
         if session.papers_ingested and not force:
             logger.info(f"Session already has {len(session.papers_ingested)} papers. Skipping ingestion.")
             return session
@@ -116,4 +123,3 @@ class SessionManager:
 
 
 session_manager = SessionManager()
-

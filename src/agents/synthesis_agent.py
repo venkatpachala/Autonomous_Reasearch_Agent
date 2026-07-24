@@ -1,26 +1,27 @@
 """
 Synthesis Agent: Cross-paper reasoning, trend analysis, and research insight generation.
-Activated for collection-level queries instead of single-document RAG.
+Updated to work with chunk-based dicts (new architecture) while remaining compatible
+with legacy KnowledgeNote objects.
 """
 
-import json
-from pathlib import Path
 from typing import List, Dict, Any, Optional, Literal
 from pydantic import BaseModel, Field
 from loguru import logger
 
 from src.gateway import gateway
-from src.models.schemas import KnowledgeNote
 
 
 class PaperRelationship(BaseModel):
     paper_a: str = Field(..., description="Short title or arXiv ID of paper A")
     paper_b: str = Field(..., description="Short title or arXiv ID of paper B")
-    relationship: Literal["extends", "contradicts", "evaluates_same_data", "proposes_alternative", "builds_upon", "surveys"]
+    relationship: Literal[
+        "extends", "contradicts", "evaluates_same_data",
+        "proposes_alternative", "builds_upon", "surveys"
+    ]
     description: str = Field(..., description="One sentence explaining the relationship.")
     evidence_basis: str = Field(
         default="inferred",
-        description="Exact quote or section from the papers that explicitly supports this relationship. Write 'inferred' if not directly stated."
+        description="Exact quote or section that supports this relationship, or 'inferred'."
     )
 
 
@@ -48,7 +49,7 @@ class ResearchSynthesis(BaseModel):
     )
     paper_relationships: List[PaperRelationship] = Field(
         default_factory=list,
-        description="Notable relationships between papers (extensions, contradictions, evaluations)."
+        description="Notable relationships between papers."
     )
     state_of_the_art: str = Field(
         ...,
@@ -59,7 +60,7 @@ class ResearchSynthesis(BaseModel):
         description=(
             "A rich, 4-6 paragraph research synthesis narrative that groups papers into themes, "
             "explains how they relate, identifies the progression of ideas, notes contradictions, "
-            "and highlights what is missing. Write like an expert researcher, NOT like a list. "
+            "and highlights what is missing. Write like an expert researcher. "
             "Include specific citations using [arXiv:ID - Short Title] format."
         )
     )
@@ -68,32 +69,48 @@ class ResearchSynthesis(BaseModel):
 class SynthesisAgent:
     """
     Generates cross-paper research synthesis, trend analysis, and gap identification.
-    Used for collection-level queries like 'what are all these papers about?'
+    Compatible with both:
+      - List[dict]          (current chunk-based storage)
+      - List[KnowledgeNote] (legacy path)
     """
+
+    def _get_field(self, note: Any, field: str, default=None):
+        """Safe accessor for both dict and object notes."""
+        if isinstance(note, dict):
+            return note.get(field, default)
+        return getattr(note, field, default)
+
+    def _build_sources(self, notes: List[Any]) -> List[Dict]:
+        """Build sources list that works for both dicts and KnowledgeNote objects."""
+        sources = []
+        for n in notes:
+            paper_id = self._get_field(n, "paper_id", "unknown")
+            title = self._get_field(n, "title", "Untitled")
+            score = self._get_field(n, "score") or self._get_field(n, "criticality_score")
+
+            sources.append({
+                "paper_id": paper_id,
+                "title": title,
+                "arxiv_url": f"https://arxiv.org/abs/{paper_id}",
+                "score": score,
+            })
+        return sources
 
     def _build_collection_context(self, notes: List[Any]) -> str:
         """
         Format all notes into a compact collection context string.
-
-        `notes` is expected to be ONE ENTRY PER PAPER (e.g. from
-        retriever.get_grouped_notes_for_topic()), each shaped as either:
-          - a dict: {"paper_id", "title", "content", ...}   (current, chunk-based storage)
-          - a KnowledgeNote object with .structured_data     (legacy / monitor_agent path)
-
-        Both shapes are handled so this keeps working regardless of which
-        ingestion path produced the data.
+        Handles both dict chunks and legacy KnowledgeNote objects.
         """
         parts = []
         for i, note in enumerate(notes, 1):
+            paper_id = self._get_field(note, "paper_id", "unknown")
+            title = self._get_field(note, "title", "Untitled")
             is_dict = isinstance(note, dict)
-
-            paper_id = note.get("paper_id") if is_dict else getattr(note, "paper_id", "unknown")
-            title = note.get("title") if is_dict else getattr(note, "title", "Untitled")
 
             sd = None if is_dict else getattr(note, "structured_data", None)
 
             if sd:
-                # Rich path — a real KnowledgeNote with structured_data was available.
+                # Rich path — real KnowledgeNote with structured_data
                 contributions = (
                     "\n".join(f"    - {c}" for c in sd.key_contributions[:3])
                     if sd.key_contributions else "    - N/A"
@@ -113,12 +130,9 @@ class SynthesisAgent:
                     f"  Concepts: {concepts}\n"
                 )
             else:
-                # Fallback path — no structured KnowledgeNote exists (this is the
-                # common case today, since critic_agent no longer runs in the
-                # main /ingest pipeline). Use the representative raw content
-                # instead, e.g. from get_grouped_notes_for_topic().
-                content = (note.get("content") if is_dict else str(note)) or "No content available."
-                num_chunks = note.get("num_chunks") if is_dict else None
+                # Common path today — raw chunk content
+                content = self._get_field(note, "content") or str(note)
+                num_chunks = self._get_field(note, "num_chunks")
                 chunk_note = f" ({num_chunks} chunks)" if num_chunks else ""
 
                 parts.append(
@@ -129,29 +143,31 @@ class SynthesisAgent:
 
     async def synthesize(
         self,
-        notes: List[KnowledgeNote],
+        notes: List[Any],
         query: str,
         topic: str,
         graph_triplets: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Generate a cross-paper research synthesis.
-        Returns a structured dict with the synthesis and metadata.
+        Accepts List[dict] or List[KnowledgeNote].
         """
         if not notes:
             return {
                 "answer": "No papers are indexed for this topic yet. Ingest papers first.",
                 "sources": [],
-                "synthesis": None
+                "synthesis": None,
+                "contexts_used": 0
             }
 
         collection_context = self._build_collection_context(notes)
         n_papers = len(notes)
+        sources = self._build_sources(notes)
 
         graph_section = ""
         if graph_triplets:
             graph_section = (
-                f"\nKnowledge Graph Relationships:\n"
+                "\nKnowledge Graph Relationships:\n"
                 + "\n".join(f"  - {t}" for t in graph_triplets[:20])
                 + "\n"
             )
@@ -170,8 +186,8 @@ class SynthesisAgent:
                     "5. Cite specific papers using [arXiv:ID - Short Title] format\n"
                     "6. Write as an expert researcher would — thematic, analytical, NOT a list of summaries\n\n"
                     "CRITICAL RULES FOR RELATIONSHIPS:\n"
-                    "- Only claim a relationship (BUILDS_UPON, CONTRADICTS, etc.) if there is explicit textual evidence in the provided paper summaries.\n"
-                    "- If you cannot find a direct citation or explicit statement connecting two papers, set evidence_basis to 'inferred' and downgrade confidence.\n"
+                    "- Only claim a relationship if there is explicit textual evidence in the provided paper content.\n"
+                    "- If you cannot find a direct connection, set evidence_basis to 'inferred'.\n"
                     "- Do NOT fabricate citation connections between papers that never reference each other.\n\n"
                     "Do NOT simply summarize each paper individually. BUILD CONNECTIONS based on the evidence."
                 )
@@ -199,20 +215,12 @@ class SynthesisAgent:
 
             if response.structured:
                 synthesis = response.structured
-
-                # Build the final human-readable answer
                 answer = self._format_synthesis_answer(synthesis, query)
-
-                sources = [
-                    {"paper_id": note.paper_id, "title": note.title,
-                     "arxiv_url": f"https://arxiv.org/abs/{note.paper_id}",
-                     "score": note.criticality_score}
-                    for note in notes
-                ]
 
                 logger.success(
                     f"Synthesis complete: {len(synthesis.research_directions)} directions, "
-                    f"{len(synthesis.research_gaps)} gaps, {len(synthesis.paper_relationships)} relationships"
+                    f"{len(synthesis.research_gaps)} gaps, "
+                    f"{len(synthesis.paper_relationships)} relationships"
                 )
 
                 return {
@@ -223,13 +231,13 @@ class SynthesisAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Synthesis generation failed: {e}")
+            logger.error(f"Structured synthesis failed: {e}")
 
         # Fallback: plain narrative synthesis
         fallback_answer = await self._fallback_narrative(collection_context, query, topic)
         return {
             "answer": fallback_answer,
-            "sources": [{"paper_id": n.paper_id, "title": n.title} for n in notes],
+            "sources": sources,
             "synthesis": None,
             "contexts_used": n_papers
         }
@@ -274,7 +282,8 @@ class SynthesisAgent:
                 "content": (
                     "You are an expert research analyst. Synthesize the provided papers into "
                     "a coherent narrative that groups themes, identifies trends, and finds gaps. "
-                    "Write 3-4 analytical paragraphs. Do NOT just summarize each paper separately."
+                    "Write 3-4 analytical paragraphs. Do NOT just summarize each paper separately. "
+                    "Cite papers as [arXiv:ID - Short Title]."
                 )
             },
             {

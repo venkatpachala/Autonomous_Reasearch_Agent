@@ -1,8 +1,8 @@
 """
-Query / Chat Agent - Talks to Helix Research using intent-routed RAG.
-Updated for chunk-based retrieval (no longer depends on KnowledgeNote objects).
+Query / Chat Agent - Intent-routed RAG with Paper Resolver.
 """
 
+import re
 from typing import List, Dict, Any, Optional
 from loguru import logger
 from src.gateway import gateway
@@ -10,11 +10,12 @@ from src.tools.retriever import research_retriever
 from src.agents.intent_classifier import intent_classifier, QueryIntent
 from src.agents.synthesis_agent import synthesis_agent
 from src.db.neo4j_client import neo4j_client
+from src.agents.session_manager import session_manager
 from src.observability.tracing import traced
 
 
 class QueryAgent:
-    """Intent-routed RAG agent over the personal research knowledge base."""
+    """Intent-routed RAG agent with paper-number resolution."""
 
     def __init__(self):
         self.retriever = research_retriever
@@ -38,17 +39,48 @@ class QueryAgent:
             return await self._handle_targeted_query(question, intent, topic)
 
     # ------------------------------------------------------------------ #
-    # EXPAND COLLECTION HANDLER
+    # PAPER RESOLVER
     # ------------------------------------------------------------------ #
-    def _handle_expand_collection(
-        self, question: str, intent: QueryIntent, topic: Optional[str]
-    ) -> Dict[str, Any]:
-        logger.info(f"Expand collection intent detected for topic '{topic}'")
+    def resolve_paper_reference(self, question: str, paper_map: Dict[int, str]) -> Optional[str]:
+        """
+        Detects:
+          - paper 1 / paper 3
+          - the first paper / third paper
+        and returns the corresponding arXiv ID.
+        """
+        if not paper_map:
+            return None
+
+        ordinals = {
+            "first": 1, "second": 2, "third": 3,
+            "fourth": 4, "fifth": 5, "sixth": 6,
+            "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10
+        }
+
+        q = question.lower()
+
+        # paper 3 / paper 1
+        m = re.search(r"paper\s+(\d+)", q)
+        if m:
+            num = int(m.group(1))
+            return paper_map.get(num)
+
+        # the first paper / third paper
+        m = re.search(r"(?:the\s+)?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+paper", q)
+        if m:
+            num = ordinals.get(m.group(1))
+            return paper_map.get(num)
+
+        return None
+
+    # ------------------------------------------------------------------ #
+    # EXPAND COLLECTION
+    # ------------------------------------------------------------------ #
+    def _handle_expand_collection(self, question, intent, topic):
         return {
             "answer": (
                 f"To fetch more papers for this session, use the `/ingest` command.\n\n"
-                f"This will run the full arXiv search pipeline for the current topic "
-                f"**'{topic}'** and add new papers to your knowledge base."
+                f"This will run the full arXiv search pipeline for **'{topic}'**."
             ),
             "sources": [],
             "contexts_used": 0,
@@ -57,29 +89,22 @@ class QueryAgent:
         }
 
     # ------------------------------------------------------------------ #
-    # COLLECTION-LEVEL HANDLER (overview / trends / gaps)
+    # COLLECTION-LEVEL
     # ------------------------------------------------------------------ #
-    async def _handle_collection_query(
-        self, question: str, intent: QueryIntent, topic: Optional[str]
-    ) -> Dict[str, Any]:
-        """Loads ONE grouped entry per paper for the topic and runs the SynthesisAgent."""
+    async def _handle_collection_query(self, question, intent, topic):
         logger.info(f"Collection-level query ({intent.intent}) — loading grouped papers for '{topic}'")
 
         notes = await self.retriever.get_grouped_notes_for_topic(topic) if topic else []
 
         if not notes:
             return {
-                "answer": (
-                    f"No papers are indexed for the topic '{topic}' yet. "
-                    "Please ingest papers on this topic first using `/ingest`."
-                ),
+                "answer": f"No papers are indexed for the topic '{topic}' yet. Use `/ingest`.",
                 "sources": [],
                 "contexts_used": 0,
                 "intent": intent.intent,
                 "retrieval_confidence": 0.0
             }
 
-        # Safe graph enrichment (works with dict-based chunks)
         graph_triplets = []
         if neo4j_client.is_connected() and notes:
             paper_ids = list({n.get("paper_id") for n in notes if n.get("paper_id")})
@@ -96,16 +121,10 @@ class QueryAgent:
         return result
 
     # ------------------------------------------------------------------ #
-    # COMPARISON HANDLER
+    # COMPARISON
     # ------------------------------------------------------------------ #
-    async def _handle_comparison_query(
-        self, question: str, intent: QueryIntent, topic: Optional[str]
-    ) -> Dict[str, Any]:
-        logger.info(f"Comparison query — expanded: {intent.expanded_query[:80]}")
-
-        retrieved = await self.retriever.search(
-            intent.expanded_query, topic=topic, n_results=8
-        )
+    async def _handle_comparison_query(self, question, intent, topic):
+        retrieved = await self.retriever.search(intent.expanded_query, topic=topic, n_results=8)
         papers = retrieved.get("papers", [])
         graph_triplets = retrieved.get("graph_triplets", [])
         confidence = retrieved.get("retrieval_confidence", 0.0)
@@ -118,39 +137,44 @@ class QueryAgent:
 
         system_prompt = (
             "You are a senior AI research analyst.\n"
-            "The user wants a direct, structured COMPARISON between methods, models, or approaches.\n\n"
-            "Format your answer as:\n"
-            "1. A comparison table if comparing quantitative metrics\n"
-            "2. A structured breakdown of differences in approach, performance, and limitations\n"
-            "3. A clear verdict on which approach is stronger and under what conditions\n\n"
-            "Always cite papers: [arXiv:ID - Short Title]\n"
-            "Use graph relationships to link entities across papers."
+            "Provide a structured COMPARISON. Always cite [arXiv:ID - Title]."
         )
-
-        human_prompt = (
-            f"Comparison Question: {question}\n"
-            f"{graph_section}"
-            f"\nResearch Context:\n{context_str}\n\n"
-            "Provide a structured comparison with citations."
-        )
+        human_prompt = f"Comparison: {question}\n{graph_section}\nContext:\n{context_str}"
 
         answer = await self._generate(system_prompt, human_prompt)
         return self._build_response(answer, papers, intent.intent, confidence)
 
     # ------------------------------------------------------------------ #
-    # TARGETED QUERY HANDLER
+    # TARGETED QUERY (with Paper Resolver)
     # ------------------------------------------------------------------ #
-    async def _handle_targeted_query(
-        self, question: str, intent: QueryIntent, topic: Optional[str]
-    ) -> Dict[str, Any]:
+    async def _handle_targeted_query(self, question, intent, topic):
         logger.info(f"Targeted query ({intent.intent}) — expanded: {intent.expanded_query[:80]}")
 
-        retrieved = await self.retriever.search(
-            intent.expanded_query, topic=topic, n_results=8
-        )
-        papers = retrieved.get("papers", [])
-        graph_triplets = retrieved.get("graph_triplets", [])
-        confidence = retrieved.get("retrieval_confidence", 0.0)
+        # --- Paper Resolver ---
+        paper_map = session_manager.build_paper_number_map()
+        resolved_id = self.resolve_paper_reference(question, paper_map)
+
+        if resolved_id:
+            logger.info(f"Resolved paper reference → {resolved_id}")
+            # Fetch chunks only for this specific paper
+            papers = await self.retriever.get_chunks_for_paper(resolved_id, topic=topic, n_results=50)
+            if not papers:
+                # Fallback to normal search if dedicated method not available
+                retrieved = await self.retriever.search(
+                    f"paper {resolved_id}", topic=topic, n_results=8
+                )
+                papers = [p for p in retrieved.get("papers", []) if p.get("paper_id") == resolved_id]
+
+            graph_triplets = []
+            confidence = 0.95 if papers else 0.0
+        else:
+            # Normal semantic search
+            retrieved = await self.retriever.search(
+                intent.expanded_query, topic=topic, n_results=8
+            )
+            papers = retrieved.get("papers", [])
+            graph_triplets = retrieved.get("graph_triplets", [])
+            confidence = retrieved.get("retrieval_confidence", 0.0)
 
         if not papers:
             return self._no_results_response(intent)
@@ -171,10 +195,8 @@ class QueryAgent:
             "Rules:\n"
             "- Ground every claim in the provided context.\n"
             "- Always cite papers: [arXiv:ID - Short Title]\n"
-            "- If context is insufficient, say so explicitly.\n"
-            "- Be technical, precise, and insightful.\n"
-            "- Use graph relationships to connect methods, datasets, and metrics.\n"
-            "- Go beyond summaries — provide analysis, implications, and connections."
+            "- If context is insufficient, say so explicitly (this is NOT a hallucination).\n"
+            "- Be technical, precise, and insightful."
         )
 
         human_prompt = (
@@ -213,7 +235,6 @@ class QueryAgent:
             title = ctx.get("title", "Untitled")
             score = ctx.get("score", 0.0)
             content = ctx.get("content") or ctx.get("text") or ""
-
             parts.append(
                 f"--- Paper {i} [arXiv:{paper_id}] {title} [score: {score:.3f}] ---\n"
                 f"{content.strip()}\n"
@@ -229,10 +250,8 @@ class QueryAgent:
     def _no_results_response(self, intent: QueryIntent) -> Dict[str, Any]:
         return {
             "answer": (
-                "No relevant papers were found in the knowledge base for this query. "
-                "This may mean: (1) no papers on this topic are indexed yet, or "
-                "(2) the query is too specific for the current collection.\n\n"
-                "Try ingesting more papers on this topic or broadening your query."
+                "No relevant papers were found in the knowledge base for this query.\n\n"
+                "Try ingesting more papers or broadening your query."
             ),
             "sources": [],
             "contexts_used": 0,
@@ -240,13 +259,7 @@ class QueryAgent:
             "retrieval_confidence": 0.0
         }
 
-    def _build_response(
-        self,
-        answer: str,
-        papers: List[Dict],
-        intent_type: str,
-        confidence: float
-    ) -> Dict[str, Any]:
+    def _build_response(self, answer, papers, intent_type, confidence):
         sources = [
             {
                 "paper_id": c.get("paper_id"),
