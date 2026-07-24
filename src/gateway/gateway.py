@@ -72,13 +72,16 @@ class AIGateway:
     # Groundedness
     # ------------------------------------------------------------------ #
     async def _verify_groundedness(
-        self, answer: str, context: str, model: str
-    ) -> Tuple[bool, str]:
+        self, answer: str, context: str, model: str) -> Tuple[bool, str]:
         """
         Fast LLM-as-a-judge consistency validation.
         Fail-open on empty/invalid judge responses.
         """
-        # Fast path: answer that admits missing info is always grounded
+        # Skip if no real context to check against
+        if not (context or "").strip() or not (answer or "").strip():
+            return True, "Skipped: empty context or answer"
+
+        # Fast path: answer that admits missing info is grounded
         lower = answer.lower()
         insufficient_phrases = [
             "does not contain",
@@ -89,54 +92,61 @@ class AIGateway:
             "not mentioned in the retrieved",
             "not available in the context",
             "context is insufficient",
-        ]
+            "not stored",
+            "not available",]
         if any(p in lower for p in insufficient_phrases):
             return True, "Answer correctly reports insufficient context"
 
-        system_prompt = """You are a strict factual consistency judge.
-Analyze the provided Answer and Context.
+    # Keep judge prompt short — long context causes empty local-model replies
+        ctx = context.strip()
+        if len(ctx) > 3500:
+            ctx = ctx[:3500] + "\n...[truncated]"
 
-Flag the Answer as NOT grounded ONLY if it invents, states, or implies specific
-facts, numbers, metrics, or claims that are NOT present in the Context.
+        system_prompt = (
+            "You are a factual consistency judge.\n"
+            "Return ONLY one JSON object, no markdown:\n"
+            '{"is_grounded": true, "reason": "short reason"}\n\n'
+            "Rules:\n"
+            "- is_grounded=false ONLY if the Answer invents specific facts/numbers "
+            "not in the Context.\n"
+            "- is_grounded=true if the Answer is supported OR correctly says "
+            "information is missing.\n")
 
-Do NOT flag the Answer as ungrounded if it correctly states that certain
-information is missing, unavailable, or not detailed in the Context —
-that is a truthful response, not a hallucination.
-
-Return ONLY a JSON object:
-{"is_grounded": true|false, "reason": "<short explanation>"}"""
-
-        human_prompt = f"""Context:
-{context}
-
-Answer:
-{answer}
-
-Verify the Answer."""
+        human_prompt = f"Context:\n{ctx}\n\nAnswer:\n{answer}\n\nJSON only:"
 
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": human_prompt},
-        ]
+            {"role": "user", "content": human_prompt},]
 
         try:
             local_model = settings.default_model or "qwen2.5:7b"
             response = await self.ollama.generate(
                 model=local_model,
                 messages=messages,
-                temperature=0.0,
-            )
-            raw = response.get("text") or ""
-            if not raw.strip():
-                logger.warning("Groundedness checker returned empty — defaulting to True")
-                return True, ""
+                temperature=0.0,)
+            raw = (response.get("text") if isinstance(response, dict) else None) or ""
+            raw = raw.strip()
+            if not raw:
+                logger.warning(
+                "Groundedness checker returned empty — defaulting to True"
+                )
+                return True, "empty_judge_response"
 
-            text = extract_json_object(raw)
+            # Prefer extract_json_object if available; else first {...} span
+            try:
+                text = extract_json_object(raw)
+            except Exception:
+                start, end = raw.find("{"), raw.rfind("}")
+                text = raw[start : end + 1] if start != -1 and end > start else raw
+
             data = json.loads(text)
-            return bool(data.get("is_grounded", True)), data.get("reason", "")
+            is_grounded = bool(data.get("is_grounded", True))
+            reason = str(data.get("reason", ""))[:200]
+            return is_grounded, reason
+
         except Exception as e:
             logger.warning(f"Groundedness checker failed: {e}. Defaulting to True.")
-            return True, ""
+            return True, f"judge_error: {e}"
 
     # ------------------------------------------------------------------ #
     # Structured parse helper

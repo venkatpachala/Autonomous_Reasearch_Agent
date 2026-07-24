@@ -142,7 +142,43 @@ class PineconeVectorClient:
         except Exception as e:
             logger.error(f"Failed to store {note_id} in Pinecone: {e}")
             raise
+    def _to_pinecone_filter(self, where: Optional[Dict]) -> Optional[Dict]:
+        """Convert simple or compound filters to Pinecone filter syntax."""
+        if not where:
+            return None
 
+        # Already a compound operator at top level
+        if "$and" in where or "$or" in where:
+            op = "$and" if "$and" in where else "$or"
+            clauses = where[op]
+            if not isinstance(clauses, list):
+                raise ValueError(f"{op} must be a list of filter clauses")
+
+            normalized = []
+            for clause in clauses:
+                if not isinstance(clause, dict):
+                    continue
+                # {"paper_id": "x"} → {"paper_id": {"$eq": "x"}}
+                # {"paper_id": {"$eq": "x"}} → keep
+                item = {}
+                for k, v in clause.items():
+                    if isinstance(v, dict) and any(str(opk).startswith("$") for opk in v.keys()):
+                        item[k] = v
+                    else:
+                        item[k] = {"$eq": v}
+                if item:
+                    normalized.append(item)
+            return {op: normalized} if normalized else None
+
+    # Simple flat filter: {"paper_id": "x", "topic": "y"}
+        pinecone_filter = {}
+        for k, v in where.items():
+            if isinstance(v, dict) and any(str(opk).startswith("$") for opk in v.keys()):
+                pinecone_filter[k] = v
+            else:
+                pinecone_filter[k] = {"$eq": v}
+        return pinecone_filter  
+          
     def query(
         self,
         query_text: str,
@@ -167,19 +203,13 @@ class PineconeVectorClient:
                 query_vector = asyncio.run(_get_embedding(query_text))
 
             # Convert filter
-            pinecone_filter = None
-            if where:
-                # Pinecone expects {"topic": {"$eq": "value"}}
-                pinecone_filter = {}
-                for k, v in where.items():
-                    pinecone_filter[k] = {"$eq": v}
+            pinecone_filter = self._to_pinecone_filter(where)
 
             result = self._index.query(
                 vector=query_vector,
                 top_k=n_results,
                 filter=pinecone_filter,
-                include_metadata=True
-            )
+                include_metadata=True,)
 
             ids, documents, metadatas, distances = [], [], [], []
             for match in result.get("matches", []):

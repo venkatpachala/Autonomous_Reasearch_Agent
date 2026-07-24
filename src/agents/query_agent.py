@@ -27,7 +27,7 @@ class QueryAgent:
         self,
         question: str,
         topic: Optional[str] = None,
-        chat_history: Optional[List] = None
+        chat_history: Optional[List] = None,
     ) -> Dict[str, Any]:
         # 1. Session metadata — NEVER use RAG
         if self._is_session_metadata_question(question):
@@ -47,7 +47,7 @@ class QueryAgent:
             return await self._handle_targeted_query(question, intent, topic)
 
     # ------------------------------------------------------------------ #
-    # SESSION METADATA (no embedding / no retrieval / no LLM)
+    # SESSION METADATA
     # ------------------------------------------------------------------ #
     def _is_session_metadata_question(self, question: str) -> bool:
         q = question.lower().strip()
@@ -65,6 +65,10 @@ class QueryAgent:
             r"papers indexed",
             r"ingestion status",
             r"failed papers",
+            r"session topic",
+            r"current topic",
+            r"what( is|\'s)? (the )?topic",
+            r"this session",
         ]
         return any(re.search(p, q) for p in patterns)
 
@@ -73,6 +77,7 @@ class QueryAgent:
     ) -> Dict[str, Any]:
         session = session_manager.current_session
         paper_ids = (session.papers_ingested if session else []) or []
+        session_topic = topic or (session.topic if session else None)
 
         rows = []
         for i, pid in enumerate(paper_ids, 1):
@@ -86,10 +91,15 @@ class QueryAgent:
 
         q = question.lower()
 
-        if re.search(r"how many|number of|count", q):
+        if re.search(r"session topic|current topic|what( is|\'s)? (the )?topic", q):
+            answer = f"**Session topic:** {session_topic or 'N/A'}"
+            if paper_ids:
+                answer += f"\n**Papers ingested:** {len(paper_ids)}"
+
+        elif re.search(r"how many|number of|count", q):
             answer = f"**{len(paper_ids)} papers** are ingested in this session"
-            if topic:
-                answer += f" for topic **'{topic}'**."
+            if session_topic:
+                answer += f" for topic **'{session_topic}'**."
             else:
                 answer += "."
             if rows:
@@ -118,7 +128,7 @@ class QueryAgent:
         else:
             answer = (
                 f"**Session status**\n"
-                f"- Topic: {topic or (session.topic if session else 'N/A')}\n"
+                f"- Topic: {session_topic or 'N/A'}\n"
                 f"- Papers ingested: {len(paper_ids)}\n"
             )
             if rows:
@@ -179,7 +189,7 @@ class QueryAgent:
         return m.group(1) if m else None
 
     # ------------------------------------------------------------------ #
-    # PAPER METADATA (authors / title / date for a specific paper)
+    # PAPER METADATA
     # ------------------------------------------------------------------ #
     def _is_paper_metadata_question(self, question: str) -> bool:
         q = question.lower()
@@ -194,10 +204,19 @@ class QueryAgent:
 
     def _answer_from_paper_metadata(
         self, question: str, paper_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         meta = research_index.get_paper(paper_id)
         if not meta:
-            return None
+            return {
+                "answer": (
+                    f"No metadata stored yet for `{paper_id}`. "
+                    "Re-ingest to populate authors/dates."
+                ),
+                "sources": [],
+                "contexts_used": 0,
+                "intent": "metadata",
+                "retrieval_confidence": 0.0,
+            }
 
         q = question.lower()
         title = meta.get("title", "Untitled")
@@ -255,7 +274,7 @@ class QueryAgent:
         }
 
     # ------------------------------------------------------------------ #
-    # EXPAND COLLECTION
+    # EXPAND / COLLECTION / COMPARISON / TARGETED
     # ------------------------------------------------------------------ #
     def _handle_expand_collection(self, question, intent, topic):
         return {
@@ -269,19 +288,19 @@ class QueryAgent:
             "retrieval_confidence": 1.0,
         }
 
-    # ------------------------------------------------------------------ #
-    # COLLECTION-LEVEL
-    # ------------------------------------------------------------------ #
     async def _handle_collection_query(self, question, intent, topic):
         logger.info(
-            f"Collection-level query ({intent.intent}) — loading grouped papers for '{topic}'"
+            f"Collection-level query ({intent.intent}) — "
+            f"loading grouped papers for '{topic}'"
         )
 
         notes = await self.retriever.get_grouped_notes_for_topic(topic) if topic else []
 
         if not notes:
             return {
-                "answer": f"No papers are indexed for the topic '{topic}' yet. Use `/ingest`.",
+                "answer": (
+                    f"No papers are indexed for the topic '{topic}' yet. Use `/ingest`."
+                ),
                 "sources": [],
                 "contexts_used": 0,
                 "intent": intent.intent,
@@ -303,9 +322,6 @@ class QueryAgent:
         result["retrieval_confidence"] = 1.0
         return result
 
-    # ------------------------------------------------------------------ #
-    # COMPARISON
-    # ------------------------------------------------------------------ #
     async def _handle_comparison_query(self, question, intent, topic):
         retrieved = await self.retriever.search(
             intent.expanded_query, topic=topic, n_results=8
@@ -329,9 +345,6 @@ class QueryAgent:
         answer = await self._generate(system_prompt, human_prompt)
         return self._build_response(answer, papers, intent.intent, confidence)
 
-    # ------------------------------------------------------------------ #
-    # TARGETED QUERY
-    # ------------------------------------------------------------------ #
     async def _handle_targeted_query(self, question, intent, topic):
         logger.info(
             f"Targeted query ({intent.intent}) — expanded: {intent.expanded_query[:80]}"
@@ -343,12 +356,9 @@ class QueryAgent:
             or self.resolve_arxiv_id(question)
         )
 
-        # Paper-level metadata (authors, title, date) — no RAG
         if resolved_id and self._is_paper_metadata_question(question):
-            meta_answer = self._answer_from_paper_metadata(question, resolved_id)
-            if meta_answer:
-                logger.info(f"Answered from paper metadata registry: {resolved_id}")
-                return meta_answer
+            logger.info(f"Answered from paper metadata registry: {resolved_id}")
+            return self._answer_from_paper_metadata(question, resolved_id)
 
         if resolved_id:
             logger.info(f"Resolved paper reference → {resolved_id}")
@@ -387,7 +397,8 @@ class QueryAgent:
             )
 
         system_prompt = (
-            "You are a senior AI Research Engineer with access to a personal research knowledge base.\n\n"
+            "You are a senior AI Research Engineer with access to a personal "
+            "research knowledge base.\n\n"
             "Answer the user's question **strictly based on the provided context**.\n\n"
             "Rules:\n"
             "- Ground every claim in the provided context.\n"

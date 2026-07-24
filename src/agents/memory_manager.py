@@ -1,9 +1,9 @@
 """
 Memory Manager - Layered Storage (Artifact + Vector + Graph + Research Index)
-Updated for full parsed content + chunk storage + real paper titles.
+Updated for full parsed content + chunk storage + full paper metadata.
 """
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from loguru import logger
 
 from src.storage.artifact_store import artifact_store
@@ -23,14 +23,13 @@ class MemoryManager:
     async def store_paper(self, output: PerPaperOutput, topic: str):
         """
         Main storage orchestration.
-        Stores FULL extracted content as chunks in Pinecone.
+        Stores FULL extracted content as chunks in Pinecone + metadata registry.
         """
         paper_id = output.paper_id
         extracted = output.extracted
-        title = (
-            getattr(output.metadata, "title", None)
-            if output.metadata else None
-        ) or paper_id
+        meta = output.metadata
+
+        title = (getattr(meta, "title", None) if meta else None) or paper_id
 
         if not extracted or not getattr(extracted, "full_text", None):
             logger.warning(f"No extracted content for {paper_id} — skipping storage")
@@ -48,12 +47,40 @@ class MemoryManager:
         # 3. Knowledge Graph (optional)
         self._update_graph(output, topic)
 
-        # 4. Research Index (for continuous monitor + deduplication)
+        # 4. Research Index — full metadata for authors / dates / abstracts
         try:
+            authors: List[str] = []
+            if meta and getattr(meta, "authors", None):
+                for a in meta.authors:
+                    if hasattr(a, "name") and a.name:
+                        authors.append(a.name)
+                    elif isinstance(a, str) and a.strip():
+                        authors.append(a.strip())
+
+            published = ""
+            if meta is not None:
+                published = str(
+                    getattr(meta, "published_date", None)
+                    or getattr(meta, "published", None)
+                    or ""
+                )
+
+            categories = None
+            if meta is not None:
+                categories = getattr(meta, "categories", None)
+
+            abstract = getattr(meta, "abstract", None) if meta else None
+
             self.index.register_paper(
                 arxiv_id=paper_id,
                 title=title,
-                topic=topic
+                topic=topic,
+                authors=authors,
+                abstract=abstract,
+                published=published,
+                categories=categories,
+                pdf_path=getattr(output, "local_pdf_path", None),
+                status="indexed",
             )
         except Exception as e:
             logger.warning(f"Research Index registration failed for {paper_id}: {e}")
@@ -83,7 +110,7 @@ class MemoryManager:
                 await self.vector.add_knowledge_note(
                     note_id=chunk["chunk_id"],
                     document=chunk["text"],
-                    metadata=chunk["metadata"]
+                    metadata=chunk["metadata"],
                 )
             except Exception as e:
                 logger.warning(f"Failed to store chunk {chunk['chunk_id']}: {e}")
@@ -95,26 +122,24 @@ class MemoryManager:
         topic: str,
         title: str = "Untitled",
         chunk_size: int = 1200,
-        overlap: int = 200
+        overlap: int = 200,
     ) -> List[Dict[str, Any]]:
         """
         Create retrieval-friendly chunks from full extracted content.
         Prefers section-based chunks when available.
         """
-        chunks = []
+        chunks: List[Dict[str, Any]] = []
 
         # 1. Prefer section-based chunks (best quality)
         if extracted.sections:
             for idx, (section_name, content) in enumerate(extracted.sections.items()):
                 if content and content.strip():
-                    # Sanitize section name → ASCII-only, safe for IDs
                     safe_section = (
                         re.sub(r"[^\x00-\x7F]+", "", section_name)[:40]
                         .strip()
                         .replace(" ", "_")
                         or f"sec{idx}"
                     )
-
                     chunks.append({
                         "chunk_id": f"{paper_id}_section_{safe_section}",
                         "text": f"Section: {section_name}\n\n{content.strip()}",
@@ -124,8 +149,8 @@ class MemoryManager:
                             "topic": topic,
                             "chunk_type": "section",
                             "section": section_name,
-                            "artifact_type": "chunk"
-                        }
+                            "artifact_type": "chunk",
+                        },
                     })
 
         # 2. Fallback: fixed-size paragraph chunks
@@ -133,7 +158,7 @@ class MemoryManager:
             text = extracted.full_text.strip()
             paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
 
-            current_chunk = []
+            current_chunk: List[str] = []
             current_length = 0
             chunk_idx = 0
 
@@ -149,14 +174,14 @@ class MemoryManager:
                             "topic": topic,
                             "chunk_index": chunk_idx,
                             "chunk_type": "text",
-                            "artifact_type": "chunk"
-                        }
+                            "artifact_type": "chunk",
+                        },
                     })
                     chunk_idx += 1
 
                     # Keep overlap
                     overlap_chars = 0
-                    new_chunk = []
+                    new_chunk: List[str] = []
                     for prev in reversed(current_chunk):
                         if overlap_chars + len(prev) < overlap:
                             new_chunk.insert(0, prev)
@@ -180,8 +205,8 @@ class MemoryManager:
                         "topic": topic,
                         "chunk_index": chunk_idx,
                         "chunk_type": "text",
-                        "artifact_type": "chunk"
-                    }
+                        "artifact_type": "chunk",
+                    },
                 })
 
         return chunks
@@ -192,19 +217,28 @@ class MemoryManager:
 
         try:
             paper = output.metadata
+            if not paper:
+                return
+
             self.graph.create_paper_node({
                 "arxiv_id": output.paper_id,
-                "title": paper.title,
-                "abstract": paper.abstract,
-                "published_date": str(paper.published_date),
-                "topic": topic
+                "title": getattr(paper, "title", output.paper_id),
+                "abstract": getattr(paper, "abstract", "") or "",
+                "published_date": str(
+                    getattr(paper, "published_date", None)
+                    or getattr(paper, "published", "")
+                    or ""
+                ),
+                "topic": topic,
             })
 
-            for author in paper.authors:
-                self.graph.create_author_relationship(output.paper_id, author.name)
+            authors = getattr(paper, "authors", None) or []
+            for author in authors:
+                name = author.name if hasattr(author, "name") else str(author)
+                if name:
+                    self.graph.create_author_relationship(output.paper_id, name)
         except Exception as e:
             logger.warning(f"Neo4j update failed for {output.paper_id}: {e}")
 
 
-# Global instance
 memory_manager = MemoryManager()
