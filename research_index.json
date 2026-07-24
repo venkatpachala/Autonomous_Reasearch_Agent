@@ -4,19 +4,21 @@
       "title": "Towards Proactive Information Retrieval in Noisy Text with Wikipedia Concepts",
       "topics": [
         "retrieval frameworks for ai agents",
-        "retrieval startegies for ai agents"
+        "retrieval startegies for ai agents",
+        "retrieval strategies for rag and ai agents"
       ],
       "first_seen": "2026-07-23T07:14:42.567009",
-      "last_processed": "2026-07-23T07:49:13.587233"
+      "last_processed": "2026-07-24T09:00:36.442161"
     },
     "1601.04605v1": {
       "title": "Dynamic Information Retrieval: Theoretical Framework and Application",
       "topics": [
         "retrieval frameworks for ai agents",
-        "retrieval startegies for ai agents"
+        "retrieval startegies for ai agents",
+        "retrieval strategies for rag and ai agents"
       ],
       "first_seen": "2026-07-23T07:15:07.717394",
-      "last_processed": "2026-07-23T07:49:17.803601"
+      "last_processed": "2026-07-24T09:00:37.568335"
     },
     "2404.14464v1": {
       "title": "Tree of Reviews: A Tree-based Dynamic Iterative Retrieval Framework for Multi-hop Question Answering",
@@ -30,10 +32,11 @@
       "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
       "topics": [
         "retrieval frameworks for ai agents",
-        "retrieval startegies for ai agents"
+        "retrieval startegies for ai agents",
+        "retrieval strategies for rag and ai agents"
       ],
       "first_seen": "2026-07-23T07:15:36.253520",
-      "last_processed": "2026-07-23T07:49:19.405517"
+      "last_processed": "2026-07-24T09:01:12.136953"
     },
     "2503.12687v1": {
       "title": "AI Agents: Evolution, Architecture, and Real-World Applications",
@@ -263,6 +266,62 @@
       ],
       "first_seen": "2026-07-24T07:55:30.431761",
       "last_processed": "2026-07-24T07:55:30.431761"
+    },
+    "2511.22858v1": {
+      "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T08:58:11.681305",
+      "last_processed": "2026-07-24T08:58:11.681305"
+    },
+    "2412.12881v1": {
+      "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T08:58:34.886095",
+      "last_processed": "2026-07-24T08:58:34.886095"
+    },
+    "2402.07483v2": {
+      "title": "T-RAG: Lessons from the LLM Trenches",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T08:59:23.377365",
+      "last_processed": "2026-07-24T08:59:23.377365"
+    },
+    "2409.03708v2": {
+      "title": "RAG based Question-Answering for Contextual Response Prediction System",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T09:00:49.743566",
+      "last_processed": "2026-07-24T09:00:49.743566"
+    },
+    "2401.15391v1": {
+      "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T09:01:00.137809",
+      "last_processed": "2026-07-24T09:01:00.137809"
+    },
+    "2504.01346v4": {
+      "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T09:01:49.451290",
+      "last_processed": "2026-07-24T09:01:49.451290"
+    },
+    "2505.21439v1": {
+      "title": "Towards Better Instruction Following Retrieval Models",
+      "topics": [
+        "retrieval strategies for rag and ai agents"
+      ],
+      "first_seen": "2026-07-24T09:01:50.252694",
+      "last_processed": "2026-07-24T09:01:50.252694"
     }
   },
   "topics": {
@@ -353,6 +412,22 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-24T07:55:30.431761"
+    },
+    "retrieval strategies for rag and ai agents": {
+      "paper_ids": [
+        "2511.22858v1",
+        "2412.12881v1",
+        "2402.07483v2",
+        "2210.09877v1",
+        "1601.04605v1",
+        "2409.03708v2",
+        "2401.15391v1",
+        "2504.05181v2",
+        "2504.01346v4",
+        "2505.21439v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-24T09:01:50.252694"
     }
   }
 }

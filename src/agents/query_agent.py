@@ -1,21 +1,23 @@
 """
-Query / Chat Agent - Intent-routed RAG with Paper Resolver.
+Query / Chat Agent - Intent-routed RAG with Paper Resolver + Session Metadata.
 """
 
 import re
 from typing import List, Dict, Any, Optional
 from loguru import logger
+
 from src.gateway import gateway
 from src.tools.retriever import research_retriever
 from src.agents.intent_classifier import intent_classifier, QueryIntent
 from src.agents.synthesis_agent import synthesis_agent
 from src.db.neo4j_client import neo4j_client
 from src.agents.session_manager import session_manager
+from src.tools.research_index import research_index
 from src.observability.tracing import traced
 
 
 class QueryAgent:
-    """Intent-routed RAG agent with paper-number resolution."""
+    """Intent-routed RAG agent with paper-number resolution and metadata lookup."""
 
     def __init__(self):
         self.retriever = research_retriever
@@ -27,6 +29,12 @@ class QueryAgent:
         topic: Optional[str] = None,
         chat_history: Optional[List] = None
     ) -> Dict[str, Any]:
+        # 1. Session metadata — NEVER use RAG
+        if self._is_session_metadata_question(question):
+            logger.info("Routing to session metadata lookup (no RAG)")
+            return self._answer_session_metadata(question, topic)
+
+        # 2. Normal intent routing
         intent: QueryIntent = await intent_classifier.classify(question, topic=topic)
 
         if intent_classifier.is_collection_level(intent):
@@ -39,39 +47,212 @@ class QueryAgent:
             return await self._handle_targeted_query(question, intent, topic)
 
     # ------------------------------------------------------------------ #
+    # SESSION METADATA (no embedding / no retrieval / no LLM)
+    # ------------------------------------------------------------------ #
+    def _is_session_metadata_question(self, question: str) -> bool:
+        q = question.lower().strip()
+        patterns = [
+            r"how many papers",
+            r"number of papers",
+            r"count.*papers",
+            r"list (all )?papers",
+            r"list (all )?(arxiv )?ids",
+            r"list (all )?titles",
+            r"what papers",
+            r"which papers",
+            r"show (all )?papers",
+            r"papers ingested",
+            r"papers indexed",
+            r"ingestion status",
+            r"failed papers",
+        ]
+        return any(re.search(p, q) for p in patterns)
+
+    def _answer_session_metadata(
+        self, question: str, topic: Optional[str]
+    ) -> Dict[str, Any]:
+        session = session_manager.current_session
+        paper_ids = (session.papers_ingested if session else []) or []
+
+        rows = []
+        for i, pid in enumerate(paper_ids, 1):
+            meta = research_index.get_paper(pid) or {}
+            rows.append({
+                "n": i,
+                "paper_id": pid,
+                "title": meta.get("title") or "Untitled",
+                "authors": meta.get("authors") or [],
+            })
+
+        q = question.lower()
+
+        if re.search(r"how many|number of|count", q):
+            answer = f"**{len(paper_ids)} papers** are ingested in this session"
+            if topic:
+                answer += f" for topic **'{topic}'**."
+            else:
+                answer += "."
+            if rows:
+                answer += "\n\n" + "\n".join(
+                    f"{r['n']}. `{r['paper_id']}` — {r['title']}" for r in rows
+                )
+
+        elif re.search(r"list.*id|arxiv", q):
+            if not paper_ids:
+                answer = "No papers are ingested in this session yet."
+            else:
+                answer = "**arXiv IDs in this session:**\n" + "\n".join(
+                    f"{r['n']}. `{r['paper_id']}`" for r in rows
+                )
+
+        elif re.search(
+            r"list.*title|what papers|which papers|show.*papers|list.*papers", q
+        ):
+            if not rows:
+                answer = "No papers are ingested in this session yet."
+            else:
+                answer = f"**Papers in this session ({len(rows)}):**\n" + "\n".join(
+                    f"{r['n']}. **{r['title']}** (`{r['paper_id']}`)" for r in rows
+                )
+
+        else:
+            answer = (
+                f"**Session status**\n"
+                f"- Topic: {topic or (session.topic if session else 'N/A')}\n"
+                f"- Papers ingested: {len(paper_ids)}\n"
+            )
+            if rows:
+                answer += "\n" + "\n".join(
+                    f"{r['n']}. {r['title']} (`{r['paper_id']}`)" for r in rows
+                )
+
+        sources = [
+            {
+                "paper_id": r["paper_id"],
+                "title": r["title"],
+                "arxiv_url": f"https://arxiv.org/abs/{r['paper_id']}",
+                "score": 1.0,
+            }
+            for r in rows
+        ]
+
+        return {
+            "answer": answer,
+            "sources": sources,
+            "contexts_used": len(rows),
+            "intent": "metadata_lookup",
+            "retrieval_confidence": 1.0,
+        }
+
+    # ------------------------------------------------------------------ #
     # PAPER RESOLVER
     # ------------------------------------------------------------------ #
-    def resolve_paper_reference(self, question: str, paper_map: Dict[int, str]) -> Optional[str]:
-        """
-        Detects:
-          - paper 1 / paper 3
-          - the first paper / third paper
-        and returns the corresponding arXiv ID.
-        """
+    def resolve_paper_reference(
+        self, question: str, paper_map: Dict[int, str]
+    ) -> Optional[str]:
         if not paper_map:
             return None
 
         ordinals = {
             "first": 1, "second": 2, "third": 3,
             "fourth": 4, "fifth": 5, "sixth": 6,
-            "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10
+            "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10,
         }
 
         q = question.lower()
 
-        # paper 3 / paper 1
         m = re.search(r"paper\s+(\d+)", q)
         if m:
-            num = int(m.group(1))
-            return paper_map.get(num)
+            return paper_map.get(int(m.group(1)))
 
-        # the first paper / third paper
-        m = re.search(r"(?:the\s+)?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+paper", q)
+        m = re.search(
+            r"(?:the\s+)?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+paper",
+            q,
+        )
         if m:
-            num = ordinals.get(m.group(1))
-            return paper_map.get(num)
+            return paper_map.get(ordinals.get(m.group(1)))
 
         return None
+
+    def resolve_arxiv_id(self, question: str) -> Optional[str]:
+        m = re.search(r"\b(\d{4}\.\d{4,5}v?\d*)\b", question)
+        return m.group(1) if m else None
+
+    # ------------------------------------------------------------------ #
+    # PAPER METADATA (authors / title / date for a specific paper)
+    # ------------------------------------------------------------------ #
+    def _is_paper_metadata_question(self, question: str) -> bool:
+        q = question.lower()
+        keywords = [
+            "author", "authors", "who wrote", "written by",
+            "published", "publication date", "year",
+            "affiliation", "venue", "category", "categories",
+            "what is the title", "title of paper",
+            "abstract of",
+        ]
+        return any(k in q for k in keywords)
+
+    def _answer_from_paper_metadata(
+        self, question: str, paper_id: str
+    ) -> Optional[Dict[str, Any]]:
+        meta = research_index.get_paper(paper_id)
+        if not meta:
+            return None
+
+        q = question.lower()
+        title = meta.get("title", "Untitled")
+        authors = meta.get("authors") or []
+        published = meta.get("published") or "Unknown"
+        abstract = meta.get("abstract") or ""
+        categories = meta.get("categories") or []
+
+        if any(k in q for k in ["author", "who wrote", "written by"]):
+            if authors:
+                answer = f"**Authors of [{paper_id}] {title}:**\n" + ", ".join(authors)
+            else:
+                answer = (
+                    f"Author information for [{paper_id}] {title} "
+                    "is not in the metadata registry yet. Re-ingest to populate authors."
+                )
+        elif any(k in q for k in ["published", "year", "publication date"]):
+            answer = f"**Published:** {published}\n**Paper:** [{paper_id}] {title}"
+        elif "title" in q:
+            answer = f"**Title:** {title}\n**arXiv:** {paper_id}"
+        elif "categor" in q:
+            cats = ", ".join(categories) if categories else "Not available"
+            answer = f"**Categories:** {cats}\n**Paper:** [{paper_id}] {title}"
+        elif "abstract" in q:
+            answer = (
+                f"**Abstract of [{paper_id}] {title}:**\n\n"
+                f"{abstract or 'Not available.'}"
+            )
+        else:
+            author_str = ", ".join(authors) if authors else "Not available"
+            answer = (
+                f"**[{paper_id}] {title}**\n\n"
+                f"- **Authors:** {author_str}\n"
+                f"- **Published:** {published}\n"
+                f"- **Categories:** {', '.join(categories) if categories else 'N/A'}\n"
+                f"- **arXiv:** https://arxiv.org/abs/{paper_id}\n"
+            )
+            if abstract:
+                answer += (
+                    f"\n**Abstract:**\n"
+                    f"{abstract[:800]}{'...' if len(abstract) > 800 else ''}"
+                )
+
+        return {
+            "answer": answer,
+            "sources": [{
+                "paper_id": paper_id,
+                "title": title,
+                "arxiv_url": f"https://arxiv.org/abs/{paper_id}",
+                "score": 1.0,
+            }],
+            "contexts_used": 1,
+            "intent": "metadata",
+            "retrieval_confidence": 1.0,
+        }
 
     # ------------------------------------------------------------------ #
     # EXPAND COLLECTION
@@ -85,14 +266,16 @@ class QueryAgent:
             "sources": [],
             "contexts_used": 0,
             "intent": "expand_collection",
-            "retrieval_confidence": 1.0
+            "retrieval_confidence": 1.0,
         }
 
     # ------------------------------------------------------------------ #
     # COLLECTION-LEVEL
     # ------------------------------------------------------------------ #
     async def _handle_collection_query(self, question, intent, topic):
-        logger.info(f"Collection-level query ({intent.intent}) — loading grouped papers for '{topic}'")
+        logger.info(
+            f"Collection-level query ({intent.intent}) — loading grouped papers for '{topic}'"
+        )
 
         notes = await self.retriever.get_grouped_notes_for_topic(topic) if topic else []
 
@@ -102,7 +285,7 @@ class QueryAgent:
                 "sources": [],
                 "contexts_used": 0,
                 "intent": intent.intent,
-                "retrieval_confidence": 0.0
+                "retrieval_confidence": 0.0,
             }
 
         graph_triplets = []
@@ -114,7 +297,7 @@ class QueryAgent:
             notes=notes,
             query=question,
             topic=topic or "research collection",
-            graph_triplets=graph_triplets
+            graph_triplets=graph_triplets,
         )
         result["intent"] = intent.intent
         result["retrieval_confidence"] = 1.0
@@ -124,7 +307,9 @@ class QueryAgent:
     # COMPARISON
     # ------------------------------------------------------------------ #
     async def _handle_comparison_query(self, question, intent, topic):
-        retrieved = await self.retriever.search(intent.expanded_query, topic=topic, n_results=8)
+        retrieved = await self.retriever.search(
+            intent.expanded_query, topic=topic, n_results=8
+        )
         papers = retrieved.get("papers", [])
         graph_triplets = retrieved.get("graph_triplets", [])
         confidence = retrieved.get("retrieval_confidence", 0.0)
@@ -145,30 +330,42 @@ class QueryAgent:
         return self._build_response(answer, papers, intent.intent, confidence)
 
     # ------------------------------------------------------------------ #
-    # TARGETED QUERY (with Paper Resolver)
+    # TARGETED QUERY
     # ------------------------------------------------------------------ #
     async def _handle_targeted_query(self, question, intent, topic):
-        logger.info(f"Targeted query ({intent.intent}) — expanded: {intent.expanded_query[:80]}")
+        logger.info(
+            f"Targeted query ({intent.intent}) — expanded: {intent.expanded_query[:80]}"
+        )
 
-        # --- Paper Resolver ---
         paper_map = session_manager.build_paper_number_map()
-        resolved_id = self.resolve_paper_reference(question, paper_map)
+        resolved_id = (
+            self.resolve_paper_reference(question, paper_map)
+            or self.resolve_arxiv_id(question)
+        )
+
+        # Paper-level metadata (authors, title, date) — no RAG
+        if resolved_id and self._is_paper_metadata_question(question):
+            meta_answer = self._answer_from_paper_metadata(question, resolved_id)
+            if meta_answer:
+                logger.info(f"Answered from paper metadata registry: {resolved_id}")
+                return meta_answer
 
         if resolved_id:
             logger.info(f"Resolved paper reference → {resolved_id}")
-            # Fetch chunks only for this specific paper
-            papers = await self.retriever.get_chunks_for_paper(resolved_id, topic=topic, n_results=50)
+            papers = await self.retriever.get_chunks_for_paper(
+                resolved_id, topic=topic, n_results=50
+            )
             if not papers:
-                # Fallback to normal search if dedicated method not available
                 retrieved = await self.retriever.search(
                     f"paper {resolved_id}", topic=topic, n_results=8
                 )
-                papers = [p for p in retrieved.get("papers", []) if p.get("paper_id") == resolved_id]
-
+                papers = [
+                    p for p in retrieved.get("papers", [])
+                    if p.get("paper_id") == resolved_id
+                ]
             graph_triplets = []
             confidence = 0.95 if papers else 0.0
         else:
-            # Normal semantic search
             retrieved = await self.retriever.search(
                 intent.expanded_query, topic=topic, n_results=8
             )
@@ -219,9 +416,9 @@ class QueryAgent:
                 task="research_answer",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": human_prompt}
+                    {"role": "user", "content": human_prompt},
                 ],
-                temperature=0.2
+                temperature=0.2,
             )
             return response.text
         except Exception as e:
@@ -256,7 +453,7 @@ class QueryAgent:
             "sources": [],
             "contexts_used": 0,
             "intent": intent.intent,
-            "retrieval_confidence": 0.0
+            "retrieval_confidence": 0.0,
         }
 
     def _build_response(self, answer, papers, intent_type, confidence):
@@ -264,7 +461,9 @@ class QueryAgent:
             {
                 "paper_id": c.get("paper_id"),
                 "title": c.get("title", "Untitled"),
-                "arxiv_url": c.get("arxiv_url", f"https://arxiv.org/abs/{c.get('paper_id')}"),
+                "arxiv_url": c.get(
+                    "arxiv_url", f"https://arxiv.org/abs/{c.get('paper_id')}"
+                ),
                 "score": c.get("score"),
             }
             for c in papers
@@ -274,7 +473,7 @@ class QueryAgent:
             "sources": sources,
             "contexts_used": len(papers),
             "intent": intent_type,
-            "retrieval_confidence": confidence
+            "retrieval_confidence": confidence,
         }
 
 

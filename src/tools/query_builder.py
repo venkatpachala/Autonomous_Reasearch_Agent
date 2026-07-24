@@ -1,74 +1,79 @@
-# src/tools/query_builder.py
-import re
+"""
+Query Builder — builds arXiv search queries from ResearchOntology.
+"""
+
 from typing import List, Tuple
 from loguru import logger
+
 from src.agents.research_ontology_agent import ResearchOntology
 
 
-class SearchQueryBuilder:
-    MAX_QUERY_WORDS = 4
-    MAX_QUERIES_TOTAL = 12
-
+class QueryBuilder:
     def build_queries(self, ontology: ResearchOntology) -> List[Tuple[str, str]]:
-        queries = []
-
-        # Priority 1: Named frameworks (highest precision)
-        for fw in ontology.named_frameworks[:5]:
-            q = self._clip(fw)
-            if q:
-                queries.append((q, "A:framework"))
-
-        # Priority 2: Core terms
-        for term in ontology.core_terms[:6]:
-            q = self._clip(term)
-            if q:
-                queries.append((q, "B:core"))
-
-        # Priority 3: Methods
-        for method in ontology.methods[:4]:
-            q = self._clip(method)
-            if q:
-                queries.append((q, "C:method"))
-
-        # Priority 4: Datasets
-        for ds in ontology.benchmark_datasets[:3]:
-            q = self._clip(ds)
-            if q:
-                queries.append((q, "D:dataset"))
-
-        # Deduplicate
+        """
+        Returns list of (query_string, query_type).
+        Types: core | related | topic
+        """
+        queries: List[Tuple[str, str]] = []
         seen = set()
-        unique = []
-        for q, qtype in queries:
+
+        def add(q: str, qtype: str):
+            q = (q or "").strip()
+            if not q:
+                return
             key = q.lower()
-            if key and key not in seen:
-                seen.add(key)
-                unique.append((q, qtype))
-            if len(unique) >= self.MAX_QUERIES_TOTAL:
-                break
+            if key in seen:
+                return
+            seen.add(key)
+            queries.append((q, qtype))
 
-        logger.info(f"Query Builder → {len(unique)} queries")
-        for q, qt in unique:
-            logger.debug(f"  [{qt}] '{q}'")
+        # 1. Core terms (highest priority)
+        for term in (ontology.core_terms or [])[:6]:
+            add(term, "core")
 
-        return unique
+        # 2. Related methods / techniques
+        for term in (getattr(ontology, "related_terms", None) or [])[:8]:
+            add(term, "related")
 
-    def _clip(self, text: str) -> str:
-        text = re.sub(r'[\*\"\'\-]+', ' ', text)
-        text = re.sub(r'^\d+[\.\)]\s*', '', text)
-        words = text.strip().split()
-        return " ".join(words[:self.MAX_QUERY_WORDS]).strip()
+        # 3. Light combinations from core (optional, limited)
+        cores = (ontology.core_terms or [])[:3]
+        if len(cores) >= 2:
+            add(f"{cores[0]} {cores[1]}", "core")
+
+        logger.info(f"Query Builder → {len(queries)} queries")
+        for q, qt in queries:
+            logger.info(f"  [{qt}] {q}")
+
+        return queries
 
     def build_fallback_chain(self, query: str) -> List[str]:
-        words = query.strip().split()
-        chain = []
-        for n in range(len(words)-1, 0, -1):
-            simplified = " ".join(words[:n])
-            if simplified.lower() != query.lower():
-                chain.append(simplified)
-            if len(chain) >= 2:
-                break
-        return chain
+        """Simpler variants if a query returns 0 hits."""
+        q = (query or "").strip()
+        if not q:
+            return []
+
+        parts = q.split()
+        fallbacks = []
+
+        # Drop last token
+        if len(parts) > 2:
+            fallbacks.append(" ".join(parts[:-1]))
+
+        # First two tokens
+        if len(parts) >= 2:
+            fallbacks.append(" ".join(parts[:2]))
+
+        # First token only
+        if parts:
+            fallbacks.append(parts[0])
+
+        # Dedup while preserving order
+        out, seen = [], set()
+        for f in fallbacks:
+            if f.lower() not in seen and f.lower() != q.lower():
+                seen.add(f.lower())
+                out.append(f)
+        return out
 
 
-query_builder = SearchQueryBuilder()
+query_builder = QueryBuilder()

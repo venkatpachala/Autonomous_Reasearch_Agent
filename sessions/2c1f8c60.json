@@ -1,0 +1,326 @@
+{
+  "session_id": "2c1f8c60",
+  "topic": "Retrieval strategies for RAG and AI Agents",
+  "created_at": "2026-07-24T08:55:49.911063",
+  "last_active": "2026-07-24T09:16:45.150249",
+  "papers_ingested": [
+    "2401.15391v1",
+    "2412.12881v1",
+    "2402.07483v2",
+    "2504.01346v4",
+    "2409.03708v2",
+    "2504.05181v2",
+    "2505.21439v1",
+    "2511.22858v1",
+    "1601.04605v1",
+    "2210.09877v1"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Summarise all paper in detailed description",
+      "timestamp": "2026-07-24T09:09:29.303562",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "## Research Synthesis\n\nThe collection of papers presents a rich landscape of research focused on Retrieval-Augmented Generation (RAG) and its applications across various domains. A prominent theme is the enhancement of RAG systems to support multi-hop reasoning capabilities, as exemplified by [2412.12881v1 - RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement], which introduces a novel framework leveraging Monte Carlo Tree Search for sub-query generation and retrieval-augmented verification. This approach not only addresses the limitations of traditional RAG but also emphasizes the importance of integrating reasoning processes with external knowledge retrieval.\n\nAnother significant direction is the development of instruction-following retrieval models, highlighted in [2505.21439v1 - Towards Better Instruction Following Retrieval Models]. This paper discusses how LLMs can be fine-tuned to better align with user instructions, thereby improving the relevance and accuracy of retrieved information. The focus on user instructions represents a shift towards more interactive and responsive retrieval systems, which is further supported by the findings in [2409.03708v2 - RAG based Question-Answering for Contextual Response Prediction System], where the integration of ReAct tools demonstrated improved accuracy in real-time applications.\n\nIn addition, the application of RAG in domain-specific contexts, such as legal procedures, is explored in [2511.22858v1 - RAG System for Supporting Japanese Litigation Procedures]. This paper underscores the necessity of generating responses that comply with legal norms, highlighting the challenges posed by hallucinations in LLMs when applied to specialized fields. The need for RAG systems to adapt to specific domains is echoed in [2504.01346v4 - RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking], which proposes a table-aware RAG framework to enhance retrieval from structured data sources.\n\nEmerging trends indicate a growing interest in optimizing retrieval strategies, particularly through hierarchical and multi-stage retrieval techniques, as seen in [2504.01346v4]. However, several research gaps remain, particularly in understanding the dynamics of user interaction with RAG systems and the long-term effectiveness of these models in evolving domains. The theoretical frameworks discussed in [1601.04605v1 - Dynamic Information Retrieval: Theoretical Framework and Application] provide a foundation for exploring these interactive aspects, suggesting a pathway for future research to enhance the adaptability and responsiveness of RAG systems in complex retrieval scenarios.\n\n---\n\n### Research Directions\n1. Enhancements in RAG for Multi-Hop Reasoning\n2. Instruction-Following Retrieval Models\n3. RAG Applications in Domain-Specific Contexts\n4. Optimizing Retrieval Strategies for Generative Tasks\n\n### Emerging Trends\n- Integration of RAG with reasoning capabilities\n- Focus on instruction-following in retrieval systems\n- Development of specialized RAG frameworks for specific domains\n- Advancements in multi-stage and hierarchical retrieval techniques\n\n### Research Gaps & Open Problems\n- Limited exploration of RAG in dynamic and interactive retrieval contexts\n- Need for comprehensive evaluation metrics for instruction-following retrieval models\n- Lack of studies on the long-term effectiveness of RAG in evolving domains\n- Insufficient understanding of user interaction impacts on RAG performance\n\n### State of the Art\n[2412.12881v1 - RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement] represents the current state of the art by effectively integrating external retrieval techniques with multi-step reasoning capabilities, significantly outperforming traditional RAG methods in reasoning tasks.",
+      "timestamp": "2026-07-24T09:10:32.541459",
+      "sources": [
+        {
+          "paper_id": "2402.07483v2",
+          "title": "T-RAG: Lessons from the LLM Trenches",
+          "arxiv_url": "https://arxiv.org/abs/2402.07483v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.12881v1",
+          "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
+          "arxiv_url": "https://arxiv.org/abs/2412.12881v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.01346v4",
+          "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+          "arxiv_url": "https://arxiv.org/abs/2504.01346v4",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2505.21439v1",
+          "title": "Towards Better Instruction Following Retrieval Models",
+          "arxiv_url": "https://arxiv.org/abs/2505.21439v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2511.22858v1",
+          "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+          "arxiv_url": "https://arxiv.org/abs/2511.22858v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.05181v2",
+          "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
+          "arxiv_url": "https://arxiv.org/abs/2504.05181v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "1601.04605v1",
+          "title": "Dynamic Information Retrieval: Theoretical Framework and Application",
+          "arxiv_url": "https://arxiv.org/abs/1601.04605v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What does paper 2 say about give me detailed description",
+      "timestamp": "2026-07-24T09:11:57.158107",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "No relevant papers were found in the knowledge base for this query.\n\nTry ingesting more papers or broadening your query.",
+      "timestamp": "2026-07-24T09:12:04.884400",
+      "sources": []
+    },
+    {
+      "role": "user",
+      "content": "What is the session topic ?",
+      "timestamp": "2026-07-24T09:12:46.150151",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "## Research Synthesis\n\nThe collection of papers presents a rich exploration of Retrieval-Augmented Generation (RAG) and its applications across various domains, highlighting both advancements and challenges in the field. A significant focus is on enhancing RAG techniques, particularly through the integration of external knowledge to mitigate issues such as hallucinations in large language models (LLMs). For instance, [2402.07483v2 - T-RAG: Lessons from the LLM Trenches] discusses the foundational processes of RAG, emphasizing the importance of effective indexing and querying strategies. This foundational work is complemented by [2409.03708v2 - RAG based Question-Answering for Contextual Response Prediction System], which evaluates traditional RAG architectures and their effectiveness in real-world applications, particularly in contact centers. Notably, the exploration of multi-hop retrieval strategies is advanced in [2401.15391v1 - MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries], which assesses different embedding models for improving retrieval quality in complex query scenarios.\n\nEmerging trends indicate a growing integration of instruction-following capabilities within RAG systems, as seen in [2505.21439v1 - Towards Better Instruction Following Retrieval Models]. This paper highlights the shift towards using LLMs not only for generation but also for enhancing retrieval processes through user instructions, marking a significant methodological progression. Additionally, the development of domain-specific RAG systems, such as those tailored for legal contexts in [2511.22858v1 - RAG System for Supporting Japanese Litigation Procedures], showcases the versatility of RAG applications, though it also reveals a gap in comprehensive evaluation metrics for these specialized systems.\n\nDespite these advancements, several research gaps remain. There is a notable lack of exploration into how RAG can enhance the inherent reasoning capabilities of LLMs, a theme addressed by [2412.12881v1 - RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement]. This paper proposes a novel framework that leverages retrieval to support multi-step reasoning, indicating a promising direction for future research. Furthermore, the need for more adaptive retrieval strategies that incorporate user feedback and dynamic adjustments is evident, particularly in light of the interactive information retrieval frameworks discussed in [1601.04605v1 - Dynamic Information Retrieval: Theoretical Framework and Application]. Overall, the synthesis of these papers underscores the evolving landscape of RAG and the critical need for ongoing innovation and evaluation in this domain.\n\n---\n\n### Research Directions\n1. Enhancements in Retrieval-Augmented Generation (RAG) Techniques\n2. Application of RAG in Specialized Domains\n3. Instruction-Following Retrieval Models\n4. Multi-Hop Retrieval Strategies\n\n### Emerging Trends\n- Integration of RAG with Instruction Following\n- Use of Multi-Hop Retrieval for Complex Queries\n- Development of Domain-Specific RAG Systems\n\n### Research Gaps & Open Problems\n- Lack of comprehensive evaluation metrics for RAG systems in specialized domains\n- Insufficient exploration of RAG's impact on reasoning capabilities\n- Need for more adaptive retrieval strategies that incorporate user feedback\n\n### State of the Art\n[2412.12881v1 - RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement] represents the current state of the art by effectively integrating retrieval techniques to enhance multi-step reasoning in LLMs, outperforming traditional RAG methods.",
+      "timestamp": "2026-07-24T09:13:45.722392",
+      "sources": [
+        {
+          "paper_id": "2402.07483v2",
+          "title": "T-RAG: Lessons from the LLM Trenches",
+          "arxiv_url": "https://arxiv.org/abs/2402.07483v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.12881v1",
+          "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
+          "arxiv_url": "https://arxiv.org/abs/2412.12881v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.01346v4",
+          "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+          "arxiv_url": "https://arxiv.org/abs/2504.01346v4",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2505.21439v1",
+          "title": "Towards Better Instruction Following Retrieval Models",
+          "arxiv_url": "https://arxiv.org/abs/2505.21439v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2511.22858v1",
+          "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+          "arxiv_url": "https://arxiv.org/abs/2511.22858v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.05181v2",
+          "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
+          "arxiv_url": "https://arxiv.org/abs/2504.05181v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "1601.04605v1",
+          "title": "Dynamic Information Retrieval: Theoretical Framework and Application",
+          "arxiv_url": "https://arxiv.org/abs/1601.04605v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What are the papers benchmarks",
+      "timestamp": "2026-07-24T09:14:27.791298",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "The papers benchmark various aspects of Retrieval-Augmented Generation (RAG) systems through different datasets and evaluation metrics. Here are the key benchmarks mentioned in the provided context:\n\n1. **RAG Benchmarking Datasets**: \n   - The work in Paper 1 introduces one of the first RAG benchmarking datasets, which includes a knowledge base, a collection of multi-hop queries, their ground-truth answers, and associated support [arXiv:2401.15391v1 - MultiHop-RAG].\n\n2. **Evaluation Metrics**:\n   - Paper 3 discusses the \"Recall at K\" (R@K) metric, which measures the efficiency of the retriever by evaluating how well it retrieves relevant documents among the top K retrieved documents [arXiv:2409.03708v2 - RAG based Question-Answering].\n   - Paper 8 employs Accuracy at K (Acc@k) and Recall at K (Recall@k) metrics for retriever evaluation, along with Exact Match and F1 scores for downstream LLMs in tabular reasoning [arXiv:2504.01346v4 - RAG over Tables].\n\n3. **Datasets Used**:\n   - Paper 4 mentions the use of the MS MARCO Document Ranking dataset and the Natural Questions (NQ) dataset for experiments, which are widely recognized benchmarks in document ranking tasks [arXiv:2504.05181v2 - Lightweight and Direct Document Relevance Optimization].\n\n4. **Automated Evaluation Techniques**:\n   - Paper 5 describes the use of automated evaluation techniques to compare RAG-based responses against existing BERT-based systems, indicating a performance evaluation framework [arXiv:2409.03708v2 - RAG based Question-Answering].\n\nThese benchmarks and evaluation methods are crucial for assessing the performance and effectiveness of RAG systems in various contexts, particularly in handling multi-hop queries and document retrieval tasks.",
+      "timestamp": "2026-07-24T09:14:49.724853",
+      "sources": [
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 0.655422926
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 0.630076
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 0.629369736
+        },
+        {
+          "paper_id": "2504.05181v2",
+          "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
+          "arxiv_url": "https://arxiv.org/abs/2504.05181v2",
+          "score": 0.622029305
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 0.616268
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 0.610923648
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 0.610502899
+        },
+        {
+          "paper_id": "2504.01346v4",
+          "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+          "arxiv_url": "https://arxiv.org/abs/2504.01346v4",
+          "score": 0.604404688
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "Describe paper 3.",
+      "timestamp": "2026-07-24T09:14:59.274866",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "No relevant papers were found in the knowledge base for this query.\n\nTry ingesting more papers or broadening your query.",
+      "timestamp": "2026-07-24T09:15:06.594682",
+      "sources": []
+    },
+    {
+      "role": "user",
+      "content": "Summarize paper 1.",
+      "timestamp": "2026-07-24T09:15:12.986943",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "No relevant papers were found in the knowledge base for this query.\n\nTry ingesting more papers or broadening your query.",
+      "timestamp": "2026-07-24T09:15:20.021295",
+      "sources": []
+    },
+    {
+      "role": "user",
+      "content": "When was paper 3 published?",
+      "timestamp": "2026-07-24T09:15:24.740753",
+      "sources": null
+    },
+    {
+      "role": "user",
+      "content": "What are the common themes?",
+      "timestamp": "2026-07-24T09:15:32.531641",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "## Research Synthesis\n\nThe collection of papers presents a rich exploration of Retrieval-Augmented Generation (RAG) and its applications in enhancing the capabilities of Large Language Models (LLMs). A prominent theme is the enhancement of RAG frameworks, as seen in [2402.07483v2] T-RAG: Lessons from the LLM Trenches and [2504.01346v4] RAG over Tables, where innovative indexing and retrieval techniques are proposed to improve the relevance and accuracy of responses. These papers highlight the importance of embedding models and multi-stage retrieval strategies to address the complexities of real-world data, particularly in specialized domains such as legal contexts [2511.22858v1] RAG System for Supporting Japanese Litigation Procedures.\n\nAnother significant direction is the development of instruction-following retrieval models, as discussed in [2505.21439v1] Towards Better Instruction Following Retrieval Models. This paper emphasizes the need for retrieval systems that can adapt to user instructions, showcasing advancements in aligning retrieval processes with user intent. This trend is further supported by the findings in [2409.03708v2] RAG based Question-Answering for Contextual Response Prediction System, which evaluates the integration of contextual relevance in RAG applications.\n\nThe exploration of multi-hop retrieval strategies is also gaining momentum, particularly in addressing complex queries that require synthesizing information from multiple sources. The work presented in [2401.15391v1] MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries illustrates the potential of embedding models to enhance retrieval quality in such contexts. This is complemented by the hierarchical approaches proposed in [2504.05181v2] Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval, which aim to optimize retrieval processes across various data structures.\n\nDespite these advancements, several research gaps remain. There is a notable lack of comprehensive evaluation frameworks for RAG systems, which hampers the ability to assess their effectiveness across different applications. Additionally, the exploration of retrieval strategies for non-text data, such as tables, is still nascent, indicating a need for further investigation into how to effectively retrieve and utilize such information. Lastly, ensuring the faithfulness of responses generated by LLMs remains a critical challenge, with current approaches needing more robust mechanisms to verify the accuracy of generated content against retrieved data. Overall, this synthesis highlights a dynamic field with significant potential for future research and application development.\n\n---\n\n### Research Directions\n1. Enhancements in Retrieval-Augmented Generation (RAG) frameworks\n2. Instruction-following and contextual retrieval models\n3. Multi-hop and hierarchical retrieval strategies\n4. Addressing hallucinations and misinformation in LLMs\n\n### Emerging Trends\n- Integration of retrieval techniques in specialized domains (e.g., legal)\n- Use of multi-hop retrieval for complex queries\n- Development of instruction-tuned retrieval models\n\n### Research Gaps & Open Problems\n- Lack of comprehensive evaluation frameworks for RAG systems\n- Insufficient exploration of retrieval strategies for non-text data (e.g., tables)\n- Need for more robust mechanisms to ensure response faithfulness in LLMs\n\n### State of the Art\n[2412.12881v1] RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement represents the current state of the art by combining retrieval with advanced reasoning techniques to enhance LLM capabilities beyond traditional RAG applications.",
+      "timestamp": "2026-07-24T09:16:45.149575",
+      "sources": [
+        {
+          "paper_id": "2402.07483v2",
+          "title": "T-RAG: Lessons from the LLM Trenches",
+          "arxiv_url": "https://arxiv.org/abs/2402.07483v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2409.03708v2",
+          "title": "RAG based Question-Answering for Contextual Response Prediction System",
+          "arxiv_url": "https://arxiv.org/abs/2409.03708v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2401.15391v1",
+          "title": "MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries",
+          "arxiv_url": "https://arxiv.org/abs/2401.15391v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.12881v1",
+          "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
+          "arxiv_url": "https://arxiv.org/abs/2412.12881v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.01346v4",
+          "title": "RAG over Tables: Hierarchical Memory Index, Multi-Stage Retrieval, and Benchmarking",
+          "arxiv_url": "https://arxiv.org/abs/2504.01346v4",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2505.21439v1",
+          "title": "Towards Better Instruction Following Retrieval Models",
+          "arxiv_url": "https://arxiv.org/abs/2505.21439v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2511.22858v1",
+          "title": "RAG System for Supporting Japanese Litigation Procedures: Faithful Response Generation Complying with Legal Norms",
+          "arxiv_url": "https://arxiv.org/abs/2511.22858v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2504.05181v2",
+          "title": "Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval",
+          "arxiv_url": "https://arxiv.org/abs/2504.05181v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "1601.04605v1",
+          "title": "Dynamic Information Retrieval: Theoretical Framework and Application",
+          "arxiv_url": "https://arxiv.org/abs/1601.04605v1",
+          "score": 1.0
+        }
+      ]
+    }
+  ],
+  "status": "active",
+  "description": null
+}

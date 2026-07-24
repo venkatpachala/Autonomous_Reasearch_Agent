@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     pinecone_index_name: str = Field(default="helix-research", alias="PINECONE_INDEX_NAME")
     pinecone_cloud: str = Field(default="aws", alias="PINECONE_CLOUD")
     pinecone_region: str = Field(default="us-east-1", alias="PINECONE_REGION")
-    pinecone_embedding_dim: int = Field(default=1536, alias="PINECONE_EMBEDDING_DIM")
+    pinecone_embedding_dim: int = Field(default=1024, alias="PINECONE_EMBEDDING_DIM")
     # OpenAI
     openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
     # Neo4j
