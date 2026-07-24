@@ -1,8 +1,9 @@
 """
-Memory Manager - Layered Storage (Artifact + Vector + Graph + Research Index)
-Updated for full parsed content + chunk storage + full paper metadata.
+Memory Manager - Layered Storage (Artifact + Vector + Graph + Research Index + BM25)
+Batch embeddings + batch Pinecone upsert + token-safe chunk sizes + lexical index.
 """
 import re
+import time
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
@@ -11,6 +12,9 @@ from src.db.pinecone_client import pinecone_client
 from src.db.neo4j_client import neo4j_client
 from src.tools.research_index import research_index
 from src.models.schemas import PerPaperOutput, ExtractedContent
+from src.gateway.embeddings import embeddings_gateway
+
+MAX_EMBED_CHARS = 6000
 
 
 class MemoryManager:
@@ -21,10 +25,6 @@ class MemoryManager:
         self.index = research_index
 
     async def store_paper(self, output: PerPaperOutput, topic: str):
-        """
-        Main storage orchestration.
-        Stores FULL extracted content as chunks in Pinecone + metadata registry.
-        """
         paper_id = output.paper_id
         extracted = output.extracted
         meta = output.metadata
@@ -35,19 +35,14 @@ class MemoryManager:
             logger.warning(f"No extracted content for {paper_id} — skipping storage")
             return
 
-        # 1. Artifact Store (source of truth on disk)
         try:
             self.artifact.save_paper_artifacts(output, topic)
         except Exception as e:
             logger.warning(f"Artifact store failed for {paper_id}: {e}")
 
-        # 2. Vector DB — Chunk + Store full content
         await self._store_chunks_in_vector(output, topic, title)
-
-        # 3. Knowledge Graph (optional)
         self._update_graph(output, topic)
 
-        # 4. Research Index — full metadata for authors / dates / abstracts
         try:
             authors: List[str] = []
             if meta and getattr(meta, "authors", None):
@@ -65,10 +60,7 @@ class MemoryManager:
                     or ""
                 )
 
-            categories = None
-            if meta is not None:
-                categories = getattr(meta, "categories", None)
-
+            categories = getattr(meta, "categories", None) if meta else None
             abstract = getattr(meta, "abstract", None) if meta else None
 
             self.index.register_paper(
@@ -93,27 +85,134 @@ class MemoryManager:
     async def _store_chunks_in_vector(
         self, output: PerPaperOutput, topic: str, title: str
     ):
-        """Chunk the full extracted content and store in Pinecone."""
         extracted = output.extracted
+        paper_id = output.paper_id
+
         if not extracted:
             return
 
         chunks = self._create_chunks(
             extracted=extracted,
-            paper_id=output.paper_id,
+            paper_id=paper_id,
             topic=topic,
             title=title,
         )
+        if not chunks:
+            logger.warning(f"No chunks created for {paper_id}")
+            return
 
-        for chunk in chunks:
-            try:
-                await self.vector.add_knowledge_note(
-                    note_id=chunk["chunk_id"],
-                    document=chunk["text"],
-                    metadata=chunk["metadata"],
+        # Always update lexical index (even when Pinecone is skipped)
+        try:
+            from src.tools.bm25_store import bm25_store
+            bm25_store.add_chunks(topic, chunks)
+        except Exception as e:
+            logger.warning(f"BM25 index update failed for {paper_id}: {e}")
+
+        # Stage 5: skip dense embed/upsert if already present
+        if hasattr(self.vector, "paper_has_vectors") and self.vector.paper_has_vectors(
+            paper_id, topic
+        ):
+            logger.info(f"Skip embed/upsert — vectors already exist for {paper_id}")
+            return
+
+        for c in chunks:
+            if len(c["text"]) > MAX_EMBED_CHARS:
+                logger.warning(
+                    f"Chunk still over limit after split: {c['chunk_id']} "
+                    f"({len(c['text'])} chars)"
                 )
-            except Exception as e:
-                logger.warning(f"Failed to store chunk {chunk['chunk_id']}: {e}")
+
+        texts = [c["text"] for c in chunks]
+
+        t0 = time.perf_counter()
+        vectors = await embeddings_gateway.embed_batch(texts)
+        t_embed = time.perf_counter() - t0
+
+        items: List[Dict[str, Any]] = []
+        for chunk, vec in zip(chunks, vectors):
+            meta = dict(chunk["metadata"])
+            meta["_document"] = chunk["text"][:35000]
+            items.append({
+                "id": chunk["chunk_id"],
+                "values": vec,
+                "metadata": meta,
+            })
+
+        t1 = time.perf_counter()
+        n = await self.vector.upsert_vectors(items)
+        t_upsert = time.perf_counter() - t1
+
+        logger.info(
+            f"Vector store {paper_id}: {n}/{len(chunks)} chunks | "
+            f"embed={t_embed:.1f}s upsert={t_upsert:.1f}s"
+        )
+
+        if n == 0:
+            raise RuntimeError(
+                f"No vectors stored for {paper_id} "
+                "(all zero embeddings or Pinecone upsert failed)"
+            )
+
+    def _split_oversized(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        out: List[Dict[str, Any]] = []
+
+        for c in chunks:
+            text = c.get("text") or ""
+            if len(text) <= MAX_EMBED_CHARS:
+                out.append(c)
+                continue
+
+            meta = dict(c.get("metadata") or {})
+            base_id = c["chunk_id"]
+            parts = [p for p in text.split("\n\n") if p.strip()]
+            buf: List[str] = []
+            buf_len = 0
+            part_i = 0
+
+            def flush():
+                nonlocal buf, buf_len, part_i
+                if not buf:
+                    return
+                piece = "\n\n".join(buf)
+                out.append({
+                    "chunk_id": f"{base_id}_p{part_i}",
+                    "text": piece,
+                    "metadata": {
+                        **meta,
+                        "part": part_i,
+                        "oversized_split": True,
+                    },
+                })
+                part_i += 1
+                buf, buf_len = [], 0
+
+            for p in parts:
+                if len(p) > MAX_EMBED_CHARS:
+                    flush()
+                    for j in range(0, len(p), MAX_EMBED_CHARS):
+                        out.append({
+                            "chunk_id": f"{base_id}_p{part_i}",
+                            "text": p[j : j + MAX_EMBED_CHARS],
+                            "metadata": {
+                                **meta,
+                                "part": part_i,
+                                "oversized_split": True,
+                            },
+                        })
+                        part_i += 1
+                    continue
+
+                if buf_len + len(p) + 2 > MAX_EMBED_CHARS and buf:
+                    flush()
+                buf.append(p)
+                buf_len += len(p) + 2
+
+            flush()
+            logger.info(
+                f"Split oversized chunk {base_id} ({len(text)} chars) → {part_i} parts"
+            )
+
+        return out
 
     def _create_chunks(
         self,
@@ -124,13 +223,8 @@ class MemoryManager:
         chunk_size: int = 1200,
         overlap: int = 200,
     ) -> List[Dict[str, Any]]:
-        """
-        Create retrieval-friendly chunks from full extracted content.
-        Prefers section-based chunks when available.
-        """
         chunks: List[Dict[str, Any]] = []
 
-        # 1. Prefer section-based chunks (best quality)
         if extracted.sections:
             for idx, (section_name, content) in enumerate(extracted.sections.items()):
                 if content and content.strip():
@@ -153,7 +247,6 @@ class MemoryManager:
                         },
                     })
 
-        # 2. Fallback: fixed-size paragraph chunks
         if not chunks and extracted.full_text:
             text = extracted.full_text.strip()
             paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
@@ -179,7 +272,6 @@ class MemoryManager:
                     })
                     chunk_idx += 1
 
-                    # Keep overlap
                     overlap_chars = 0
                     new_chunk: List[str] = []
                     for prev in reversed(current_chunk):
@@ -209,7 +301,7 @@ class MemoryManager:
                     },
                 })
 
-        return chunks
+        return self._split_oversized(chunks)
 
     def _update_graph(self, output: PerPaperOutput, topic: str):
         if not hasattr(self.graph, "is_connected") or not self.graph.is_connected():

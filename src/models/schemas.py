@@ -22,6 +22,7 @@ class PaperStatus(str, Enum):
     CHUNKING = "chunking"
     SUMMARIZING = "summarizing"      # optional / chat-time
     CRITIQUING = "critiquing"        # optional
+    READY = "ready"
     COMPLETED = "completed"
     FAILED = "failed"
 

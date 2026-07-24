@@ -16,8 +16,7 @@ class OllamaProvider:
         model: str,
         messages: List[Dict[str, str]],
         temperature: float = 0.2,
-        max_tokens: Optional[int] = None
-    ) -> Dict[str, Any]:
+        max_tokens: Optional[int] = None) -> Dict[str, Any]:
         """Call Ollama chat endpoint synchronously or asynchronously."""
         url = f"{self.base_url}/api/chat"
         payload = {
@@ -86,7 +85,7 @@ class OpenAIProvider:
         model: str,
         messages: List[Dict[str, str]],
         temperature: float = 0.2,
-        max_tokens: Optional[int] = None
+        max_tokens: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Call OpenAI chat completion endpoint using raw HTTP."""
         if not self.api_key:
@@ -95,9 +94,9 @@ class OpenAIProvider:
         url = f"{self.base_url}/chat/completions"
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
@@ -117,7 +116,9 @@ class OpenAIProvider:
         completion_tokens = usage.get("completion_tokens", 0)
 
         choices = data.get("choices", [])
-        text = choices[0].get("message", {}).get("content", "") if choices else ""
+        text = (
+            choices[0].get("message", {}).get("content", "") if choices else ""
+        )
 
         return {
             "text": text,
@@ -127,39 +128,71 @@ class OpenAIProvider:
             "latency": latency,
             "provider": "OpenAI",
             "model": model,
-            "metadata": {"raw_response": data}
+            "metadata": {"raw_response": data},
         }
 
-    async def embed(self, model: str, text: str, dimensions: Optional[int] = None) -> List[float]:
-        """Generate embedding vector using OpenAI embeddings API.
-        
-        Args:
-            model: Embedding model name (e.g. 'text-embedding-3-small')
-            text: Text to embed
-            dimensions: Optional output dimension for models that support truncation
-                        (text-embedding-3-small supports any dim ≤ 1536).
-                        Must match Pinecone index dimension exactly.
-        """
+    async def embed(
+        self,
+        model: str,
+        text: str,
+        dimensions: Optional[int] = None,
+    ) -> List[float]:
+        """Generate a single embedding vector."""
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY is not set.")
 
         url = f"{self.base_url}/embeddings"
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
-            "input": text
+            "input": text,
         }
-        # Only text-embedding-3-* models support the dimensions parameter
-        if dimensions and "embedding-3" in model:
+        if dimensions is not None:
             payload["dimensions"] = dimensions
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             data = response.json()
-        
+
         return data["data"][0]["embedding"]
 
+    async def embed_batch(
+        self,
+        model: str,
+        texts: List[str],
+        dimensions: Optional[int] = None,
+    ) -> List[List[float]]:
+        """
+        Batch embeddings in one HTTP request.
+        Returns vectors in the same order as `texts`.
+        """
+        if not self.api_key:
+            raise ValueError("OPENAI_API_KEY is not set.")
+        if not texts:
+            return []
+
+        url = f"{self.base_url}/embeddings"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload: Dict[str, Any] = {
+            "model": model,
+            "input": texts,
+        }
+        if dimensions is not None:
+            payload["dimensions"] = dimensions
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            data = response.json()
+
+        items = sorted(data["data"], key=lambda d: d["index"])
+        return [item["embedding"] for item in items]
+    
+    

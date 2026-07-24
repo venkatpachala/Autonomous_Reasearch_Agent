@@ -120,12 +120,23 @@
       "last_processed": "2026-07-23T09:09:09.610940"
     },
     "1709.08071v2": {
-      "title": "Autonomous Agents Modelling Other Agents: A Comprehensive Survey and Open Problems",
+      "paper_id": "1709.08071v2",
+      "title": "Stage4 test 1709.08071v2",
+      "authors": [],
+      "abstract": "Stage 4 background graph test abstract.",
+      "published": "2024-01-01 00:00:00",
+      "categories": [],
       "topics": [
         "agentic ai for loop tasks"
       ],
+      "topic": "agentic ai for loop tasks",
+      "pdf_path": "D:\\Research_Agent\\papers\\agentic_ai_for_loop_tasks\\1709.08071v2.pdf",
+      "status": "indexed",
       "first_seen": "2026-07-23T09:09:48.894270",
-      "last_processed": "2026-07-23T09:09:48.894270"
+      "last_processed": "2026-07-24T13:38:38.790121",
+      "updated_at": "2026-07-24T13:38:38.790121",
+      "graph_status": "completed",
+      "graph_error": null
     },
     "2504.00727v1": {
       "title": "Personality-Driven Decision-Making in LLM-Based Autonomous Agents",
@@ -322,6 +333,392 @@
       ],
       "first_seen": "2026-07-24T09:01:50.252694",
       "last_processed": "2026-07-24T09:01:50.252694"
+    },
+    "2512.09458v1": {
+      "paper_id": "2512.09458v1",
+      "title": "Architectures for Building Agentic AI",
+      "authors": [
+        "S\u0142awomir Nowaczyk"
+      ],
+      "abstract": "This chapter argues that the reliability of agentic and generative AI is chiefly an architectural property. We define agentic systems as goal-directed, tool-using decision makers operating in closed loops, and show how reliability emerges from principled componentisation (goal manager, planner, tool-router, executor, memory, verifiers, safety monitor, telemetry), disciplined interfaces (schema-constrained, validated, least-privilege tool calls), and explicit control and assurance loops. Building on classical foundations, we propose a practical taxonomy-tool-using agents, memory-augmented agents, planning and self-improvement agents, multi-agent systems, and embodied or web agents - and analyse how each pattern reshapes the reliability envelope and failure modes. We distil design guidance on typed schemas, idempotency, permissioning, transactional semantics, memory provenance and hygiene, runtime governance (budgets, termination conditions), and simulate-before-actuate safeguards.",
+      "published": "2025-12-10 09:28:40+00:00",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2512.09458v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:52:59.814638",
+      "last_processed": "2026-07-24T09:52:59.814638",
+      "updated_at": "2026-07-24T09:52:59.814638"
+    },
+    "2203.08975v2": {
+      "paper_id": "2203.08975v2",
+      "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+      "authors": [
+        "Changxi Zhu",
+        "Mehdi Dastani",
+        "Shihan Wang"
+      ],
+      "abstract": "Communication is an effective mechanism for coordinating the behaviors of multiple agents, broadening their views of the environment, and to support their collaborations. In the field of multi-agent deep reinforcement learning (MADRL), agents can improve the overall learning performance and achieve their objectives by communication. Agents can communicate various types of messages, either to all agents or to specific agent groups, or conditioned on specific constraints. With the growing body of research work in MADRL with communication (Comm-MADRL), there is a lack of a systematic and structural approach to distinguish and classify existing Comm-MADRL approaches. In this paper, we survey recent works in the Comm-MADRL field and consider various aspects of communication that can play a role in designing and developing multi-agent reinforcement learning systems. With these aspects in mind, we propose 9 dimensions along which Comm-MADRL approaches can be analyzed, developed, and compared. By projecting existing works into the multi-dimensional space, we discover interesting trends. We also propose some novel directions for designing future Comm-MADRL systems through exploring possible combinations of the dimensions.",
+      "published": "2022-03-16 22:39:46+00:00",
+      "categories": [
+        "cs.MA",
+        "cs.LG"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2203.08975v2.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:53:45.945652",
+      "last_processed": "2026-07-24T09:53:45.945652",
+      "updated_at": "2026-07-24T09:53:45.945652"
+    },
+    "2210.02260v1": {
+      "paper_id": "2210.02260v1",
+      "title": "From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+      "authors": [
+        "Mohammad Divband Soorati",
+        "Enrico H. Gerding",
+        "Enrico Marchioni",
+        "Pavel Naumov",
+        "Timothy J. Norman",
+        "Sarvapali D. Ramchurn",
+        "Bahar Rastegari",
+        "Adam Sobey",
+        "Sebastian Stein",
+        "Danesh Tarpore",
+        "Vahid Yazdanpanah",
+        "Jie Zhang"
+      ],
+      "abstract": "The Agents, Interaction and Complexity research group at the University of Southampton has a long track record of research in multiagent systems (MAS). We have made substantial scientific contributions across learning in MAS, game-theoretic techniques for coordinating agent systems, and formal methods for representation and reasoning. We highlight key results achieved by the group and elaborate on recent work and open research challenges in developing trustworthy autonomous systems and deploying human-centred AI systems that aim to support societal good.",
+      "published": "2022-10-05 13:40:38+00:00",
+      "categories": [
+        "cs.MA",
+        "cs.AI"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2210.02260v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:53:49.536582",
+      "last_processed": "2026-07-24T09:53:49.536582",
+      "updated_at": "2026-07-24T09:53:49.536582"
+    },
+    "2510.13343v1": {
+      "paper_id": "2510.13343v1",
+      "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+      "authors": [
+        "Shota Takayama",
+        "Katsuhide Fujita"
+      ],
+      "abstract": "Multi-agent reinforcement learning focuses on training the behaviors of multiple learning agents that coexist in a shared environment. Recently, MARL models, such as the Multi-Agent Transformer (MAT) and ACtion dEpendent deep Q-learning (ACE), have significantly improved performance by leveraging sequential decision-making processes. Although these models can enhance performance, they do not explicitly consider the importance of the order in which agents make decisions. In this paper, we propose an Agent Order of Action Decisions-MAT (AOAD-MAT), a novel MAT model that considers the order in which agents make decisions. The proposed model explicitly incorporates the sequence of action decisions into the learning process, allowing the model to learn and predict the optimal order of agent actions. The AOAD-MAT model leverages a Transformer-based actor-critic architecture that dynamically adjusts the sequence of agent actions. To achieve this, we introduce a novel MARL architecture that cooperates with a subtask focused on predicting the next agent to act, integrated into a Proximal Policy Optimization based loss function to synergistically maximize the advantage of the sequential decision-making. The proposed method was validated through extensive experiments on the StarCraft Multi-Agent Challenge and Multi-Agent MuJoCo benchmarks. The experimental results show that the proposed AOAD-MAT model outperforms existing MAT and other baseline models, demonstrating the effectiveness of adjusting the AOAD order in MARL.",
+      "published": "2025-10-15 09:29:36+00:00",
+      "categories": [
+        "cs.MA",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2510.13343v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:55:09.356630",
+      "last_processed": "2026-07-24T09:55:09.356630",
+      "updated_at": "2026-07-24T09:55:09.356630"
+    },
+    "2102.08370v2": {
+      "paper_id": "2102.08370v2",
+      "title": "Quantifying the effects of environment and population diversity in multi-agent reinforcement learning",
+      "authors": [
+        "Kevin R. McKee",
+        "Joel Z. Leibo",
+        "Charlie Beattie",
+        "Richard Everett"
+      ],
+      "abstract": "Generalization is a major challenge for multi-agent reinforcement learning. How well does an agent perform when placed in novel environments and in interactions with new co-players? In this paper, we investigate and quantify the relationship between generalization and diversity in the multi-agent domain. Across the range of multi-agent environments considered here, procedurally generating training levels significantly improves agent performance on held-out levels. However, agent performance on the specific levels used in training sometimes declines as a result. To better understand the effects of co-player variation, our experiments introduce a new environment-agnostic measure of behavioral diversity. Results demonstrate that population size and intrinsic motivation are both effective methods of generating greater population diversity. In turn, training with a diverse set of co-players strengthens agent performance in some (but not all) cases.",
+      "published": "2021-02-16 18:54:39+00:00",
+      "categories": [
+        "cs.MA",
+        "cs.AI"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2102.08370v2.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:55:32.659977",
+      "last_processed": "2026-07-24T09:55:32.659977",
+      "updated_at": "2026-07-24T09:55:32.659977"
+    },
+    "2412.06333v3": {
+      "paper_id": "2412.06333v3",
+      "title": "Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi",
+      "authors": [
+        "F. Bredell",
+        "H. A. Engelbrecht",
+        "J. C. Schoeman"
+      ],
+      "abstract": "The card game Hanabi is considered a strong medium for the testing and development of multi-agent reinforcement learning (MARL) algorithms, due to its cooperative nature, partial observability, limited communication and remarkable complexity. Previous research efforts have explored the capabilities of MARL algorithms within Hanabi, focusing largely on advanced architecture design and algorithmic manipulations to achieve state-of-the-art performance for various number of cooperators. However, this often leads to complex solution strategies with high computational cost and requiring large amounts of training data. For humans to solve the Hanabi game effectively, they require the use of conventions, which often allows for a means to implicitly convey ideas or knowledge based on a predefined, and mutually agreed upon, set of \"rules\" or principles. Multi-agent problems containing partial observability, especially when limited communication is present, can benefit greatly from the use of implicit knowledge sharing. In this paper, we propose a novel approach to augmenting an agent's action space using conventions, which act as a sequence of special cooperative actions that span over and include multiple time steps and multiple agents, requiring agents to actively opt in for it to reach fruition. These conventions are based on existing human conventions, and result in a significant improvement on the performance of existing techniques for self-play and cross-play for various number of cooperators within Hanabi.",
+      "published": "2024-12-09 09:34:40+00:00",
+      "categories": [
+        "cs.MA",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "topics": [
+        "multi agents architectures for ai agents"
+      ],
+      "topic": "multi agents architectures for ai agents",
+      "pdf_path": "D:\\Research_Agent\\papers\\multi_agents_architectures_for_ai_agents\\2412.06333v3.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T09:56:12.609997",
+      "last_processed": "2026-07-24T09:56:12.609997",
+      "updated_at": "2026-07-24T09:56:12.609997"
+    },
+    "2210.09440v2": {
+      "paper_id": "2210.09440v2",
+      "title": "Using Bottleneck Adapters to Identify Cancer in Clinical Notes under Low-Resource Constraints",
+      "authors": [
+        "Omid Rohanian",
+        "Hannah Jauncey",
+        "Mohammadmahdi Nouriborji",
+        "Vinod Kumar Chauhan",
+        "Bronner P. Gon\u00e7alves",
+        "Christiana Kartsonaki",
+        "ISARIC Clinical Characterisation Group",
+        "Laura Merson",
+        "David Clifton"
+      ],
+      "abstract": "Processing information locked within clinical health records is a challenging task that remains an active area of research in biomedical NLP. In this work, we evaluate a broad set of machine learning techniques ranging from simple RNNs to specialised transformers such as BioBERT on a dataset containing clinical notes along with a set of annotations indicating whether a sample is cancer-related or not.\n  Furthermore, we specifically employ efficient fine-tuning methods from NLP, namely, bottleneck adapters and prompt tuning, to adapt the models to our specialised task. Our evaluations suggest that fine-tuning a frozen BERT model pre-trained on natural language and with bottleneck adapters outperforms all other strategies, including full fine-tuning of the specialised BioBERT model. Based on our findings, we suggest that using bottleneck adapters in low-resource situations with limited access to labelled data or processing capacity could be a viable strategy in biomedical text mining. The code used in the experiments are going to be made available at https://github.com/omidrohanian/bottleneck-adapters.",
+      "published": "2022-10-17 21:22:23+00:00",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2210.09440v2.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:55:43.285748",
+      "last_processed": "2026-07-24T13:55:43.285748",
+      "updated_at": "2026-07-24T13:55:43.285748",
+      "graph_status": "completed"
+    },
+    "2603.16204v1": {
+      "paper_id": "2603.16204v1",
+      "title": "A Scoping Review of AI-Driven Digital Interventions in Mental Health Care: Mapping Applications Across Screening, Support, Monitoring, Prevention, and Clinical Education",
+      "authors": [
+        "Yang Ni",
+        "Fanli Jia"
+      ],
+      "abstract": "Artificial intelligence (AI)-enabled digital interventions, including Generative AI (GenAI) and Human-Centered AI (HCAI), are increasingly used to expand access to digital psychiatry and mental health care. This PRISMA-ScR scoping review maps the landscape of AI-driven mental health (mHealth) technologies across five critical phases: pre-treatment (screening/triage), treatment (therapeutic support), post-treatment (remote patient monitoring), clinical education, and population-level prevention. We synthesized 36 empirical studies implemented through early 2024, focusing on Large Language Models (LLMs), machine learning (ML) models, and autonomous conversational agents. Key use cases involve referral triage, empathic communication enhancement, and AI-assisted psychotherapy delivered via chatbots and voice agents. While benefits include reduced wait times and increased patient engagement, we address recurring challenges like algorithmic bias, data privacy, and human-AI collaboration barriers. By introducing a novel four-pillar framework, this review provides a comprehensive roadmap for AI-augmented mental health care, offering actionable insights for researchers, clinicians, and policymakers to develop safe, effective, and equitable digital health interventions.",
+      "published": "2026-03-17 07:33:29+00:00",
+      "categories": [
+        "cs.CY",
+        "cs.AI",
+        "cs.HC"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2603.16204v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:55:50.125611",
+      "last_processed": "2026-07-24T13:55:50.125611",
+      "updated_at": "2026-07-24T13:55:50.125611",
+      "graph_status": "completed"
+    },
+    "1904.03225v1": {
+      "paper_id": "1904.03225v1",
+      "title": "Distinguishing Clinical Sentiment: The Importance of Domain Adaptation in Psychiatric Patient Health Records",
+      "authors": [
+        "Eben Holderness",
+        "Philip Cawkwell",
+        "Kirsten Bolton",
+        "James Pustejovsky",
+        "Mei-Hua Hall"
+      ],
+      "abstract": "Recently natural language processing (NLP) tools have been developed to identify and extract salient risk indicators in electronic health records (EHRs). Sentiment analysis, although widely used in non-medical areas for improving decision making, has been studied minimally in the clinical setting. In this study, we undertook, to our knowledge, the first domain adaptation of sentiment analysis to psychiatric EHRs by defining psychiatric clinical sentiment, performing an annotation project, and evaluating multiple sentence-level sentiment machine learning (ML) models. Results indicate that off-the-shelf sentiment analysis tools fail in identifying clinically positive or negative polarity, and that the definition of clinical sentiment that we provide is learnable with relatively small amounts of training data. This project is an initial step towards further refining sentiment analysis methods for clinical use. Our long-term objective is to incorporate the results of this project as part of a machine learning model that predicts inpatient readmission risk. We hope that this work will initiate a discussion concerning domain adaptation of sentiment analysis to the clinical setting.",
+      "published": "2019-04-05 18:33:22+00:00",
+      "categories": [
+        "cs.CL"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\1904.03225v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:55:52.006902",
+      "last_processed": "2026-07-24T13:55:52.006902",
+      "updated_at": "2026-07-24T13:55:52.006902",
+      "graph_status": "completed"
+    },
+    "2011.09625v2": {
+      "paper_id": "2011.09625v2",
+      "title": "Exploring Text Specific and Blackbox Fairness Algorithms in Multimodal Clinical NLP",
+      "authors": [
+        "John Chen",
+        "Ian Berlot-Attwell",
+        "Safwan Hossain",
+        "Xindi Wang",
+        "Frank Rudzicz"
+      ],
+      "abstract": "Clinical machine learning is increasingly multimodal, collected in both structured tabular formats and unstructured forms such as freetext. We propose a novel task of exploring fairness on a multimodal clinical dataset, adopting equalized odds for the downstream medical prediction tasks. To this end, we investigate a modality-agnostic fairness algorithm - equalized odds post processing - and compare it to a text-specific fairness algorithm: debiased clinical word embeddings. Despite the fact that debiased word embeddings do not explicitly address equalized odds of protected groups, we show that a text-specific approach to fairness may simultaneously achieve a good balance of performance and classical notions of fairness. We hope that our paper inspires future contributions at the critical intersection of clinical NLP and fairness. The full source code is available here: https://github.com/johntiger1/multimodal_fairness",
+      "published": "2020-11-19 03:11:24+00:00",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2011.09625v2.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:55:56.177021",
+      "last_processed": "2026-07-24T13:55:56.177021",
+      "updated_at": "2026-07-24T13:55:56.177021",
+      "graph_status": "completed"
+    },
+    "2409.16098v2": {
+      "paper_id": "2409.16098v2",
+      "title": "The Digital Transformation in Health: How AI Can Improve the Performance of Health Systems",
+      "authors": [
+        "\u00c1frica Peri\u00e1\u00f1ez",
+        "Ana Fern\u00e1ndez del R\u00edo",
+        "Ivan Nazarov",
+        "Enric Jan\u00e9",
+        "Moiz Hassan",
+        "Aditya Rastogi",
+        "Dexian Tang"
+      ],
+      "abstract": "Mobile health has the potential to revolutionize health care delivery and patient engagement. In this work, we discuss how integrating Artificial Intelligence into digital health applications-focused on supply chain, patient management, and capacity building, among other use cases-can improve the health system and public health performance. We present an Artificial Intelligence and Reinforcement Learning platform that allows the delivery of adaptive interventions whose impact can be optimized through experimentation and real-time monitoring. The system can integrate multiple data sources and digital health applications. The flexibility of this platform to connect to various mobile health applications and digital devices and send personalized recommendations based on past data and predictions can significantly improve the impact of digital tools on health system outcomes. The potential for resource-poor settings, where the impact of this approach on health outcomes could be more decisive, is discussed specifically. This framework is, however, similarly applicable to improving efficiency in health systems where scarcity is not an issue.",
+      "published": "2024-09-24 13:52:15+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CY",
+        "cs.HC"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2409.16098v2.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:55:57.941814",
+      "last_processed": "2026-07-24T13:55:57.941814",
+      "updated_at": "2026-07-24T13:55:57.941814",
+      "graph_status": "completed"
+    },
+    "2302.04725v1": {
+      "paper_id": "2302.04725v1",
+      "title": "Lightweight Transformers for Clinical Natural Language Processing",
+      "authors": [
+        "Omid Rohanian",
+        "Mohammadmahdi Nouriborji",
+        "Hannah Jauncey",
+        "Samaneh Kouchaki",
+        "ISARIC Clinical Characterisation Group",
+        "Lei Clifton",
+        "Laura Merson",
+        "David A. Clifton"
+      ],
+      "abstract": "Specialised pre-trained language models are becoming more frequent in NLP since they can potentially outperform models trained on generic texts. BioBERT and BioClinicalBERT are two examples of such models that have shown promise in medical NLP tasks. Many of these models are overparametrised and resource-intensive, but thanks to techniques like Knowledge Distillation (KD), it is possible to create smaller versions that perform almost as well as their larger counterparts. In this work, we specifically focus on development of compact language models for processing clinical texts (i.e. progress notes, discharge summaries etc). We developed a number of efficient lightweight clinical transformers using knowledge distillation and continual learning, with the number of parameters ranging from 15 million to 65 million. These models performed comparably to larger models such as BioBERT and ClinicalBioBERT and significantly outperformed other compact models trained on general or biomedical data. Our extensive evaluation was done across several standard datasets and covered a wide range of clinical text-mining tasks, including Natural Language Inference, Relation Extraction, Named Entity Recognition, and Sequence Classification. To our knowledge, this is the first comprehensive study specifically focused on creating efficient and compact transformers for clinical NLP tasks. The models and code used in this study can be found on our Huggingface profile at https://huggingface.co/nlpie and Github page at https://github.com/nlpie-research/Lightweight-Clinical-Transformers, respectively, promoting reproducibility of our results.",
+      "published": "2023-02-09 16:07:31+00:00",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2302.04725v1.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:56:00.842358",
+      "last_processed": "2026-07-24T13:56:00.842358",
+      "updated_at": "2026-07-24T13:56:00.842358",
+      "graph_status": "completed"
+    },
+    "2106.02359v3": {
+      "paper_id": "2106.02359v3",
+      "title": "How Good Is NLP? A Sober Look at NLP Tasks through the Lens of Social Impact",
+      "authors": [
+        "Zhijing Jin",
+        "Geeticka Chauhan",
+        "Brian Tse",
+        "Mrinmaya Sachan",
+        "Rada Mihalcea"
+      ],
+      "abstract": "Recent years have seen many breakthroughs in natural language processing (NLP), transitioning it from a mostly theoretical field to one with many real-world applications. Noting the rising number of applications of other machine learning and AI techniques with pervasive societal impact, we anticipate the rising importance of developing NLP technologies for social good. Inspired by theories in moral philosophy and global priorities research, we aim to promote a guideline for social good in the context of NLP. We lay the foundations via the moral philosophy definition of social good, propose a framework to evaluate the direct and indirect real-world impact of NLP tasks, and adopt the methodology of global priorities research to identify priority causes for NLP research. Finally, we use our theoretical framework to provide some practical guidelines for future NLP research for social good. Our data and code are available at http://github.com/zhijing-jin/nlp4sg_acl2021. In addition, we curate a list of papers and resources on NLP for social good at https://github.com/zhijing-jin/NLP4SocialGood_Papers.",
+      "published": "2021-06-04 09:17:15+00:00",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CY",
+        "cs.LG"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2106.02359v3.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:56:02.400423",
+      "last_processed": "2026-07-24T13:56:02.400423",
+      "updated_at": "2026-07-24T13:56:02.400423",
+      "graph_status": "completed"
+    },
+    "2604.11197v3": {
+      "paper_id": "2604.11197v3",
+      "title": "MedP-CLIP: Medical CLIP with Region-Aware Prompt Integration",
+      "authors": [
+        "Jiahui Peng",
+        "He Yao",
+        "Jingwen Li",
+        "Yanzhou Su",
+        "Sibo Ju",
+        "Yujie Lu",
+        "Jin Ye",
+        "Hongchun Lu",
+        "Xue Li",
+        "Lincheng Jiang",
+        "Min Zhu",
+        "Junlong Cheng"
+      ],
+      "abstract": "Contrastive Language-Image Pre-training (CLIP) has demonstrated outstanding performance in global image understanding and zero-shot transfer through large-scale text-image alignment. However, the core of medical image analysis often lies in the fine-grained understanding of specific anatomical structures or lesion regions. Therefore, precisely comprehending region-of-interest (RoI) information provided by medical professionals or perception models becomes crucial. To address this need, we propose MedP-CLIP, a region-aware medical vision-language model (VLM). MedP-CLIP innovatively integrates medical prior knowledge and designs a feature-level region prompt integration mechanism, enabling it to flexibly respond to various prompt forms (e.g., points, bounding boxes, masks) while maintaining global contextual awareness when focusing on local regions. We pre-train the model on a meticulously constructed large-scale dataset (containing over 6.4 million medical images and 97.3 million region-level annotations), equipping it with cross-disease and cross-modality fine-grained spatial semantic understanding capabilities. Experiments demonstrate that MedP-CLIP significantly outperforms baseline methods in various medical tasks, including zero-shot recognition, interactive segmentation, and empowering multimodal large language models. This model provides a scalable, plug-and-play visual backbone for medical AI, combining holistic image understanding with precise regional analysis.",
+      "published": "2026-04-13 08:53:36+00:00",
+      "categories": [
+        "cs.CV"
+      ],
+      "topics": [
+        "large language models for health care industry"
+      ],
+      "topic": "large language models for health care industry",
+      "pdf_path": "D:\\Research_Agent\\papers\\large_language_models_for_health_care_industry\\2604.11197v3.pdf",
+      "status": "indexed",
+      "first_seen": "2026-07-24T13:57:26.624074",
+      "last_processed": "2026-07-24T13:57:26.624074",
+      "updated_at": "2026-07-24T13:57:26.624074",
+      "graph_status": "completed"
     }
   },
   "topics": {
@@ -374,7 +771,7 @@
         "2605.23989v1"
       ],
       "last_monitored": null,
-      "last_ingestion": "2026-07-23T09:11:43.857180"
+      "last_ingestion": "2026-07-24T13:38:38.790121"
     },
     "vector database for similarity seach": {
       "paper_ids": [
@@ -428,6 +825,32 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-24T09:01:50.252694"
+    },
+    "multi agents architectures for ai agents": {
+      "paper_ids": [
+        "2512.09458v1",
+        "2203.08975v2",
+        "2210.02260v1",
+        "2510.13343v1",
+        "2102.08370v2",
+        "2412.06333v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-24T09:56:12.609997"
+    },
+    "large language models for health care industry": {
+      "paper_ids": [
+        "2210.09440v2",
+        "2603.16204v1",
+        "1904.03225v1",
+        "2011.09625v2",
+        "2409.16098v2",
+        "2302.04725v1",
+        "2106.02359v3",
+        "2604.11197v3"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-24T13:57:26.624074"
     }
   }
 }

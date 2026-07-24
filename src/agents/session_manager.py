@@ -13,8 +13,8 @@ from src.models.session import ResearchSession, ChatMessage
 from src.config import settings
 from src.graphs.ingestion_graph import ingestion_graph
 from src.models.schemas import ResearchState
-
-
+from src.graphs.ingestion_graph import drain_background_graphs
+from src.graphs.ingestion_graph import drain_background_graphs
 class SessionManager:
     def __init__(self, sessions_dir: Path = None):
         self.sessions_dir = sessions_dir or (settings.base_dir / "sessions")
@@ -95,6 +95,7 @@ class SessionManager:
 
         try:
             result = await ingestion_graph.ainvoke(initial_state)
+            await drain_background_graphs(timeout=120.0)
             processed = result.get("processed_papers", [])
             paper_ids = []
             for p in processed:

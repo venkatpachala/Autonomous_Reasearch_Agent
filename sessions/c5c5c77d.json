@@ -1,0 +1,558 @@
+{
+  "session_id": "c5c5c77d",
+  "topic": "Multi Agents Architectures for AI Agents",
+  "created_at": "2026-07-24T09:50:37.176546",
+  "last_active": "2026-07-24T10:01:48.413124",
+  "papers_ingested": [
+    "2203.08975v2",
+    "2512.09458v1",
+    "2510.13343v1",
+    "2412.06333v3",
+    "2102.08370v2",
+    "2210.02260v1"
+  ],
+  "conversation": [
+    {
+      "role": "user",
+      "content": "How many papers were ingested?",
+      "timestamp": "2026-07-24T09:58:51.931792",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "**6 papers** are ingested in this session for topic **'Multi Agents Architectures for AI Agents'**.\n\n1. `2203.08975v2` — A Survey of Multi-Agent Deep Reinforcement Learning with Communication\n2. `2512.09458v1` — Architectures for Building Agentic AI\n3. `2510.13343v1` — AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions\n4. `2412.06333v3` — Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi\n5. `2102.08370v2` — Quantifying the effects of environment and population diversity in multi-agent reinforcement learning\n6. `2210.02260v1` — From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+      "timestamp": "2026-07-24T09:58:51.947931",
+      "sources": [
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2512.09458v1",
+          "title": "Architectures for Building Agentic AI",
+          "arxiv_url": "https://arxiv.org/abs/2512.09458v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.06333v3",
+          "title": "Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi",
+          "arxiv_url": "https://arxiv.org/abs/2412.06333v3",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2102.08370v2",
+          "title": "Quantifying the effects of environment and population diversity in multi-agent reinforcement learning",
+          "arxiv_url": "https://arxiv.org/abs/2102.08370v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2210.02260v1",
+          "title": "From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+          "arxiv_url": "https://arxiv.org/abs/2210.02260v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "QuestionExpectHow many papers were ingested?Exact count, no RAGList all paper titles",
+      "timestamp": "2026-07-24T09:58:57.060490",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "**6 papers** are ingested in this session for topic **'Multi Agents Architectures for AI Agents'**.\n\n1. `2203.08975v2` — A Survey of Multi-Agent Deep Reinforcement Learning with Communication\n2. `2512.09458v1` — Architectures for Building Agentic AI\n3. `2510.13343v1` — AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions\n4. `2412.06333v3` — Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi\n5. `2102.08370v2` — Quantifying the effects of environment and population diversity in multi-agent reinforcement learning\n6. `2210.02260v1` — From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+      "timestamp": "2026-07-24T09:58:57.082756",
+      "sources": [
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2512.09458v1",
+          "title": "Architectures for Building Agentic AI",
+          "arxiv_url": "https://arxiv.org/abs/2512.09458v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.06333v3",
+          "title": "Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi",
+          "arxiv_url": "https://arxiv.org/abs/2412.06333v3",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2102.08370v2",
+          "title": "Quantifying the effects of environment and population diversity in multi-agent reinforcement learning",
+          "arxiv_url": "https://arxiv.org/abs/2102.08370v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2210.02260v1",
+          "title": "From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+          "arxiv_url": "https://arxiv.org/abs/2210.02260v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What is the session topic?",
+      "timestamp": "2026-07-24T09:59:13.475626",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "**Session topic:** Multi Agents Architectures for AI Agents\n**Papers ingested:** 6",
+      "timestamp": "2026-07-24T09:59:13.486312",
+      "sources": [
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2512.09458v1",
+          "title": "Architectures for Building Agentic AI",
+          "arxiv_url": "https://arxiv.org/abs/2512.09458v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2412.06333v3",
+          "title": "Augmenting the action space with conventions to improve multi-agent cooperation in Hanabi",
+          "arxiv_url": "https://arxiv.org/abs/2412.06333v3",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2102.08370v2",
+          "title": "Quantifying the effects of environment and population diversity in multi-agent reinforcement learning",
+          "arxiv_url": "https://arxiv.org/abs/2102.08370v2",
+          "score": 1.0
+        },
+        {
+          "paper_id": "2210.02260v1",
+          "title": "From Intelligent Agents to Trustworthy Human-Centred Multiagent Systems",
+          "arxiv_url": "https://arxiv.org/abs/2210.02260v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "Describe paper 1",
+      "timestamp": "2026-07-24T09:59:23.137154",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "Paper 1, titled \"A Survey of Multi-Agent Deep Reinforcement Learning with Communication\" [arXiv:2203.08975v2], provides a comprehensive overview of the field of multi-agent deep reinforcement learning (MADRL) that incorporates communication among agents. \n\nIn Section 3.2, the paper discusses **Communication Constraints**, highlighting practical issues such as communication costs and the impact of noisy environments on Comm-MADRL systems. These constraints are crucial for the application of these systems in real-world scenarios, as they limit the effectiveness of communication strategies that might work well in simulations. The authors categorize recent works in this area into various types of communication concerns, which are summarized in Table 3 of the paper.\n\nThe survey aims to systematically classify existing Comm-MADRL approaches along nine proposed dimensions, allowing for a structured analysis of the literature. This classification helps in identifying trends, gaps, and potential future research directions in the field. The paper emphasizes the importance of communication as a mechanism for improving coordination and learning performance among agents operating in partially observable and dynamic environments. \n\nOverall, the survey serves as a foundational reference for researchers interested in the intersection of multi-agent systems and communication, providing insights into both theoretical and practical aspects of the field.",
+      "timestamp": "2026-07-24T09:59:49.377028",
+      "sources": [
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.315390646
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.310577631
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.309790939
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.302509695
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.292861968
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.286844015
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.27495595800000006
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.26882118
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.265263766
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.264833242
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.26353469499999993
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.26099747400000006
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.259772271
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.25556466
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.25507107399999995
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.25415199999999993
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.25413033400000007
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.25053703800000005
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.24794982399999999
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.24660620099999997
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.24185053999999995
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.239303634
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.23812577099999999
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.23802843699999998
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.234527111
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.23436760899999998
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.231500626
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.23008818899999994
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.23007988899999998
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22931455099999998
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22726838299999996
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22628620300000002
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.225464746
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22415541100000003
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22226007299999995
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22066634900000004
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.22053302799999996
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.21992023299999996
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.21859477500000002
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.21643412100000003
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.21213510599999996
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.21169358500000002
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.211104795
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.208481252
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.20832246499999996
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.20793266600000004
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.20757141700000004
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.20727552500000002
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.20437972199999999
+        },
+        {
+          "paper_id": "2203.08975v2",
+          "title": "A Survey of Multi-Agent Deep Reinforcement Learning with Communication",
+          "arxiv_url": "https://arxiv.org/abs/2203.08975v2",
+          "score": 0.203873023
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "When was paper 3 published?",
+      "timestamp": "2026-07-24T10:00:52.353517",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "**Published:** 2025-10-15 09:29:36+00:00\n**Paper:** [2510.13343v1] AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+      "timestamp": "2026-07-24T10:00:56.453198",
+      "sources": [
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "What does algorithm 1 describe in AOAD-MAT paper",
+      "timestamp": "2026-07-24T10:01:34.370960",
+      "sources": null
+    },
+    {
+      "role": "assistant",
+      "content": "Algorithm 1 in the AOAD-MAT paper describes the inference phase of the proposed model. It outlines the steps taken to process observations and generate action decisions based on the order of actions among multiple agents. The algorithm begins by initializing the encoder, decoder, and replay buffer. It then iterates over episodes and time steps to collect observation sequences and generate representation sequences using the encoder. \n\nKey steps include:\n- Feeding the observations into the encoder to generate representations.\n- Using an auto-regressive decoder to infer the next agent's action based on the current action sequence.\n- Swapping the representation sequence according to the inferred action decision order.\n- Restoring the original action sequence and executing the joint actions.\n- Collecting rewards and storing the experience in the replay buffer.\n\nThis process emphasizes the importance of the order in which agents make decisions, which is central to the AOAD-MAT model's approach to multi-agent reinforcement learning [arXiv:2510.13343v1 - AOAD-MAT].",
+      "timestamp": "2026-07-24T10:01:48.413104",
+      "sources": [
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.687181
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.679214
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.67190212
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.661569834
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.660283625
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.658670366
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.642695725
+        },
+        {
+          "paper_id": "2510.13343v1",
+          "title": "AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions",
+          "arxiv_url": "https://arxiv.org/abs/2510.13343v1",
+          "score": 0.637098789
+        }
+      ]
+    }
+  ],
+  "status": "active",
+  "description": null
+}

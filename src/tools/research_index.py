@@ -116,15 +116,14 @@ class ResearchIndex:
         published: Optional[str] = None,
         categories: Optional[List[str]] = None,
         pdf_path: Optional[str] = None,
-        status: str = "indexed",
-    ):
+        status: str = "indexed",):
         """Register or update a paper with full metadata."""
         now = datetime.utcnow().isoformat()
         topic_key = (topic or "unknown").lower().strip()
         papers = self.data.setdefault("papers", {})
         existing = papers.get(arxiv_id, {})
 
-        # Merge topics list
+        #       Merge topics list
         topics_list = list(existing.get("topics") or [])
         if topic_key and topic_key not in topics_list:
             topics_list.append(topic_key)
@@ -147,12 +146,15 @@ class ResearchIndex:
                 else existing.get("categories", [])
             ),
             "topics": topics_list,
-            "topic": topic_key,  # primary/latest topic for simple filters
+            "topic": topic_key,
             "pdf_path": pdf_path or existing.get("pdf_path"),
             "status": status or existing.get("status", "indexed"),
             "first_seen": existing.get("first_seen") or now,
             "last_processed": now,
             "updated_at": now,
+            # Stage 5: preserve graph enrichment state across re-ingest
+            "graph_status": existing.get("graph_status"),
+            "graph_error": existing.get("graph_error"),
         }
 
         # Topic index
@@ -171,7 +173,7 @@ class ResearchIndex:
 
         self.save()
         logger.debug(f"Registered paper metadata: {arxiv_id}")
-
+    
     def mark_topic_monitored(self, topic: str):
         topic_key = topic.lower().strip()
         topics = self.data.setdefault("topics", {})
@@ -193,6 +195,17 @@ class ResearchIndex:
                 for t, info in self.data.get("topics", {}).items()
             },
         }
+    
+    def set_graph_status(self, paper_id: str, status: str, error: str = None):
+        p = self.data.get("papers", {}).get(paper_id)
+        if not p:
+            return
+        p["graph_status"] = status
+        if error is not None:
+            p["graph_error"] = error
+        elif "graph_error" in p and status == "completed":
+            p.pop("graph_error", None)
+        self.save()
 
 
 research_index = ResearchIndex()
