@@ -2,10 +2,11 @@
 Synthesis Agent: Cross-paper reasoning, trend analysis, and research insight generation.
 Updated to work with chunk-based dicts (new architecture) while remaining compatible
 with legacy KnowledgeNote objects.
+Always returns Dict with keys: answer, sources, synthesis, contexts_used.
 """
 
-from typing import List, Dict, Any, Optional, Literal
-from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional, Literal, Union
+from pydantic import BaseModel, Field, ValidationError
 from loguru import logger
 
 from src.gateway import gateway
@@ -75,19 +76,16 @@ class SynthesisAgent:
     """
 
     def _get_field(self, note: Any, field: str, default=None):
-        """Safe accessor for both dict and object notes."""
         if isinstance(note, dict):
             return note.get(field, default)
         return getattr(note, field, default)
 
     def _build_sources(self, notes: List[Any]) -> List[Dict]:
-        """Build sources list that works for both dicts and KnowledgeNote objects."""
         sources = []
         for n in notes:
             paper_id = self._get_field(n, "paper_id", "unknown")
             title = self._get_field(n, "title", "Untitled")
             score = self._get_field(n, "score") or self._get_field(n, "criticality_score")
-
             sources.append({
                 "paper_id": paper_id,
                 "title": title,
@@ -97,10 +95,6 @@ class SynthesisAgent:
         return sources
 
     def _build_collection_context(self, notes: List[Any]) -> str:
-        """
-        Format all notes into a compact collection context string.
-        Handles both dict chunks and legacy KnowledgeNote objects.
-        """
         parts = []
         for i, note in enumerate(notes, 1):
             paper_id = self._get_field(note, "paper_id", "unknown")
@@ -110,7 +104,6 @@ class SynthesisAgent:
             sd = None if is_dict else getattr(note, "structured_data", None)
 
             if sd:
-                # Rich path — real KnowledgeNote with structured_data
                 contributions = (
                     "\n".join(f"    - {c}" for c in sd.key_contributions[:3])
                     if sd.key_contributions else "    - N/A"
@@ -130,35 +123,65 @@ class SynthesisAgent:
                     f"  Concepts: {concepts}\n"
                 )
             else:
-                # Common path today — raw chunk content
                 content = self._get_field(note, "content") or str(note)
                 num_chunks = self._get_field(note, "num_chunks")
                 chunk_note = f" ({num_chunks} chunks)" if num_chunks else ""
-
                 parts.append(
                     f"Paper {i}: [{paper_id}] {title}{chunk_note}\n"
                     f"  Content excerpt:\n{content[:2500]}\n"
                 )
         return "\n\n".join(parts)
 
+    def _coerce_synthesis(self, structured: Any) -> Optional[ResearchSynthesis]:
+        """Accept ResearchSynthesis | dict (e.g. from gateway cache) | None."""
+        if structured is None:
+            return None
+        if isinstance(structured, ResearchSynthesis):
+            return structured
+        if isinstance(structured, dict):
+            try:
+                return ResearchSynthesis.model_validate(structured)
+            except ValidationError as e:
+                logger.warning(f"Could not coerce cached structured synthesis: {e}")
+                return None
+        if hasattr(structured, "model_dump"):
+            try:
+                return ResearchSynthesis.model_validate(structured.model_dump())
+            except ValidationError:
+                return None
+        return None
+
+    def _ok(
+        self,
+        answer: str,
+        sources: List[Dict],
+        n_papers: int,
+        synthesis: Optional[Dict] = None,
+    ) -> Dict[str, Any]:
+        return {
+            "answer": answer or "(empty synthesis)",
+            "sources": sources,
+            "synthesis": synthesis,
+            "contexts_used": n_papers,
+        }
+
     async def synthesize(
         self,
         notes: List[Any],
         query: str,
         topic: str,
-        graph_triplets: Optional[List[str]] = None
+        graph_triplets: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
-        Generate a cross-paper research synthesis.
-        Accepts List[dict] or List[KnowledgeNote].
+        Always returns:
+          {"answer": str, "sources": list, "synthesis": dict|None, "contexts_used": int}
         """
         if not notes:
-            return {
-                "answer": "No papers are indexed for this topic yet. Ingest papers first.",
-                "sources": [],
-                "synthesis": None,
-                "contexts_used": 0
-            }
+            return self._ok(
+                "No papers are indexed for this topic yet. Ingest papers first.",
+                [],
+                0,
+            )
 
         collection_context = self._build_collection_context(notes)
         n_papers = len(notes)
@@ -190,7 +213,7 @@ class SynthesisAgent:
                     "- If you cannot find a direct connection, set evidence_basis to 'inferred'.\n"
                     "- Do NOT fabricate citation connections between papers that never reference each other.\n\n"
                     "Do NOT simply summarize each paper individually. BUILD CONNECTIONS based on the evidence."
-                )
+                ),
             },
             {
                 "role": "user",
@@ -201,8 +224,8 @@ class SynthesisAgent:
                     f"{graph_section}\n"
                     f"Paper Collection:\n\n{collection_context}\n\n"
                     "Generate a comprehensive research synthesis."
-                )
-            }
+                ),
+            },
         ]
 
         try:
@@ -210,72 +233,72 @@ class SynthesisAgent:
                 task="synthesis",
                 messages=messages,
                 temperature=0.3,
-                schema_model=ResearchSynthesis
+                schema_model=ResearchSynthesis,
             )
 
-            if response.structured:
-                synthesis = response.structured
-                answer = self._format_synthesis_answer(synthesis, query)
+            synthesis = self._coerce_synthesis(
+                getattr(response, "structured", None)
+            )
 
+            if synthesis is not None:
+                answer = self._format_synthesis_answer(synthesis, query)
                 logger.success(
                     f"Synthesis complete: {len(synthesis.research_directions)} directions, "
                     f"{len(synthesis.research_gaps)} gaps, "
                     f"{len(synthesis.paper_relationships)} relationships"
                 )
+                return self._ok(
+                    answer,
+                    sources,
+                    n_papers,
+                    synthesis.model_dump(),
+                )
 
-                return {
-                    "answer": answer,
-                    "sources": sources,
-                    "synthesis": synthesis.model_dump(),
-                    "contexts_used": n_papers
-                }
+            # Cache / provider returned text only
+            text = (getattr(response, "text", None) or "").strip()
+            if text:
+                logger.info("Synthesis used raw text (no structured model)")
+                return self._ok(text, sources, n_papers, None)
 
         except Exception as e:
             logger.error(f"Structured synthesis failed: {e}")
 
-        # Fallback: plain narrative synthesis
-        fallback_answer = await self._fallback_narrative(collection_context, query, topic)
-        return {
-            "answer": fallback_answer,
-            "sources": sources,
-            "synthesis": None,
-            "contexts_used": n_papers
-        }
+        # Fallback narrative
+        try:
+            fallback_answer = await self._fallback_narrative(
+                collection_context, query, topic
+            )
+            return self._ok(fallback_answer, sources, n_papers, None)
+        except Exception as e:
+            logger.error(f"Fallback synthesis failed: {e}")
+            return self._ok(f"Synthesis failed: {e}", sources, n_papers, None)
 
     def _format_synthesis_answer(self, synthesis: ResearchSynthesis, query: str) -> str:
-        """Format structured synthesis into a rich markdown answer."""
         lines = []
-
         lines.append("## Research Synthesis\n")
         lines.append(synthesis.synthesis_narrative)
-
         lines.append("\n---\n")
         lines.append("### Research Directions")
         for i, d in enumerate(synthesis.research_directions, 1):
             lines.append(f"{i}. {d}")
-
         lines.append("\n### Emerging Trends")
         for t in synthesis.emerging_trends:
             lines.append(f"- {t}")
-
         lines.append("\n### Research Gaps & Open Problems")
         for g in synthesis.research_gaps:
             lines.append(f"- {g}")
-
         if synthesis.state_of_the_art:
             lines.append(f"\n### State of the Art\n{synthesis.state_of_the_art}")
-
         if synthesis.paper_relationships:
             lines.append("\n### Key Paper Relationships")
             for rel in synthesis.paper_relationships[:5]:
                 lines.append(
-                    f"- **{rel.paper_a}** `{rel.relationship.upper()}` **{rel.paper_b}**: {rel.description}"
+                    f"- **{rel.paper_a}** `{rel.relationship.upper()}` "
+                    f"**{rel.paper_b}**: {rel.description}"
                 )
-
         return "\n".join(lines)
 
     async def _fallback_narrative(self, context: str, query: str, topic: str) -> str:
-        """Simple narrative fallback when structured output fails."""
         messages = [
             {
                 "role": "system",
@@ -284,20 +307,17 @@ class SynthesisAgent:
                     "a coherent narrative that groups themes, identifies trends, and finds gaps. "
                     "Write 3-4 analytical paragraphs. Do NOT just summarize each paper separately. "
                     "Cite papers as [arXiv:ID - Short Title]."
-                )
+                ),
             },
             {
                 "role": "user",
-                "content": f"Topic: {topic}\nQuery: {query}\n\nPapers:\n{context}"
-            }
+                "content": f"Topic: {topic}\nQuery: {query}\n\nPapers:\n{context}",
+            },
         ]
-        try:
-            response = await gateway.generate(
-                task="synthesis", messages=messages, temperature=0.3
-            )
-            return response.text
-        except Exception as e:
-            return f"Synthesis failed: {e}"
+        response = await gateway.generate(
+            task="synthesis", messages=messages, temperature=0.3
+        )
+        return getattr(response, "text", None) or "Synthesis produced empty text."
 
 
 synthesis_agent = SynthesisAgent()

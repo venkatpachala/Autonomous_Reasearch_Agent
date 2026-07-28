@@ -287,12 +287,26 @@
       "last_processed": "2026-07-24T08:58:11.681305"
     },
     "2412.12881v1": {
-      "title": "RAG-Star: Enhancing Deliberative Reasoning with Retrieval Augmented Verification and Refinement",
-      "topics": [
-        "retrieval strategies for rag and ai agents"
+      "paper_id": "2412.12881v1",
+      "title": "Test paper 2412.12881v1",
+      "authors": [
+        "Test Author"
       ],
+      "abstract": "Test abstract for per-paper pipeline.",
+      "published": "2026-07-28 00:00:00",
+      "categories": [],
+      "topics": [
+        "retrieval strategies for rag and ai agents",
+        "graph rag for retrievals"
+      ],
+      "topic": "graph rag for retrievals",
+      "pdf_path": "D:\\Research_Agent\\papers\\graph_rag_for_retrievals\\2412.12881v1.pdf",
+      "status": "indexed",
       "first_seen": "2026-07-24T08:58:34.886095",
-      "last_processed": "2026-07-24T08:58:34.886095"
+      "last_processed": "2026-07-28T12:51:22.946975",
+      "updated_at": "2026-07-28T12:51:22.946975",
+      "graph_status": null,
+      "graph_error": null
     },
     "2402.07483v2": {
       "title": "T-RAG: Lessons from the LLM Trenches",
@@ -851,6 +865,13 @@
       ],
       "last_monitored": null,
       "last_ingestion": "2026-07-24T13:57:26.624074"
+    },
+    "graph rag for retrievals": {
+      "paper_ids": [
+        "2412.12881v1"
+      ],
+      "last_monitored": null,
+      "last_ingestion": "2026-07-28T12:51:22.946975"
     }
   }
 }

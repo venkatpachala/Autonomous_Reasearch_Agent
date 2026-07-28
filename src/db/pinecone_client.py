@@ -2,9 +2,16 @@
 Pinecone Vector DB Client
 ==========================
 Async embedding + chunk storage + batch upsert.
+Sync query() runs embed via a safe event-loop bridge + stage timings.
+get_by_paper_id() uses a cached neutral vector (no per-question embed).
 """
 
+from __future__ import annotations
+
+import asyncio
+import time
 from typing import List, Dict, Any, Optional
+
 from loguru import logger
 
 try:
@@ -26,6 +33,19 @@ async def _get_embedding(text: str) -> List[float]:
         return [0.0] * settings.pinecone_embedding_dim
 
 
+def _run_async(coro):
+    """Run async coroutine from sync code (query path)."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                return pool.submit(asyncio.run, coro).result()
+        return loop.run_until_complete(coro)
+    except RuntimeError:
+        return asyncio.run(coro)
+
+
 def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
     safe_meta: Dict[str, Any] = {}
     for k, v in (metadata or {}).items():
@@ -41,6 +61,9 @@ def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
 
 
 class PineconeVectorClient:
+    # One neutral query vector per process (paper_id filter fetches)
+    _neutral_vector: Optional[List[float]] = None
+
     def __init__(self, index_name: Optional[str] = None):
         self.index_name = index_name or settings.pinecone_index_name
         self.embedding_dim = settings.pinecone_embedding_dim
@@ -100,7 +123,6 @@ class PineconeVectorClient:
         metadata: Dict[str, Any],
         embedding: Optional[List[float]] = None,
     ):
-        """Single-vector upsert (legacy path). Prefer upsert_vectors for batches."""
         if not self.is_connected():
             logger.warning(f"Pinecone not connected. Skipping upsert for {note_id}.")
             return
@@ -131,12 +153,6 @@ class PineconeVectorClient:
         items: List[Dict[str, Any]],
         batch_size: int = 100,
     ) -> int:
-        """
-        Batch upsert pre-embedded vectors.
-
-        items: [{"id": str, "values": List[float], "metadata": dict}, ...]
-        Returns number of vectors upserted.
-        """
         if not self.is_connected() or not items:
             return 0
 
@@ -204,64 +220,197 @@ class PineconeVectorClient:
     def query(
         self,
         query_text: str,
-        n_results: int = 5,
+        n_results: int = 8,
         where: Optional[Dict] = None,
     ) -> Dict[str, Any]:
+        empty = {
+            "ids": [[]],
+            "documents": [[]],
+            "metadatas": [[]],
+            "distances": [[]],
+            "timings_ms": {},
+        }
         if not self.is_connected():
-            logger.warning("Pinecone not connected. Returning empty results.")
-            return {
-                "ids": [[]],
-                "documents": [[]],
-                "metadatas": [[]],
-                "distances": [[]],
-            }
+            return empty
+
+        t0 = time.perf_counter()
+        stages: Dict[str, float] = {}
 
         try:
-            import asyncio
-            import concurrent.futures
+            # A. Embed
+            t = time.perf_counter()
+            vector = _run_async(_get_embedding(query_text))
+            stages["embed_ms"] = (time.perf_counter() - t) * 1000.0
 
-            try:
-                asyncio.get_running_loop()
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    query_vector = pool.submit(
-                        lambda: asyncio.run(_get_embedding(query_text))
-                    ).result()
-            except RuntimeError:
-                query_vector = asyncio.run(_get_embedding(query_text))
+            if not vector or all(float(v) == 0.0 for v in vector):
+                logger.error("Query embedding is zero — aborting Pinecone query")
+                stages["total_ms"] = (time.perf_counter() - t0) * 1000.0
+                empty["timings_ms"] = stages
+                return empty
 
+            # B. Filter
+            t = time.perf_counter()
             pinecone_filter = self._to_pinecone_filter(where)
+            stages["filter_ms"] = (time.perf_counter() - t) * 1000.0
 
+            # C. ANN
+            t = time.perf_counter()
             result = self._index.query(
-                vector=query_vector,
+                vector=vector,
                 top_k=n_results,
                 filter=pinecone_filter,
                 include_metadata=True,
+                include_values=False,
             )
+            stages["ann_ms"] = (time.perf_counter() - t) * 1000.0
 
+            # D. Parse
+            t = time.perf_counter()
             ids, documents, metadatas, distances = [], [], [], []
-            for match in result.get("matches", []):
+            for match in result.get("matches", []) or []:
                 ids.append(match["id"])
                 meta = dict(match.get("metadata") or {})
-                doc_text = meta.pop("_document", "") or meta.get("text", "")
+                doc_text = meta.pop("_document", "") or meta.get("text", "") or ""
                 documents.append(doc_text)
                 metadatas.append(meta)
-                score = match.get("score", 0.0)
+                try:
+                    score = float(match.get("score") or 0.0)
+                except (TypeError, ValueError):
+                    score = 0.0
                 distances.append(1.0 - score)
+            stages["parse_ms"] = (time.perf_counter() - t) * 1000.0
+
+            stages["total_ms"] = (time.perf_counter() - t0) * 1000.0
+            # IMPORTANT: format stages values, not the string keys
+            logger.info(
+                f"Pinecone detail ms | "
+                f"embed={float(stages.get('embed_ms', 0)):.0f} "
+                f"filter={float(stages.get('filter_ms', 0)):.0f} "
+                f"ann={float(stages.get('ann_ms', 0)):.0f} "
+                f"parse={float(stages.get('parse_ms', 0)):.0f} "
+                f"total={float(stages.get('total_ms', 0)):.0f} "
+                f"top_k={n_results} filtered={bool(where)}"
+            )
 
             return {
                 "ids": [ids],
                 "documents": [documents],
                 "metadatas": [metadatas],
                 "distances": [distances],
+                "timings_ms": stages,
             }
         except Exception as e:
             logger.error(f"Pinecone query failed: {e}")
+            stages["total_ms"] = (time.perf_counter() - t0) * 1000.0
+            empty["timings_ms"] = stages
+            return empty
+
+    async def get_by_paper_id(
+        self,
+        paper_id: str,
+        topic: Optional[str] = None,
+        n_results: int = 50,
+    ) -> Dict[str, Any]:
+        """
+        Load chunks for a known paper_id without embedding the user question.
+        Uses one cached neutral vector + metadata filter.
+        """
+        import json
+
+        empty = {
+            "ids": [[]],
+            "documents": [[]],
+            "metadatas": [[]],
+            "distances": [[]],
+            "timings_ms": {"embed": 0.0, "ann": 0.0, "total": 0.0},
+        }
+        if not self.is_connected():
+            return empty
+
+        paper_id = str(paper_id).strip()
+        topic_s = str(topic).strip() if topic else None
+        n_results = int(n_results) if n_results else 50
+
+        try:
+            # --- neutral vector (plain list[float], JSON-safe) ---
+            if PineconeVectorClient._neutral_vector is None:
+                t_e = time.perf_counter()
+                raw = await _get_embedding("paper content overview")
+                PineconeVectorClient._neutral_vector = [float(x) for x in raw]
+                embed_ms = (time.perf_counter() - t_e) * 1000.0
+                logger.info(
+                    f"Cached neutral query vector for paper_id fetches "
+                    f"(embed={embed_ms:.0f}ms, dim={len(PineconeVectorClient._neutral_vector)})"
+                )
+            else:
+                embed_ms = 0.0
+
+            neutral = [float(x) for x in PineconeVectorClient._neutral_vector]
+            if not neutral or all(v == 0.0 for v in neutral):
+                logger.error("Neutral vector is zero — aborting get_by_paper_id")
+                return empty
+
+            # --- filter: only str values, no Ellipsis / odd types ---
+            if topic_s:
+                pinecone_filter: Dict[str, Any] = {
+                    "$and": [
+                        {"paper_id": {"$eq": paper_id}},
+                        {"topic": {"$eq": topic_s}},
+                    ]
+                }
+            else:
+                pinecone_filter = {"paper_id": {"$eq": paper_id}}
+
+            # Fail fast if anything non-JSON sneaks in (catches Ellipsis)
+            try:
+                json.dumps(pinecone_filter)
+                json.dumps(neutral[:2])  # sample; full vector is large but pure floats
+            except TypeError as je:
+                logger.error(f"get_by_paper_id preflight JSON fail: {je} filter={pinecone_filter!r}")
+                return empty
+
+            t0 = time.perf_counter()
+            result = self._index.query(
+                vector=neutral,
+                top_k=n_results,
+                filter=pinecone_filter,
+                include_metadata=True,
+            )
+            ann_ms = (time.perf_counter() - t0) * 1000.0
+
+            ids, documents, metadatas, distances = [], [], [], []
+            for match in result.get("matches", []) or []:
+                ids.append(match["id"])
+                meta = dict(match.get("metadata") or {})
+                doc_text = meta.pop("_document", "") or meta.get("text", "") or ""
+                documents.append(doc_text)
+                metadatas.append(meta)
+                try:
+                    score = float(match.get("score") or 0.0)
+                except (TypeError, ValueError):
+                    score = 0.0
+                distances.append(1.0 - score)
+
+            total_ms = float(embed_ms) + float(ann_ms)
+            logger.info(
+                f"Pinecone paper_id fetch | paper={paper_id} hits={len(ids)} "
+                f"embed={float(embed_ms):.0f} ann={float(ann_ms):.0f} "
+                f"total={total_ms:.0f}"
+            )
             return {
-                "ids": [[]],
-                "documents": [[]],
-                "metadatas": [[]],
-                "distances": [[]],
+                "ids": [ids],
+                "documents": [documents],
+                "metadatas": [metadatas],
+                "distances": [distances],
+                "timings_ms": {
+                    "embed": float(embed_ms),
+                    "ann": float(ann_ms),
+                    "total": total_ms,
+                },
             }
+        except Exception as e:
+            logger.error(f"get_by_paper_id failed: {e}")
+            return empty
 
     def get_collection_stats(self) -> Dict[str, Any]:
         if not self.is_connected():
@@ -278,14 +427,12 @@ class PineconeVectorClient:
             return {"count": 0, "name": self.index_name, "error": str(e)}
 
     def paper_has_vectors(self, paper_id: str, topic: Optional[str] = None) -> bool:
-        """True if at least one vector exists for this paper (and topic)."""
         if not self.is_connected():
             return False
         try:
-            where = {"paper_id": paper_id}
+            where: Dict[str, Any] = {"paper_id": paper_id}
             if topic:
                 where = {"$and": [{"paper_id": paper_id}, {"topic": topic}]}
-            # Cheap probe: neutral query + hard filter
             result = self.query(
                 query_text=f"paper {paper_id}",
                 n_results=1,
@@ -295,7 +442,8 @@ class PineconeVectorClient:
             return bool(ids)
         except Exception as e:
             logger.warning(f"paper_has_vectors check failed: {e}")
-        return False
-    
+            return False
+
+
 pinecone_client = PineconeVectorClient()
 chroma_client = pinecone_client
